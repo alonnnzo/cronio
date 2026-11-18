@@ -274,19 +274,6 @@
     document.querySelectorAll('[data-releases]').forEach(a => { a.href = RELEASES_URL; });
   }
 
-  // Scroll suave con Lenis (si cargó y no se pidió reducir el movimiento). Mueve la ventana de verdad.
-  if (window.Lenis && !reduced.matches) {
-    const lenis = new window.Lenis({ lerp: 0.09, smoothWheel: true });
-    document.documentElement.classList.add('lenis-on');
-    const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
-    requestAnimationFrame(raf);
-    document.addEventListener('click', e => {
-      const a = e.target.closest('a[href^="#"]');
-      const target = a && a.getAttribute('href').length > 1 && document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); lenis.scrollTo(target, { offset: -56 }); history.replaceState(null, '', a.getAttribute('href')); }
-    });
-  }
-
   const demoSection = $('demo');
   let lastSaid = '', W = innerWidth, H = innerHeight;
   addEventListener('resize', () => { W = innerWidth; H = innerHeight; sizeDemo(); });

@@ -20,7 +20,6 @@ Van incluidas, como archivos `.woff2`, en el programa del PC (`packages/installe
 | [ws](https://github.com/websockets/ws) | WebSocket del puente | MIT |
 | [zod](https://zod.dev/) | Validación de los mensajes del protocolo | MIT |
 | [qrcode](https://github.com/soldair/node-qrcode) | Código QR para instalar el cliente en la consola | MIT |
-| [Lenis](https://github.com/darkroomengineering/lenis) 1.1.13 | Desplazamiento suave de la página `site/` (copia en `site/vendor/`) | MIT |
 
 Las herramientas de desarrollo (TypeScript, Vitest, tsx, electron-builder, etc.) no se distribuyen con el programa.
 Quien use `npm install` obtiene además las dependencias indirectas de estos paquetes, cada una con la licencia que declara en su `package.json`.
