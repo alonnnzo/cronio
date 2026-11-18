@@ -101,7 +101,7 @@ conElectron("protocolo v2 dentro de Electron como Node", () => {
         expect(r.tramas.find((t) => t.dir === dir && t.n === n)!.sellada).toBe(esperada);
       }
     }
-  });
+  }, 30000); // lanza Electron como Node: con la suite completa en paralelo puede pasar de los 5 s por defecto
 });
 
 conElectron("puente empaquetado dentro de Electron como Node", () => {
