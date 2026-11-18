@@ -1,51 +1,49 @@
 # Página de Cronio: presentación y descarga
 
-Página estática (HTML, CSS y JS, sin compilar) que presenta Cronio. Empieza con la consola cerrada; al hacer scroll la
-tapa gira sobre la bisagra y las dos pantallas muestran las funciones una a una. Sigue la marca decidida el 2026-11-16
-(`docs/11-marca-cronio.md`, rama `fase-7`): nombre Cronio; logo «La palabra es la cara» (CRONIO en Dela Gothic One sobre un rectángulo naranja, con las dos «O»
-como ojos); la mascota es la cara rectangular, nunca una bolita; Dela Gothic One en el logo y los títulos grandes y
-M PLUS Rounded 1c en el resto; fondo plata con rayitas, botones con relieve (celeste para acciones, rojo para descargar)
-y tarjetas blancas con borde.
+Página estática (HTML, CSS y JS, sin compilar) que presenta Cronio. Sigue la marca de `docs/11-marca-cronio.md`: logo «La
+palabra es la cara», Dela Gothic One en logo y títulos, M PLUS Rounded 1c en el resto, fondo plata con rayitas, botones con
+relieve y tarjetas blancas con borde. Se publica sola en https://alonnnzo.github.io/cronio/.
 
 ## Verla en local
 
 ```bash
-npx --yes http-server@14.1.1 site -p 4321 -c-1
+python -m http.server 4873 --directory site
 ```
 
-Luego abre `http://localhost:4321/`.
+Luego abre `http://localhost:4873/`.
 
-## Secciones
+## Secciones (en orden)
 
-1. Portada: titular y la consola cerrada.
-2. Recorrido (la consola se abre y queda fija mientras cambia el texto): estado de sesiones con la cara, tarjeta de
-   permiso (aprobar, sí siempre, rechazar), «te espera» con la pregunta, lector del mensaje completo, menú SELECT,
-   avisos con «Visto» y sonido, y preguntas con alternativas (llega en la próxima versión).
-3. Demo interactiva: una segunda consola que responde. Cuatro botones simulan lo que pasa en el PC (permiso, fin de
-   turno, pregunta con opciones, todo tranquilo) y se contesta con los botones dibujados, los de la página, el teclado
-   (flechas, A, B, Y y S para SELECT, con la consola enfocada) o tocando la pantalla de abajo. El menú SELECT cambia de
-   verdad los avisos, el "Visto" y el sonido de la demo.
-4. Descarga, instalación en cuatro pasos y qué se necesita.
+1. **Portada y recorrido de producto** (`tour.js`). Una sección de unas 8 pantallas con un escenario fijo. La consola es
+   HTML y CSS en 3D (dos mitades con grosor, bisagra, pantallas, cruceta, A/B/X/Y, LED) y una «cámara» (un `transform` sobre el
+   contenedor) pasa por 9 planos según el scroll: cerrada con titular y botón de descarga, se abre, cara de arriba, tarjeta de
+   permiso, botones A y B (A se hunde y la tarjeta se aprueba), vista lateral con la cara en capas, LED y bisagra, sesiones en
+   tema oscuro y plano general con la descarga. Los fotogramas clave están en `KF` (escritorio) y `MOB` (móvil).
+2. **Menú de funciones** (`home.js`). Dos pantallas apiladas: abajo, 8 canales con cursor celeste (ratón, toque, flechas, Tab,
+   Enter o A); arriba, el banner de la función elegida. Es un `tablist` con `aria-selected`.
+3. **Cómo funciona.** Diagrama PC ↔ puente ↔ 3DS y tres pasos. Todo local.
+4. **Demo interactiva** (`app.js`). Una consola que responde a botones, teclado y toques.
+5. **Descarga e instalación.** Botón a `releases/latest`, huellas SHA-256, código y SECURITY.md.
+6. **Seguridad y privacidad** y **Preguntas frecuentes** (`<details>`).
+7. Pie con enlaces y descargo de marcas.
+
+## Archivos
+
+- `pieces.js`: agentes, tarjetas de la pantalla de abajo (mismos textos que la app) y la cara en DOM por capas.
+- `tour.js`, `home.js`, `app.js`: recorrido, menú y demo. Scripts clásicos que comparten `window.Cronio`.
+- `og.png`: imagen para redes (1200x630). Se genera con `node_modules\electron\dist\electron.exe art\marca\og\gen-og.cjs`.
+- `icon.svg`: el ícono (cuadrado naranja con los dos ojos).
 
 ## Detalles
 
-- `app.js` dibuja la pantalla de arriba en un canvas (la cara: la pantalla entera del color del agente con dos ojos) y
-  arma la pantalla de abajo de cada paso con botones táctiles claros.
-- `icon.svg` es el ícono: el cuadrado naranja lleno, de borde a borde, con los dos ojos.
-- El logo está hecho en CSS (`.logo` en `styles.css`), sin imágenes. El naranja `#EE7446` es solo del logo, el ícono y
-  la cara de Claude. Los demás agentes conservan su color en su carita rectangular.
-- La consola está dibujada en CSS 3D: sin fotos, renders ni marcas de terceros.
-- Scroll suave con [Lenis](https://github.com/darkroomengineering/lenis) 1.1.13 (MIT), copiado en `vendor/`. Si no carga, la
-  página funciona igual.
-- Sin servicios externos: las fuentes (OFL) están en `fonts/` y la página declara una CSP estricta (`<meta http-equiv>`: solo
-  `'self'`; `style-src` lleva `'unsafe-inline'` porque la demo arma tarjetas con `style=""`). No hay CDN, Google Fonts ni analítica.
-- Con `prefers-reduced-motion` la consola aparece abierta, sin Lenis ni giros, y los pasos cambian solo con fundidos.
-- En móvil (menos de 900 px) la consola queda arriba y el texto de cada paso, fijo debajo.
+- Sin servicios externos: fuentes (OFL) en `fonts/` y CSP estricta (`'self'`; `style-src` lleva `'unsafe-inline'` por los
+  `style=""` de la demo). Scroll suave con [Lenis](https://github.com/darkroomengineering/lenis) 1.1.13 (MIT) en `vendor/`; si
+  no carga, la página funciona igual. La versión (0.3.1) está fija en el HTML: no se llama a la API de GitHub.
+- La cámara solo anima `transform` y `opacity`. Los textos de cada plano son HTML real; la consola va con `aria-hidden`.
+- Con `prefers-reduced-motion` no hay cámara ni Lenis: cada plano es un bloque estático con su encuadre y su texto.
+- En menos de 900 px los encuadres son otros (`MOB`) y el texto va en una tarjeta abajo.
 
 ## Pendiente
 
-- **Enlace de Releases:** `RELEASES_URL` (primera constante de `app.js`) apunta a
-  `https://github.com/alonnnzo/cronio/releases/latest`; sirve cuando exista la primera release.
-- **Video o GIF para el README:** grabar el recorrido de la página.
-- **Opcional, clips con IA (Higgsfield u otra):** usar capturas de esta consola (cerrada y abierta) como cuadros de inicio
-  y fin, para que el clip conserve un diseño propio y no parezca una consola comercial.
+- Video o GIF para el README: grabar el recorrido.
+- La versión del HTML (0.3.1) se actualiza a mano en cada release.
