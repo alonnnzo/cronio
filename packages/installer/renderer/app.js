@@ -185,6 +185,7 @@ function pintarVersion() {
 }
 
 async function refrescarPuente() {
+  if (document.hidden) return;
   try {
     estadoPuente = await api.puenteEstado();
   } catch {
@@ -210,6 +211,7 @@ async function irA(clave, opciones) {
   const dibujar = clave === "inicio" ? dibujarInicio : clave === "ajustes" ? dibujarAjustes : PASOS[Number(clave.slice(5)) - 1].dibujar;
   vista = await dibujar(cont);
   cont.scrollTop = 0;
+  if (clave === "inicio") leerRed().then(() => vista && vista.actualizarDatos && vista.actualizarDatos());
   pintarLateral();
   if (opciones && opciones.seccion) {
     const sec = document.getElementById(opciones.seccion);
@@ -355,6 +357,7 @@ function pintarFranja() {
 }
 
 async function refrescarActualizaciones() {
+  if (document.hidden) return;
   try {
     estadoAct = await api.actualizacionEstado();
   } catch {
@@ -496,24 +499,28 @@ async function leerRed() {
   }
 }
 
-/** Lo que alimenta las ✓ y las tarjetas de Inicio. Rápido: sin la red (PowerShell tarda). */
-async function leerBasicos() {
+/**
+ * Lo que alimenta las ✓ y las tarjetas de Inicio. Rápido: sin la red (PowerShell tarda).
+ * Con `soloLoBarato` (las vueltas de fondo) el firewall (netsh) y Node (node --version) solo se miran en las pantallas que los usan.
+ */
+async function leerBasicos(soloLoBarato = false) {
+  const enInicio = vistaActual === "inicio";
   const resultados = await Promise.allSettled([
-    leerNode(),
+    !soloLoBarato || enInicio || vistaActual === "paso-1" ? leerNode() : null,
     api.hooksVista().then(registrarHooks),
     api.hooksCarpetasVista().then(registrarCarpetas),
-    leerFirewall(),
+    !soloLoBarato || enInicio || vistaActual === "paso-3" ? leerFirewall() : null,
   ]);
   marcar(4, leerYaInstalada());
   marcar(5, conectada());
   return resultados;
 }
 
-let vueltasFondo = 0;
 async function verificarFondo() {
+  if (document.hidden) return; // ventana minimizada u oculta: no se mira nada
   try {
-    await leerBasicos();
-    if (vueltasFondo++ % 3 === 0) await leerRed(); // PowerShell: cada 30 s
+    await leerBasicos(true);
+    // la red (PowerShell) no se consulta de fondo: se lee al abrir y al entrar a Inicio, y el paso 4 la lee por su cuenta
   } catch {
     /* se reintenta en la próxima vuelta */
   }
@@ -730,6 +737,20 @@ function dibujarAjustes(cont) {
     casillaInicio.checked = r.activo;
   });
 
+  // al cerrar la ventana: seguir en la bandeja (por defecto) o salir del todo
+  const radioCierre = (valor, texto) =>
+    h(
+      "label",
+      { class: "opcion" },
+      h("input", { type: "radio", name: "al-cerrar", value: valor, onchange: async (e) => { await api.cierreCambiar(e.target.value); } }),
+      " ",
+      texto,
+    );
+  const zonaCierre = h("div", { class: "apilado" }, radioCierre("bandeja", "Seguir en la bandeja (el puente sigue avisando a tu 3DS)"), radioCierre("salir", "Salir del todo (se detiene el puente)"));
+  api.cierreEstado().then((r) => {
+    for (const el of zonaCierre.querySelectorAll("input")) el.checked = el.value === r.alCerrar;
+  });
+
   // actualizaciones
   const zonaAct = h("div", { class: "apilado" });
   pintarActualizaciones(zonaAct, true);
@@ -862,6 +883,7 @@ function dibujarAjustes(cont) {
           h("label", { class: "casilla", for: "inicio-windows" }, casillaInicio, h("span", {}, "Abrir Cronio al encender el PC")),
           h("p", { class: "descripcion" }, "Queda en la bandeja y enciende el puente."),
         ),
+        tarjeta("Al cerrar la ventana", null, zonaCierre, h("p", { class: "descripcion" }, "En la bandeja (junto al reloj) tienes un menú con lo más usado: detener el puente, buscar actualizaciones y más.")),
         (() => {
           const t = tarjeta("Actualizaciones", null, zonaAct);
           t.id = "seccion-actualizaciones";
@@ -1435,6 +1457,20 @@ PASOS.push({
 
 // ---------- arranque ----------
 
+/** Lo que pide el menú de la bandeja cuando abre la ventana: ir a una pantalla o actualizar (la ventana muestra el progreso). */
+async function aplicarOrden(orden) {
+  if (!orden) return;
+  if (orden.tipo === "ir") {
+    await irA(orden.vista, { manual: true, ...(orden.seccion ? { seccion: orden.seccion } : {}) });
+  } else if (orden.tipo === "actualizar") {
+    await irA("inicio", { manual: true });
+    await refrescarActualizaciones();
+    if (estadoAct && estadoAct.fase === "descargada") await accionActualizacion("reiniciar");
+    else if (estadoAct && estadoAct.fase === "nueva") await accionActualizacion("actualizar");
+  }
+}
+const tomarOrden = async () => aplicarOrden(await api.ordenPendiente());
+
 async function iniciar() {
   pintarLateral();
   document.getElementById("contenido").replaceChildren(h("p", { class: "lead" }, "Comprobando tu PC…"));
@@ -1449,7 +1485,9 @@ async function iniciar() {
   setInterval(refrescarPuente, 2000);
   setInterval(refrescarActualizaciones, 3000);
   setInterval(verificarFondo, 10000);
-  leerRed().then(() => vista && vista.actualizarDatos && vista.actualizarDatos());
+  await tomarOrden();
 }
 
+// con la ventana ya abierta, la bandeja avisa por aquí que dejó una orden
+api.alRecibirOrden(tomarOrden);
 iniciar();

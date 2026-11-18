@@ -9,7 +9,12 @@ import type { ComandoPuente } from "./paths.ts";
 import { decidirPuenteExistente, evaluarCierrePid, parsearNetstat, parsearTasklist } from "./setup/puente-viejo.ts";
 import { rutaPrograma } from "./setup/sistema.ts";
 
-export const PUENTE_PUERTO = 33335;
+/**
+ * Solo para pruebas del programa empaquetado sin tocar el puente real: `CRONIO_PUERTOS_PRUEBA=api,consola,udp,ws` (cuatro puertos propios).
+ * Sin esa variable (el uso normal) son los de siempre.
+ */
+const FORMA_PUERTOS_PRUEBA = /^\d{2,5},\d{2,5},\d{2,5},\d{2,5}$/;
+export const PUENTE_PUERTO = FORMA_PUERTOS_PRUEBA.test(process.env.CRONIO_PUERTOS_PRUEBA ?? "") ? Number(process.env.CRONIO_PUERTOS_PRUEBA!.split(",")[0]) : 33335;
 export const PUENTE_API = `http://127.0.0.1:${PUENTE_PUERTO}`;
 /** Cuánto se espera a que un puente al que se le pidió cerrarse suelte el puerto. */
 const ESPERA_PUERTO_MS = 5000;

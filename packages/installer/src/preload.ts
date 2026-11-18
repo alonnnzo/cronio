@@ -50,4 +50,12 @@ contextBridge.exposeInMainWorld("companion", {
   dispositivosOlvidar: (deviceId: string) => llamar("dispositivos-olvidar", String(deviceId)),
   pruebaEnviar: () => llamar("prueba-enviar"),
   pruebaTerminar: () => llamar("prueba-terminar"),
+  // Ajustes: qué pasa al cerrar la ventana
+  cierreEstado: () => llamar("cierre-estado"),
+  cierreCambiar: (valor: "bandeja" | "salir") => llamar("cierre-cambiar", valor === "salir" ? "salir" : "bandeja"),
+  // la bandeja puede abrir la ventana con una orden (ir a una pantalla o actualizar); la ventana la pide al abrirse o cuando se le avisa
+  ordenPendiente: () => llamar("orden"),
+  alRecibirOrden: (f: () => void) => {
+    if (typeof f === "function") ipcRenderer.on("companion:orden", () => f());
+  },
 });

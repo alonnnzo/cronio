@@ -7,10 +7,16 @@ import { join } from "node:path";
 import QRCode from "qrcode";
 import { Actualizador } from "./actualizador.ts";
 import { consultarSalud, detenerPuenteViejo, leerVersionBundle, PUENTE_API, ProcesoPuente } from "./bridge-proc.ts";
+import type { SaludPuente } from "./bridge-proc.ts";
 import { iniciarServidorCia } from "./cia-server.ts";
 import type { ServidorCia } from "./cia-server.ts";
 import { crearIconoPng } from "./icon.ts";
 import { cabecerasApi, carpetaConfig } from "./token-api.ts";
+import { guardarAlCerrar, guardarAvisoBandejaMostrado, leerAjustesApp } from "./setup/app-ajustes.ts";
+import type { AlCerrar } from "./setup/app-ajustes.ts";
+import { ENLACES_BANDEJA, PAUSAS_MIN, plantillaMenu, tooltipBandeja, varianteIcono } from "./setup/bandeja.ts";
+import type { AccionBandeja, ElementoMenu, EstadoBandeja } from "./setup/bandeja.ts";
+import { appendFileSync, readFileSync, rmSync } from "node:fs";
 import { comandoPuente, crearRutas } from "./paths.ts";
 import { agregarHooks, quitarHooks, revisarHooks } from "./setup/apply.ts";
 import type { RutasHooks } from "./setup/apply.ts";
@@ -47,6 +53,19 @@ const ENLACES = {
 
 app.setName("Cronio");
 
+// Segundo plano liviano (cada bandera se midió, ver docs/10-fase-7-instalador.md): la interfaz es simple y no necesita GPU, así que no hay
+// aceleración por hardware, el trabajo de gráficos va dentro del proceso principal (sin proceso de GPU) y el servicio de red también
+// (sin el proceso «utility»). Debe ir antes de que la app esté lista.
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("in-process-gpu");
+app.commandLine.appendSwitch("enable-features", "NetworkServiceInProcess2");
+
+/** Modo de prueba de la bandeja (solo la usa quien desarrolla): carpeta donde se vuelca el menú y de donde se lee qué acción ejecutar. Nada real se toca. */
+const PRUEBA_BANDEJA = process.env.CRONIO_PRUEBA_BANDEJA || undefined;
+
+/** Lo que el menú de la bandeja pide a la ventana al abrirla. */
+type OrdenVentana = { tipo: "ir"; vista: "ajustes" | "paso-4" | "paso-3"; seccion?: string } | { tipo: "actualizar" };
+
 let ventana: BrowserWindow | undefined;
 let bandeja: Tray | undefined;
 let saliendo = false;
@@ -60,16 +79,25 @@ const actualizador = new Actualizador({
   empaquetada: app.isPackaged,
   recursos: process.resourcesPath,
   notificar: (version) => {
-    // una vez por versión; con la app en la bandeja es lo único que se hace: actualizar siempre lo pide el usuario
-    if (!Notification.isSupported()) return;
-    const n = new Notification({ title: "Cronio", body: `Hay una versión nueva de Cronio (${version}). Ábrela para actualizar.` });
-    n.on("click", mostrarVentana);
-    n.show();
+    // una vez por versión; actualizar siempre lo pide el usuario
+    avisar(`Hay una versión nueva de Cronio (${version}). Ábrela para actualizar.`, () => abrirVentana());
+    reaplicarBandeja();
   },
   salir: () => app.quit(),
 });
 let cierreEnCurso = false;
 let cierreListo = false;
+let ordenPendiente: OrdenVentana | undefined;
+// pausa de avisos desde la bandeja: el puente se detiene y vuelve solo al cumplirse el plazo (0 = hasta que el usuario lo reactive)
+let pausaHasta: number | undefined;
+let pausaTemporizador: NodeJS.Timeout | undefined;
+/** El puente se detuvo a pedido (ventana, bandeja o pausa): su caída no es una sorpresa y no se avisa. */
+let detencionPedida = false;
+/** Lo último que se supo del puente (la ventana lo sondea con la misma llamada); la bandeja se redibuja con esto sin pedir nada más. */
+let ultimaSalud: SaludPuente | undefined;
+let ultimoActivoVisto: boolean | undefined;
+let claveBandeja = "";
+let inicioConWindowsPrueba = false;
 
 function rutasHooks(): RutasHooks {
   return {
@@ -95,6 +123,18 @@ function mensajeDeError(err: unknown): string {
 }
 
 // ---------- ventana y bandeja ----------
+
+/** Notificación del sistema (solo las importantes). En modo de prueba se anota en un archivo en vez de mostrarse. */
+function avisar(cuerpo: string, alClic?: () => void): void {
+  if (PRUEBA_BANDEJA) {
+    appendFileSync(join(PRUEBA_BANDEJA, "notificaciones.log"), `${cuerpo}\n`);
+    return;
+  }
+  if (!Notification.isSupported()) return;
+  const n = new Notification({ title: "Cronio", body: cuerpo });
+  if (alClic) n.on("click", alClic);
+  n.show();
+}
 
 function crearVentana(): BrowserWindow {
   // el .ico (assets/cronio.ico, hecho con scripts/gen-ico.ts) trae todos los tamaños; si falta, se dibuja el PNG
@@ -125,38 +165,298 @@ function crearVentana(): BrowserWindow {
   v.webContents.on("console-message", (e) => {
     if (e.level === "error" || e.level === "warning") console.log(`[interfaz ${e.level}] ${e.message}`);
   });
-  v.on("close", (e) => {
-    // cerrar la ventana la manda a la bandeja; "Salir" la cierra de verdad
-    if (!saliendo && bandeja) {
-      e.preventDefault();
-      v.hide();
+  v.on("close", () => {
+    // Cerrar la ventana la DESTRUYE (no la oculta): sin ventana no hay proceso de interfaz, que es lo que más pesa. Quien sigue vivo es el
+    // proceso principal con la bandeja, el puente y las revisiones. Con el ajuste «salir del todo», cerrar la ventana cierra el programa.
+    if (saliendo || !bandeja) return;
+    if (leerAjustesApp(CARPETA_DATOS).alCerrar === "salir") {
+      app.quit();
+      return;
     }
+    avisarBandejaUnaVez();
+  });
+  v.on("closed", () => {
+    if (ventana === v) ventana = undefined;
+    volcarPrueba();
   });
   // con carpeta local, volver a la ventana (foco o desde la bandeja) busca si hace más de 15 s que no se mira
   v.on("focus", () => actualizador.alFoco());
   v.on("show", () => actualizador.alFoco());
+  v.once("ready-to-show", () => {
+    v.show();
+    v.focus();
+  });
   void v.loadFile(RUTAS.renderer);
   return v;
 }
 
-function mostrarVentana(): void {
-  if (!ventana || ventana.isDestroyed()) ventana = crearVentana();
-  if (ventana.isMinimized()) ventana.restore();
-  ventana.show();
-  ventana.focus();
+/** La primera vez que se cierra la ventana: una notificación única («sigue en la bandeja»), guardada en app.json para no repetirla. */
+function avisarBandejaUnaVez(): void {
+  if (leerAjustesApp(CARPETA_DATOS).avisoBandejaMostrado) return;
+  try {
+    guardarAvisoBandejaMostrado(CARPETA_DATOS);
+  } catch {
+    return; // si no se puede guardar, no se avisa: mejor callar que repetirlo cada vez
+  }
+  avisar("Cronio sigue en la bandeja. Para salir del todo, usa «Salir» en su menú (clic derecho en el ícono).");
+}
+
+/** Abre la ventana: la crea si no existe (se destruye al cerrarla) o la trae al frente. `orden` la lleva a una pantalla o inicia la actualización. */
+function abrirVentana(orden?: OrdenVentana): void {
+  if (orden) ordenPendiente = orden;
+  const existia = ventana !== undefined && !ventana.isDestroyed();
+  if (!existia) {
+    ventana = crearVentana(); // se muestra sola al estar lista; lee todo del proceso principal, así que queda igual que antes
+  } else {
+    if (ventana!.isMinimized()) ventana!.restore();
+    ventana!.show();
+    ventana!.focus();
+    if (orden) ventana!.webContents.send("companion:orden");
+  }
+  volcarPrueba();
+}
+
+// ---------- bandeja: menú de acciones rápidas ----------
+
+const iconosBandeja = new Map<string, Electron.NativeImage>();
+function iconoBandeja(apagado: boolean, punto: boolean): Electron.NativeImage {
+  const clave = `${apagado ? 1 : 0}${punto ? 1 : 0}`;
+  let img = iconosBandeja.get(clave);
+  if (!img) {
+    img = nativeImage.createFromBuffer(crearIconoPng(32, { apagado, punto }));
+    iconosBandeja.set(clave, img);
+  }
+  return img;
+}
+
+const inicioArgs = () => (app.isPackaged ? ["--hidden"] : [app.getAppPath(), "--hidden"]);
+const inicioConWindows = (): boolean => (PRUEBA_BANDEJA ? inicioConWindowsPrueba : app.getLoginItemSettings({ args: inicioArgs() }).openAtLogin);
+function cambiarInicioConWindows(activo: boolean): boolean {
+  if (PRUEBA_BANDEJA) {
+    inicioConWindowsPrueba = activo; // la prueba no toca el inicio con Windows real
+    return inicioConWindowsPrueba;
+  }
+  app.setLoginItemSettings({ openAtLogin: activo, path: process.execPath, args: inicioArgs() });
+  return app.getLoginItemSettings({ args: inicioArgs() }).openAtLogin;
+}
+
+function estadoBandeja(): EstadoBandeja {
+  const a = actualizador.estado();
+  return {
+    version: app.getVersion(),
+    puenteActivo: ultimaSalud !== undefined,
+    puentePropio: puente.propio,
+    consola: ultimaSalud?.console === true,
+    ...(ultimaSalud?.consoleVersion ? { consolaVersion: ultimaSalud.consoleVersion } : {}),
+    ...(pausaHasta !== undefined ? { pausaHasta } : {}),
+    actualizacion: { origen: a.origen, fase: a.fase, ...(a.version ? { version: a.version } : {}) },
+    inicioConWindows: inicioCache,
+  };
+}
+let inicioCache = false;
+
+function aMenu(items: ElementoMenu[]): Electron.MenuItemConstructorOptions[] {
+  return items.map((it) => {
+    const o: Electron.MenuItemConstructorOptions = { type: it.type ?? "normal" };
+    if (it.label !== undefined) o.label = it.label;
+    if (it.enabled !== undefined) o.enabled = it.enabled;
+    if (it.checked !== undefined) o.checked = it.checked;
+    if (it.submenu) o.submenu = aMenu(it.submenu);
+    if (it.id) {
+      const id = it.id;
+      o.click = () => void ejecutarAccion(id);
+    }
+    return o;
+  });
+}
+
+/** Redibuja el menú, el tooltip y el ícono con lo último que se sabe. Solo toca Electron si algo cambió. No consulta nada. */
+function reaplicarBandeja(): void {
+  if (!bandeja) return;
+  const e = estadoBandeja();
+  const plantilla = plantillaMenu(e);
+  const tooltip = tooltipBandeja(e);
+  const v = varianteIcono(e);
+  const clave = JSON.stringify([plantilla, tooltip, v]);
+  if (clave === claveBandeja) return;
+  claveBandeja = clave;
+  bandeja.setImage(iconoBandeja(v.apagado, v.punto));
+  bandeja.setToolTip(tooltip);
+  bandeja.setContextMenu(Menu.buildFromTemplate(aMenu(plantilla)));
+  volcarPrueba();
+}
+
+const esperarMs = (ms: number) => new Promise<void>((ok) => setTimeout(ok, ms));
+
+/**
+ * Mira el puente (un GET /health a 127.0.0.1: nada de red, firewall ni PowerShell) y redibuja la bandeja. Si el puente estaba arriba y de
+ * pronto no responde sin que nadie lo haya pedido, lo confirma a los 2 s y avisa una sola vez.
+ */
+async function refrescarBandeja(): Promise<void> {
+  if (!bandeja) return;
+  let salud = await consultarSalud();
+  if (ultimoActivoVisto === true && !salud && !detencionPedida && pausaHasta === undefined && !saliendo && !puente.arrancando) {
+    await esperarMs(2000);
+    salud = await consultarSalud();
+    if (!salud && !detencionPedida && !saliendo) {
+      avisar("El puente se detuvo: la 3DS no recibirá avisos. Ábrelo desde la bandeja para volver a iniciarlo.", () => abrirVentana());
+    }
+  }
+  ultimaSalud = salud;
+  ultimoActivoVisto = salud !== undefined;
+  inicioCache = inicioConWindows();
+  reaplicarBandeja();
+}
+
+/** Lo que la ventana ya sabe del puente (sondea cada 2 s): la bandeja lo aprovecha en vez de preguntar otra vez. */
+function saludDesdeVentana(salud: SaludPuente | undefined): void {
+  ultimaSalud = salud;
+  reaplicarBandeja();
+}
+
+function cancelarPausa(): void {
+  if (pausaTemporizador) clearTimeout(pausaTemporizador);
+  pausaTemporizador = undefined;
+  pausaHasta = undefined;
+}
+
+async function iniciarPuenteDesdeBandeja(): Promise<void> {
+  cancelarPausa();
+  detencionPedida = false;
+  const r = await puente.iniciar();
+  if (r === "puente-viejo") {
+    avisar("Hay un puente de otra versión que no se dejó cerrar. Ábrelo en el paso 3 para detenerlo.", () => abrirVentana({ tipo: "ir", vista: "paso-3" }));
+  } else if (r === "error") {
+    avisar("El puente no arrancó. Mira su registro desde el menú de la bandeja.");
+  }
+  await refrescarBandeja();
+}
+
+async function detenerPuenteDesdeBandeja(): Promise<void> {
+  detencionPedida = true;
+  const detenido = await puente.detenerOrdenado();
+  if (detenido) avisar("Puente detenido: la 3DS no recibirá avisos.");
+  else detencionPedida = false; // no lo lanzó Cronio: no se pudo detener y nada cambió
+  await refrescarBandeja();
+}
+
+/** Detiene el puente y lo reinicia solo al cumplirse el plazo (`minutos` 0 = hasta que el usuario lo reactive). */
+async function pausarAvisos(minutos: number): Promise<void> {
+  detencionPedida = true;
+  if (!(await puente.detenerOrdenado())) {
+    detencionPedida = false;
+    return;
+  }
+  cancelarPausa();
+  pausaHasta = minutos > 0 ? Date.now() + minutos * 60_000 : 0;
+  if (minutos > 0) {
+    pausaTemporizador = setTimeout(() => void iniciarPuenteDesdeBandeja(), minutos * 60_000);
+    pausaTemporizador.unref();
+  }
+  avisar(minutos > 0 ? `Avisos en pausa por ${minutos === 60 ? "1 hora" : `${minutos} minutos`}: la 3DS no recibirá avisos hasta entonces.` : "Avisos en pausa: la 3DS no recibirá avisos hasta que los reactives.");
+  await refrescarBandeja();
+}
+
+function abrirRegistroPuente(): void {
+  const ruta = puente.rutaLog();
+  if (existsSync(ruta)) shell.showItemInFolder(ruta);
+  else void shell.openPath(join(CARPETA_DATOS, "logs"));
+}
+
+async function abrirUrlFija(clave: "web" | "ayuda"): Promise<void> {
+  const url = ENLACES_BANDEJA[clave]; // solo direcciones de la lista
+  if (PRUEBA_BANDEJA) appendFileSync(join(PRUEBA_BANDEJA, "urls.log"), `${url}\n`);
+  else await shell.openExternal(url);
+}
+
+/** Cada entrada del menú de la bandeja cae en una de estas funciones con nombre; nada genérico. */
+async function ejecutarAccion(id: AccionBandeja): Promise<void> {
+  switch (id) {
+    case "abrir":
+      return abrirVentana();
+    case "puente-iniciar":
+    case "pausa-reactivar":
+      return iniciarPuenteDesdeBandeja();
+    case "puente-detener":
+      return detenerPuenteDesdeBandeja();
+    case "pausa-30":
+    case "pausa-60":
+    case "pausa-indefinida":
+      return pausarAvisos(PAUSAS_MIN[id]);
+    case "act-buscar":
+      {
+        const busqueda = actualizador.buscar();
+        reaplicarBandeja(); // «Buscando actualizaciones…»
+        await busqueda;
+        return reaplicarBandeja();
+      }
+    case "act-actualizar":
+      // el instalador necesita que se vea qué pasa: se abre la ventana y es ella quien lo muestra
+      return abrirVentana({ tipo: "actualizar" });
+    case "act-configurar":
+      return abrirVentana({ tipo: "ir", vista: "ajustes", seccion: "seccion-actualizaciones" });
+    case "qr":
+      return abrirVentana({ tipo: "ir", vista: "paso-4" });
+    case "inicio-windows":
+      inicioCache = cambiarInicioConWindows(!inicioCache);
+      return reaplicarBandeja();
+    case "registro":
+      return abrirRegistroPuente();
+    case "web":
+    case "ayuda":
+      return abrirUrlFija(id);
+    case "salir":
+      app.quit();
+  }
 }
 
 function crearBandeja(): void {
-  bandeja = new Tray(nativeImage.createFromBuffer(crearIconoPng(32)));
+  inicioCache = inicioConWindows();
+  bandeja = new Tray(iconoBandeja(false, false));
   bandeja.setToolTip("Cronio");
-  bandeja.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: "Abrir", click: mostrarVentana },
-      { type: "separator" },
-      { label: "Salir (detiene el puente que inició la app)", click: () => app.quit() },
-    ]),
-  );
-  bandeja.on("click", mostrarVentana);
+  // en Windows lo natural es: clic o doble clic abre la ventana y el clic derecho abre el menú
+  bandeja.on("click", () => abrirVentana());
+  bandeja.on("double-click", () => abrirVentana());
+  reaplicarBandeja();
+  // una sola consulta local cada 20 s (con la ventana abierta se aprovecha lo que ella ya sondea cada 2 s); nada de red, firewall ni PowerShell
+  const reloj = setInterval(() => void refrescarBandeja(), 20_000);
+  reloj.unref();
+  void refrescarBandeja();
+  if (PRUEBA_BANDEJA) iniciarPruebaBandeja(PRUEBA_BANDEJA);
+}
+
+/**
+ * Solo pruebas (CRONIO_PRUEBA_BANDEJA=<carpeta>): vuelca el menú y el estado en `bandeja.json` y ejecuta la acción que se deje escrita en
+ * `accion.txt` (un `AccionBandeja`). No se puede hacer clic en la bandeja desde fuera; así se prueba lo mismo que haría el clic.
+ */
+function iniciarPruebaBandeja(carpeta: string): void {
+  mkdirSync(carpeta, { recursive: true });
+  const archivoAccion = join(carpeta, "accion.txt");
+  const reloj = setInterval(() => {
+    try {
+      const id = readFileSync(archivoAccion, "utf8").trim();
+      rmSync(archivoAccion, { force: true });
+      if (id === "refrescar") void refrescarBandeja();
+      else if (id) void ejecutarAccion(id as AccionBandeja).then(volcarPrueba);
+    } catch {
+      /* sin archivo: nada que hacer */
+    }
+  }, 400);
+  reloj.unref();
+  volcarPrueba();
+}
+
+function volcarPrueba(): void {
+  if (!PRUEBA_BANDEJA || !bandeja) return;
+  try {
+    const e = estadoBandeja();
+    writeFileSync(
+      join(PRUEBA_BANDEJA, "bandeja.json"),
+      JSON.stringify({ estado: e, plantilla: plantillaMenu(e), tooltip: tooltipBandeja(e), icono: varianteIcono(e), ventanas: BrowserWindow.getAllWindows().length, pausaHasta: pausaHasta ?? null }, null, 2),
+    );
+  } catch {
+    /* solo es ayuda de prueba */
+  }
 }
 
 // ---------- servidor del .cia ----------
@@ -172,7 +472,7 @@ async function detenerCia(): Promise<void> {
 function registrarIpc(): void {
   // En modo capturas (--debug-shots) la interfaz solo se mira: nada que cambie algo del PC (puentes, firewall, archivos de Claude Code,
   // inicio con Windows, actualizaciones) se ejecuta, aunque alguien pulse un botón de la ventana de prueba.
-  const INERTES = new Set(["puente-iniciar", "puente-detener", "puente-detener-viejo", "fw-agregar", "inicio-cambiar", "hooks-agregar", "hooks-quitar", "carpetas-modo", "carpetas-agregar", "carpetas-quitar", "skill-instalar", "skill-quitar", "act-origen", "act-carpeta", "act-actualizar", "act-reiniciar", "prueba-enviar", "prueba-terminar", "pair", "dispositivos-olvidar"]);
+  const INERTES = new Set(["puente-iniciar", "puente-detener", "puente-detener-viejo", "fw-agregar", "inicio-cambiar", "hooks-agregar", "hooks-quitar", "cierre-cambiar", "carpetas-modo", "carpetas-agregar", "carpetas-quitar", "skill-instalar", "skill-quitar", "act-origen", "act-carpeta", "act-actualizar", "act-reiniciar", "prueba-enviar", "prueba-terminar", "pair", "dispositivos-olvidar"]);
   const on = (canal: string, f: (...args: any[]) => unknown) =>
     ipcMain.handle(`companion:${canal}`, async (_e, ...args) => {
       if (capturas && INERTES.has(canal)) return { ok: false, detenido: false, resultado: "error", error: "Modo capturas: no se hace nada.", motivo: "Modo capturas: no se hace nada.", estado: await puente.estado() };
@@ -263,7 +563,21 @@ function registrarIpc(): void {
   });
 
   // actualizaciones del programa
-  on("act-estado", () => actualizador.estado());
+  on("act-estado", () => {
+    reaplicarBandeja(); // las revisiones corren en este proceso: la bandeja se entera de una versión nueva sin esperar a su reloj
+    return actualizador.estado();
+  });
+  on("orden", () => {
+    const o = ordenPendiente;
+    ordenPendiente = undefined;
+    return o ?? null;
+  });
+  on("cierre-estado", () => ({ alCerrar: leerAjustesApp(CARPETA_DATOS).alCerrar }));
+  on("cierre-cambiar", (valor: unknown) => {
+    const alCerrar: AlCerrar = valor === "salir" ? "salir" : "bandeja";
+    guardarAlCerrar(CARPETA_DATOS, alCerrar);
+    return { alCerrar };
+  });
   on("act-origen", (origen: string) => actualizador.cambiarOrigen(origen === "local" || origen === "github" ? origen : "ninguno"));
   on("act-carpeta", async () => {
     const opciones = { title: "Elige la carpeta con las versiones (la que tiene latest.yml)", properties: ["openDirectory" as const] };
@@ -276,24 +590,37 @@ function registrarIpc(): void {
   on("act-reiniciar", () => actualizador.reiniciar());
 
   // puente
-  on("puente-estado", () => puente.estado());
-  on("puente-iniciar", async () => ({ resultado: await puente.iniciar(), estado: await puente.estado() }));
+  on("puente-estado", async () => {
+    const e = await puente.estado();
+    saludDesdeVentana(e.salud);
+    return e;
+  });
+  on("puente-iniciar", async () => {
+    cancelarPausa();
+    detencionPedida = false;
+    const resultado = await puente.iniciar();
+    return { resultado, estado: await puente.estado() };
+  });
   on("puente-detener", async () => {
+    detencionPedida = true;
     const detenido = await puente.detenerOrdenado();
-    return { detenido, estado: await puente.estado() };
+    if (!detenido) detencionPedida = false;
+    else cancelarPausa();
+    const estado = await puente.estado();
+    saludDesdeVentana(estado.salud);
+    return { detenido, estado };
   });
   // un puente suelto de otra versión que no se dejó cerrar: el usuario pide detenerlo; luego se arranca el propio
   on("puente-detener-viejo", async (pid: number) => {
     if (!Number.isInteger(pid)) return { ok: false, motivo: "PID inválido.", estado: await puente.estado() };
     const r = await detenerPuenteViejo(pid);
-    if (r.ok) await puente.iniciar();
+    if (r.ok) {
+      detencionPedida = false;
+      await puente.iniciar();
+    }
     return { ...r, estado: await puente.estado() };
   });
-  on("puente-log", async () => {
-    const ruta = puente.rutaLog();
-    if (existsSync(ruta)) shell.showItemInFolder(ruta);
-    else await shell.openPath(join(CARPETA_DATOS, "logs"));
-  });
+  on("puente-log", () => abrirRegistroPuente());
 
   // firewall
   const estadoFirewall = async () => {
@@ -319,11 +646,11 @@ function registrarIpc(): void {
   });
 
   // iniciar con Windows
-  const argsInicio = () => (app.isPackaged ? ["--hidden"] : [app.getAppPath(), "--hidden"]);
-  on("inicio-estado", () => ({ activo: app.getLoginItemSettings({ args: argsInicio() }).openAtLogin }));
+  on("inicio-estado", () => ({ activo: inicioConWindows() }));
   on("inicio-cambiar", (activo: boolean) => {
-    app.setLoginItemSettings({ openAtLogin: activo, path: process.execPath, args: argsInicio() });
-    return { activo: app.getLoginItemSettings({ args: argsInicio() }).openAtLogin };
+    inicioCache = cambiarInicioConWindows(activo === true);
+    reaplicarBandeja();
+    return { activo: inicioCache };
   });
 
   // instalar en la 3DS
@@ -507,7 +834,8 @@ async function tomarCapturas(carpeta: string): Promise<void> {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", mostrarVentana);
+  // abrir el programa otra vez (acceso directo, menú Inicio) trae la ventana al frente, o la crea si estaba solo en la bandeja
+  app.on("second-instance", () => abrirVentana());
 
   // «Salir» y cualquier cierre normal pasan por aquí: se detiene el puente propio (primero /shutdown, 3 s, luego kill) y se vuelve a salir
   app.on("before-quit", (e) => {
@@ -532,12 +860,10 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(async () => {
     registrarIpc();
     if (!capturas) crearBandeja();
-    ventana = crearVentana();
-    ventana.once("ready-to-show", () => {
-      if (!iniciarOculto || capturas) ventana?.show();
-    });
+    // con --hidden (inicio con Windows) no se crea ninguna ventana: no hay proceso de interfaz hasta que el usuario la abra
+    if (!iniciarOculto || capturas) abrirVentana();
     if (capturas) {
-      ventana.webContents.once("did-finish-load", () => {
+      ventana!.webContents.once("did-finish-load", () => {
         void tomarCapturas(capturas).then(
           () => app.quit(),
           (err) => {
@@ -555,5 +881,6 @@ if (!app.requestSingleInstanceLock()) {
     arranquePuente = puente.iniciar();
     const r = await arranquePuente;
     console.log(`Puente: ${antes && r === "ya-corria" ? "ya estaba corriendo" : r}`);
+    await refrescarBandeja();
   });
 }

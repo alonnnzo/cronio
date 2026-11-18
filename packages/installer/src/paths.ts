@@ -99,13 +99,21 @@ export function crearRutas(o: OpcionesRutas): RutasApp {
  * En los dos modos le pasa COMPANION_CIA_PATH: el puente sirve ese .cia en el puerto 33337 y lee su versión del `.version` que
  * está al lado (en el modo empaquetado, ambos vienen de `resources/client-3ds`).
  */
+/** Solo pruebas (ver `PUENTE_PUERTO` en bridge-proc.ts): los puertos propios del puente de prueba. */
+function puertosPrueba(env: Record<string, string | undefined> = process.env): string[] {
+  const v = env.CRONIO_PUERTOS_PRUEBA;
+  if (!v || !/^\d{2,5},\d{2,5},\d{2,5},\d{2,5}$/.test(v)) return [];
+  const [api, consola, udp, ws] = v.split(",");
+  return ["--api-port", api!, "--console-port", consola!, "--udp-port", udp!, "--ws-port", ws!];
+}
+
 export function comandoPuente(o: OpcionesRutas, carpetaDatos: string): ComandoPuente {
   if (o.empaquetada) {
     const r = o.recursos;
     if (!r || !o.ejecutable) throw new Error("Faltan recursos o ejecutable de la app empaquetada");
     return {
       archivo: o.ejecutable,
-      args: [join(r, "bridge", "cli.mjs"), "start", "--data-dir", join(carpetaDatos, "bridge")],
+      args: [join(r, "bridge", "cli.mjs"), "start", "--data-dir", join(carpetaDatos, "bridge"), ...puertosPrueba()],
       cwd: r,
       env: { ELECTRON_RUN_AS_NODE: "1", COMPANION_STATIC_DIR: join(r, "simulator"), COMPANION_CIA_PATH: crearRutas(o).cia, COMPANION_SIMULATOR: "0" },
     };
