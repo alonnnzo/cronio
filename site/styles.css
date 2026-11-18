@@ -546,11 +546,14 @@ code { font: .88em ui-monospace, SFMono-Regular, Consolas, monospace; }
 @media (max-width: 899px) { .cap:first-child .cap-in { max-width: none; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn-rojo, .btn-claro, .device.flat button, .channel { transition: none; } }
 
-/* Salto largo dentro de la página (botones y menú): en vez de recorrer todo el scroll a la carrera, un velo con el logo
-   tapa la página un instante, se salta de una vez y el velo se va. Lo arma app.js; con movimiento reducido no hay velo. */
-.velo { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; opacity: 0; pointer-events: none;
+/* Salto largo dentro de la página (botones y menú): una transición breve con la consola 3D. Un fondo claro tapa la página, la consola
+   (instancia reducida de la del recorrido) aparece cerrada y se abre, la página salta mientras está tapada y todo se desvanece.
+   Lo arma app.js; con movimiento reducido no hay transición. Solo se animan opacity y transform. */
+.velo { position: fixed; inset: 0; z-index: 40; opacity: 0; pointer-events: none; overflow: hidden;
   background: linear-gradient(#ffffff, var(--plata)); transition: opacity .22s ease; }
-.velo.on { opacity: 1; pointer-events: auto; }
-.velo .logo { font-size: 44px; padding: .32em .45em .38em; border-radius: 14px; transform: scale(.92); transition: transform .32s cubic-bezier(.3, 1.4, .5, 1); }
-.velo.on .logo { transform: scale(1); }
+.velo[hidden] { display: none; }
+.velo.on { opacity: 1; pointer-events: auto; transition-duration: .18s; }
+.velo .cam { transition: transform var(--t-cam, 0ms) cubic-bezier(.3, .6, .3, 1); }
+.velo .k-lid { transition: transform var(--t-tapa, 0ms) cubic-bezier(.3, 1.1, .5, 1); }
+.velo .screen { background: #1c2029; }
 [tabindex="-1"]:focus { outline: none; }

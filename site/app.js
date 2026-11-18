@@ -297,23 +297,37 @@
 })();
 
 // Saltos largos dentro de la página (por ejemplo «Ver cómo funciona» desde la portada): el scroll suave pasaría por todo el
-// recorrido de la consola a la carrera. En su lugar, un velo con el logo tapa la página, se salta de una vez y el velo se va.
-// Los saltos cortos (menos de una pantalla y media) y el movimiento reducido siguen como siempre.
+// recorrido de la consola a la carrera. En su lugar, una transición breve (~0,85 s) con la consola 3D: un fondo claro tapa la
+// página, aparece la consola cerrada en tres cuartos y se abre, la página salta de una vez al destino mientras está tapada,
+// y la consola crece como si la cámara entrara a la pantalla mientras todo se desvanece.
+// La consola es una segunda instancia reducida (8 láminas por mitad, pantallas apagadas) de la de tour.js, y se crea la primera
+// vez que se usa. Los saltos cortos (menos de una pantalla y media) y el movimiento reducido siguen como siempre.
 (() => {
   'use strict';
   const reducido = matchMedia('(prefers-reduced-motion: reduce)');
-  let velo = null, ocupado = false;
+  const FUNDIDO = 180, ABRE = 450, SALE = 220;   // ms; en total 850
+  // Tres poses de la cámara (mismos campos que los fotogramas de tour.js)
+  const CERRADA = { fx: 230, fy: 463, vis: 520, rx: 34, ry: -20, rz: 0, ox: 0, oy: 0, open: 0, sp: 0 };
+  const ABIERTA = { fx: 230, fy: 304, vis: 680, rx: 20, ry: -20, rz: 0, ox: 0, oy: 0, open: 1, sp: 0 };
+  const ENTRA = { fx: 230, fy: 150, vis: 420, rx: 4, ry: -6, rz: 0, ox: 0, oy: 0, open: 1, sp: 0 };
+  let velo = null, rig = null, ocupado = false;
   function crearVelo() {
     velo = document.createElement('div');
     velo.className = 'velo';
     velo.setAttribute('aria-hidden', 'true');
-    const logo = document.createElement('span');
-    logo.className = 'logo';
-    const letras = document.createElement('span');
-    letras.append('CR', document.createElement('i'), 'NI', document.createElement('i'));
-    logo.append(letras);
-    velo.append(logo);
+    velo.hidden = true;
+    const host = document.createElement('div');
+    host.className = 'cam-wrap';
+    velo.append(host);
     document.body.append(velo);
+    rig = window.CronioTour.makeRig(host, true);
+  }
+  // t: ms de la transición del cuerpo de la cámara y de la tapa (0 = colocar sin animar)
+  function pose(P, cam, tapa) {
+    velo.style.setProperty('--t-cam', cam + 'ms');
+    velo.style.setProperty('--t-tapa', tapa + 'ms');
+    const w = innerWidth, h = innerHeight;
+    rig.apply(P, 0, w, h, Math.min(w * .7, 480), Math.min(h * .6, 420));
   }
   const espera = (ms) => new Promise((r) => setTimeout(r, ms));
   document.addEventListener('click', async (e) => {
@@ -321,16 +335,20 @@
     if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const id = decodeURIComponent(a.getAttribute('href').slice(1));
     const destino = id ? document.getElementById(id) : null;
-    if (!destino || reducido.matches) return;
+    if (!destino || reducido.matches || !window.CronioTour) return;
     const lejos = Math.abs(destino.getBoundingClientRect().top) > innerHeight * 1.5;
     if (!lejos) return; // un salto corto se ve bien con el scroll suave
     e.preventDefault();
     if (ocupado) return;
     ocupado = true;
     if (!velo) crearVelo();
+    // 1. fondo claro con la consola cerrada, colocada sin animar
+    velo.hidden = false;
+    pose(CERRADA, 0, 0);
     void velo.offsetWidth; // que la transición parta desde opacidad 0
     velo.classList.add('on');
-    await espera(240);
+    await espera(FUNDIDO);
+    // 2. ya está tapado: la página salta de una vez y la consola se abre
     const raiz = document.documentElement;
     raiz.style.scrollBehavior = 'auto';
     scrollTo(0, Math.max(0, Math.round(scrollY + destino.getBoundingClientRect().top - 56))); // 56: alto de la barra de arriba
@@ -338,9 +356,13 @@
     history.pushState(null, '', '#' + id);
     if (!destino.hasAttribute('tabindex')) destino.setAttribute('tabindex', '-1');
     destino.focus({ preventScroll: true });
-    await espera(160);
+    pose(ABIERTA, ABRE, ABRE);
+    await espera(ABRE);
+    // 3. la cámara entra a la pantalla y todo se desvanece, dejando ver la sección
+    pose(ENTRA, SALE, 0);
     velo.classList.remove('on');
-    await espera(240);
+    await espera(SALE + 10);
+    velo.hidden = true;
     ocupado = false;
   });
 })();
