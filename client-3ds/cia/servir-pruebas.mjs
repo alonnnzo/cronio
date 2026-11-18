@@ -1,9 +1,9 @@
-// Sirve los .cia de prueba de banners (cronio-banner-test-a/b/c/d.cia, de `make cia-banner-test`) por HTTP para
+// Sirve los .cia de prueba de banners (cronio-banner-test-a/b/c/d/e.cia, de `make cia-banner-test`) por HTTP para
 // FBI → Remote Install → Enter URL. Sin dependencias: solo Node.
 //
 //   node client-3ds/cia/servir-pruebas.mjs [puerto]        (por defecto 33338, en 0.0.0.0)
 //
-// Muestra en la terminal la URL de cada variante con la IP de la red local. Solo sirve esos cuatro archivos (no la app
+// Muestra en la terminal la URL de cada variante con la IP de la red local. Solo sirve esos cinco archivos (no la app
 // real); la 3DS y el PC deben estar en la misma red. Ctrl+C para parar.
 import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
@@ -13,9 +13,9 @@ import { fileURLToPath } from "node:url";
 
 const carpeta = join(dirname(fileURLToPath(import.meta.url)), "..");
 const puerto = Number(process.argv[2] ?? 33338);
-const variantes = { a: "control: banner plano", b: "un plano 3D, sin animación", c: "capas, sin animación", d: "capas con animación de escala" };
+const variantes = { a: "control: banner plano", b: "placa del logo, estática", c: "logo en capas, estático", d: "capas con animación de escala", e: "capas con pivote propio, salto y mirada" };
 const archivo = (v) => join(carpeta, `cronio-banner-test-${v}.cia`);
-const permitido = /^\/cronio-banner-test-([a-d])\.cia$/;
+const permitido = /^\/cronio-banner-test-([a-e])\.cia$/;
 
 const servidor = createServer((req, res) => {
   const m = permitido.exec((req.url ?? "").split("?")[0]);
@@ -39,7 +39,7 @@ servidor.listen(puerto, "0.0.0.0", () => {
     .filter((i) => i && i.family === "IPv4" && !i.internal)
     .map((i) => i.address);
   console.log(`Sirviendo ${carpeta} en 0.0.0.0:${puerto}\n`);
-  console.log("En la 3DS: FBI → Remote Install → Enter URL, y escribe la dirección de una variante (instálalas de a una, en orden A, B, C, D):\n");
+  console.log("En la 3DS: FBI → Remote Install → Enter URL, y escribe la dirección de una variante (instálalas de a una, en orden A, B, C, D, E):\n");
   for (const [v, texto] of Object.entries(variantes)) {
     const falta = existsSync(archivo(v)) ? "" : "   [no existe: corre `make cia-banner-test` en client-3ds]";
     for (const ip of ips.length ? ips : ["<IP-del-PC>"]) {

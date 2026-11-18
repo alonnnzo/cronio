@@ -186,25 +186,28 @@ cia: all
 	@echo "hecho: $(TARGET).cia $(APP_VERSION) (y $(TARGET).version)"
 
 #---------------------------------------------------------------------------------
-# cia-banner-test: APP DE PRUEBA para probar banners del menú HOME sin arriesgar la app real. Arma cuatro .cia
-# (cronio-banner-test-a/b/c/d.cia) con el mismo .elf y el icono real, pero con UniqueId, ProductCode y nombre propios
+# cia-banner-test: APP DE PRUEBA para probar banners del menú HOME sin arriesgar la app real. Arma cinco .cia
+# (cronio-banner-test-a/b/c/d/e.cia) con el mismo .elf y el icono real, pero con UniqueId, ProductCode y nombre propios
 # (cia/banner-test.rsf, plantilla). No toca el objetivo `cia` ni cia/agent-companion.rsf. Ver cia/README-banner3d.md.
-#   A  banner plano actual (control)          C  capas a distinta Z, sin animación
-#   B  un plano texturizado, sin animación    D  capas con animación de escala
-# Las B, C y D salen de cia/gen-banner3d-v2.py (alineación a 128 bytes y billboard; verifica el .cgfx al generarlo).
-# UniqueId: A 0xF7A3D, B 0xF7A3E, C 0xF7A3F, D 0xF7A40 (la app real es 0xF7A3C).
+#   A  banner plano actual (control)               D  como C con animación de escala (huesos en el origen)
+#   B  solo la placa del logo, una textura         E  como D + huesos con pivote propio, saltito y mirada
+#   C  el logo en capas con profundidad, estático  (sin fondo: se ve el del menú HOME)
+# Las B..E salen de cia/gen-banner3d-v2.py (alineación a 128 bytes y billboard; verifica el .cgfx al generarlo y deja
+# una vista previa de frente en build/banner-test/<v>.png).
+# UniqueId: A 0xF7A3D, B 0xF7A3E, C 0xF7A3F, D 0xF7A40, E 0xF7A41 (la app real es 0xF7A3C).
 #---------------------------------------------------------------------------------
-BT_VARIANTES	:=	a b c d
+BT_VARIANTES	:=	a b c d e
 PYTHON		?=	$(if $(wildcard /c/Python314/python.exe),/c/Python314/python,python)
 
 cia-banner-test: all
 	@mkdir -p $(BUILD)/banner-test
 	@for v in $(BT_VARIANTES); do \
 		V=$$(echo $$v | tr a-z A-Z); \
-		case $$v in a) ID=0xF7A3D;; b) ID=0xF7A3E;; c) ID=0xF7A3F;; d) ID=0xF7A40;; esac; \
+		case $$v in a) ID=0xF7A3D;; b) ID=0xF7A3E;; c) ID=0xF7A3F;; d) ID=0xF7A40;; e) ID=0xF7A41;; esac; \
 		echo "armando cronio-banner-test-$$v.cia (Banner $$V, UniqueId $$ID) ..."; \
 		if [ $$v = a ]; then \
 			$(BANNERTOOL) makebanner -i $(CIA_DIR)/banner.png -a $(CIA_DIR)/banner.wav -o $(BUILD)/banner-test/$$v.bnr || exit 1; \
+			cp $(CIA_DIR)/banner.png $(BUILD)/banner-test/$$v.png; \
 		else \
 			$(PYTHON) $(CIA_DIR)/gen-banner3d-v2.py $$v $(BUILD)/banner-test/$$v.cgfx > $(BUILD)/banner-test/$$v.txt || { cat $(BUILD)/banner-test/$$v.txt; exit 1; }; \
 			$(BANNERTOOL) makebanner -ci $(BUILD)/banner-test/$$v.cgfx -a $(CIA_DIR)/banner.wav -o $(BUILD)/banner-test/$$v.bnr || exit 1; \
@@ -213,7 +216,7 @@ cia-banner-test: all
 		sed -e "s/@TITULO@/Banner $$V/" -e "s/@CODIGO@/CTR-H-BNR$$V/" -e "s/@ID@/$$ID/" $(CIA_DIR)/banner-test.rsf > $(BUILD)/banner-test/$$v.rsf; \
 		$(MAKEROM) -f cia -o cronio-banner-test-$$v.cia -target t -exefslogo -elf $(TARGET).elf -rsf $(BUILD)/banner-test/$$v.rsf -icon $(BUILD)/banner-test/$$v.icn -banner $(BUILD)/banner-test/$$v.bnr -major $(APP_MAJOR) -minor $(APP_MINOR) -micro $(APP_MICRO) || exit 1; \
 	done
-	@echo "hecho: cronio-banner-test-{a,b,c,d}.cia (ver cia/README-banner3d.md)"
+	@echo "hecho: cronio-banner-test-{a,b,c,d,e}.cia y vistas previas en $(BUILD)/banner-test/*.png (ver cia/README-banner3d.md)"
 
 #---------------------------------------------------------------------------------
 clean:
