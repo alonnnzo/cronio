@@ -5,8 +5,7 @@
   'use strict';
   const { AGENTS, $, reduced, bar, permCard, faceHTML, setFace, sessionRows } = window.Cronio;
   const story = $('story');
-  if (!story) return;
-  const caps = [...story.querySelectorAll('.cap')];
+  const caps = story ? [...story.querySelectorAll('.cap')] : [];
   const N = caps.length;
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, k) => a + (b - a) * k;
@@ -33,7 +32,7 @@
   const keyframe = (i, mobile) => (mobile ? { ...KF[i], ...MOB[i] } : KF[i]);
 
   // ---------- la consola: sólidos hechos con láminas apiladas (ver styles.css) ----------
-  const TB = 44, TL = 26, NB = 26, NL = 19;
+  const TB = 44, TL = 26, NB = 26, NL = 19, NLITE = 8;   // NLITE: láminas por mitad en la consola reducida (la de la transición)
   const STOPS = [[0, [241, 244, 248]], [.06, [223, 228, 235]], [.2, [203, 210, 219]], [.7, [174, 182, 195]], [1, [143, 152, 166]]];
   const edgeCol = t => {
     let j = 1; while (j < STOPS.length - 1 && STOPS[j][0] < t) j++;
@@ -69,16 +68,16 @@
     return `<div class="k-trig" style="left:${x}px">${L}</div>`;
   };
   const logo = '<span class="logo k-lid-logo" aria-hidden="true"><span>CR<i></i>NI<i></i></span></span>';
-  const deviceHTML = () => `
+  const deviceHTML = (lite = false) => `
     <div class="device kd" style="--edge:${EDGE}">
       <i class="k-sh k-sh-b" style="left:-50px;top:268px;width:560px;height:390px"></i>
       <i class="k-sh k-sh-l" style="left:-50px;top:-50px;width:560px;height:390px"></i>
       <div class="k-lid">
-        ${slices(NL, TL)}
+        ${slices(lite ? NLITE : NL, TL)}
         <div class="k-cap k-lfront">
           <div class="k-well" style="left:17px;top:11px;width:426px;height:266px"></div>
           <div class="k-bez" style="left:23px;top:17px;width:414px;height:254px"></div>
-          <div class="screen top-screen">${faceHTML('claude')}</div>
+          <div class="screen top-screen">${lite ? '' : faceHTML('claude')}</div>
           <i class="k-glass" style="left:30px;top:24px;width:400px;height:240px"></i>
           <i class="k-dots" style="left:3px;top:150px"></i><i class="k-dots" style="left:445px;top:150px"></i>
           <i class="k-cam"></i><i class="k-mic" style="left:213px"></i><i class="k-mic" style="left:244px"></i>
@@ -89,16 +88,16 @@
       </div>
       ${hinge()}
       <div class="k-base">
-        ${slices(NB, TB)}
+        ${slices(lite ? NLITE : NB, TB)}
         <div class="k-cap k-btop">
           <div class="k-well" style="left:57px;top:3px;width:346px;height:266px"></div>
           <div class="k-bez" style="left:63px;top:9px;width:334px;height:254px"></div>
-          <div class="screen bottom-screen">
+          <div class="screen bottom-screen">${lite ? '' : `
             <div class="bs" data-l="light">${bar('Claude', '4 sesiones', { color: AGENTS.claude.color, mode: '' })}<div class="list">${sessionRows()}</div></div>
             <div class="bs dark" data-l="dark">${bar('Claude', '4 sesiones', { color: AGENTS.claude.color, mode: '' })}<div class="list">${sessionRows()}</div></div>
             <div class="bs" data-l="perm">${bar('Claude', 'mi-portal', { color: AGENTS.claude.color, back: true, mode: '' })}
               <div class="detail"><p><b>Proyecto:</b> mi-portal</p><p><b>Ahora:</b> Pide permiso</p></div>${permCard('Claude · mi-portal', 'npm install sharp')}</div>
-            <div class="flash"></div><div class="okmark">✓ Aprobado</div>
+            <div class="flash"></div><div class="okmark">✓ Aprobado</div>`}
           </div>
           <i class="k-glass" style="left:70px;top:16px;width:320px;height:240px"></i>
           ${btn('big', '', 'left:13px;top:47px')}${dpad}
@@ -113,8 +112,9 @@
       </div>
     </div>`;
 
-  function makeRig(host) {
-    host.innerHTML = `<div class="cam">${deviceHTML()}</div>`;
+  // lite: consola reducida para la transición (pocas láminas, pantallas apagadas, sin estados de la historia)
+  function makeRig(host, lite = false) {
+    host.innerHTML = `<div class="cam">${deviceHTML(lite)}</div>`;
     const q = s => host.querySelector(s);
     const cam = q('.cam'), lid = q('.k-lid'), bA = q('.bA'), flash = q('.flash'), ok = q('.okmark');
     const ledPw = q('.k-ld.pw'), ledAm = q('.k-ld.am');
@@ -143,6 +143,8 @@
         shL.style.opacity = (P.open * .7).toFixed(3);
         sheenB.style.transform = `translate3d(${(250 + P.ry * 7 - P.rx * 3).toFixed(1)}px, 0, 0) skewX(-20deg)`;
         sheenL.style.transform = `translate3d(${(250 - P.ry * 7 + P.rx * 3).toFixed(1)}px, 0, 0) skewX(-20deg)`;
+        ledPw.classList.toggle('on', P.open > .5);
+        if (lite) return;
         // estados que dependen del punto del recorrido
         const perm = smooth(idx, 3.5, 3.9) * (1 - smooth(idx, 5.1, 5.18));
         const dark = smooth(idx, 7.45, 7.85) - smooth(idx, 8.55, 8.9);
@@ -153,7 +155,6 @@
         ok.style.opacity = (smooth(idx, 5.12, 5.2) * (1 - smooth(idx, 5.5, 5.75))).toFixed(3);
         bA.classList.toggle('down', smooth(idx, 4.9, 5.0) - smooth(idx, 5.14, 5.24) > .5);
         ledAm.classList.toggle('on', idx > 6.55 && idx < 8.45);
-        ledPw.classList.toggle('on', P.open > .5);
         const f = faceFor(idx), k = f.join('|');
         if (k !== faceKey) { faceKey = k; setFace(top, 'claude', f[0], f[1], f[2]); }
       },
@@ -167,6 +168,10 @@
     for (const k in a) P[k] = lerp(a[k], b[k], e);
     return P;
   }
+
+  // La transición de los saltos largos (app.js) arma su propia consola reducida con la misma construcción.
+  window.CronioTour = { makeRig };
+  if (!story) return;
 
   // =====================================================================================================
   if (reduced.matches) {
@@ -196,16 +201,24 @@
   }
 
   // ---------- con movimiento ----------
-  // El scroll es el nativo del navegador: aquí solo se LEE scrollY dentro de requestAnimationFrame y se aplican transform y opacity.
+  // El scroll es el nativo del navegador: nunca se intercepta la rueda ni el tacto (no hay preventDefault). Aquí solo se LEE scrollY,
+  // se calcula el progreso OBJETIVO y la cámara lo persigue con un suavizado exponencial independiente de los fps.
+  const TAU = 140;          // ms: constante de tiempo de la cámara (la distancia a recorrer cae a 1/e cada TAU)
+  const EPS = .0004;        // diferencia de progreso (en planos) por debajo de la cual el bucle se duerme
+  const SNAP_PX = 2;        // si ya está a menos de esto de un plano, no se asienta
+  const SNAP_QUIET = 140;   // ms sin eventos de scroll para dar el scroll por terminado (cuando no existe scrollend)
   const rig = makeRig($('cam-wrap'));
   const cue = $('scroll-cue');
-  let storyTop = 0, total = 1, W = innerWidth, H = innerHeight, queued = false, lastY = -1, current = -1;
+  let storyTop = 0, total = 1, W = innerWidth, H = innerHeight, current = -1;
+  let target = 0, shown = 0, drawn = NaN, lastT = -1, running = false;
   const stage = story.querySelector('.stage');
+  const idxAt = y => clamp((y - storyTop) / total) * (N - 1);
+  const planeY = i => Math.round(storyTop + (i / (N - 1)) * total + (i === 0 ? 0 : 1));
   const measure = () => {
     W = stage.clientWidth; H = stage.clientHeight;   // el encuadre real (100svh), no innerHeight: en el móvil cambia con la barra del navegador
     storyTop = story.getBoundingClientRect().top + scrollY;
     total = Math.max(1, story.offsetHeight - H);
-    lastY = -1;
+    target = idxAt(scrollY);
   };
   // puntos laterales: cada uno salta a su plano (scroll nativo; el navegador lo anima)
   const dots = document.createElement('nav');
@@ -216,16 +229,14 @@
   const dotBtns = [...dots.children];
   dots.addEventListener('click', e => {
     const i = dotBtns.indexOf(e.target.closest('button'));
-    if (i >= 0) scrollTo({ top: Math.round(storyTop + (i / (N - 1)) * total + (i === 0 ? 0 : 1)), behavior: 'smooth' });
+    if (i >= 0) scrollTo({ top: planeY(i), behavior: 'smooth' });
   });
 
-  function frame() {
-    queued = false;
-    const y = scrollY;
-    if (y === lastY) return;
-    lastY = y;
-    const mobile = W < 900;
-    const idx = clamp((y - storyTop) / total) * (N - 1);
+  // Dibuja todo lo que depende del progreso a partir del progreso MOSTRADO (cámara, tapa, textos de cada plano).
+  function draw() {
+    if (shown === drawn) return;
+    drawn = shown;
+    const idx = shown, mobile = W < 900;
     const P = atIndex(idx, mobile);
     rig.apply(P, idx, W, H, mobile ? W * .94 : W * .56, mobile ? H * .5 : H * .78);
     caps.forEach((cap, i) => {
@@ -236,20 +247,78 @@
       if (cap.classList.contains('has-links')) cap.style.visibility = o > .02 ? 'visible' : 'hidden';
     });
     cue.style.opacity = String(1 - clamp(idx * 4));
-    const near = Math.round(idx);
+    const near = Math.round(target);   // los puntos y el aria-current siguen al objetivo: responden al instante
     if (near !== current) {
       if (current >= 0) dotBtns[current].removeAttribute('aria-current');
       dotBtns[near].setAttribute('aria-current', 'true');
       current = near;
     }
   }
-  const request = () => { if (!queued) { queued = true; requestAnimationFrame(frame); } };
-  addEventListener('scroll', request, { passive: true });
-  const remeasure = () => { measure(); request(); };
+  // Bucle de la cámara: persigue el objetivo y se duerme cuando llega. Solo corre mientras hay algo que mover.
+  function loop(now) {
+    const dt = lastT < 0 ? 16 : clamp(now - lastT, 0, 64);
+    lastT = now;
+    const d = target - shown;
+    if (Math.abs(d) < EPS) { shown = target; draw(); running = false; lastT = -1; return; }
+    shown += d * (1 - Math.exp(-dt / TAU));
+    draw();
+    requestAnimationFrame(loop);
+  }
+  const wake = () => { if (!running) { running = true; lastT = -1; requestAnimationFrame(loop); } };
+  const snapNow = () => { shown = target; drawn = NaN; draw(); };   // sin persecución: al cargar y al cambiar de tamaño
+
+  // ---------- imán: al dejar de hacer scroll dentro del recorrido, la página se asienta en el plano más cercano ----------
+  // Nada de scroll-snap en CSS (un snap en el documento estorbaría fuera del recorrido) ni de interceptar eventos: es un scrollTo suave.
+  const hasScrollEnd = 'onscrollend' in window;
+  let touching = false, dragging = false, asentando = false, lastScroll = 0, restY = scrollY, timer = 0;
+  const cancelar = () => { asentando = false; };   // entrada nueva: el usuario manda (el navegador ya cancela el scroll suave solo)
+  const armar = (ms, suave) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (suave && performance.now() - lastScroll < SNAP_QUIET - 10) return; asentar(); }, ms);
+  };
+  function asentar() {
+    if (asentando) { asentando = false; restY = scrollY; return; }   // fin de nuestro propio asentamiento: no se vuelve a disparar
+    if (touching || dragging) return;
+    const y = scrollY, from = restY;
+    restY = y;
+    const first = planeY(0), end = planeY(N - 1);
+    if (y < first - SNAP_PX || y > end + SNAP_PX) return;   // fuera del recorrido: se sale libremente por arriba y por abajo
+    const step = (end - first) / (N - 1);
+    let i = clamp(Math.round((y - first) / step), 0, N - 1);
+    if (Math.abs(planeY(i) - y) < SNAP_PX) return;           // ya está en un plano
+    // Un empujón corto (un tick de rueda) no debe devolverte al plano de partida: si te alejaste lo suficiente, avanza al siguiente.
+    const i0 = clamp(Math.round((from - first) / step), 0, N - 1), moved = y - from;
+    if (i === i0 && Math.abs(moved) >= Math.min(step * .08, 70)) i = clamp(i0 + Math.sign(moved), 0, N - 1);
+    const ty = planeY(i);
+    if (Math.abs(ty - y) < SNAP_PX) return;
+    asentando = true;
+    scrollTo({ top: ty, behavior: 'smooth' });
+    setTimeout(() => { asentando = false; }, 1200);   // por si el navegador no avisa del fin
+  }
+  addEventListener('wheel', cancelar, { passive: true });
+  addEventListener('keydown', cancelar);
+  addEventListener('touchstart', () => { touching = true; cancelar(); }, { passive: true });
+  const soltar = () => { touching = false; armar(SNAP_QUIET + 20, true); };
+  addEventListener('touchend', soltar, { passive: true });
+  addEventListener('touchcancel', soltar, { passive: true });
+  // barra de scroll arrastrada: el mousedown cae a la derecha del área de contenido
+  addEventListener('mousedown', e => { if (e.button === 0 && e.clientX >= document.documentElement.clientWidth) { dragging = true; cancelar(); } });
+  const finArrastre = () => { if (dragging) { dragging = false; armar(SNAP_QUIET, false); } };
+  addEventListener('mouseup', finArrastre);
+  addEventListener('blur', finArrastre);
+  if (hasScrollEnd) addEventListener('scrollend', () => armar(0, false));
+
+  addEventListener('scroll', () => {
+    lastScroll = performance.now();
+    target = idxAt(scrollY);
+    wake();
+    if (!hasScrollEnd) armar(SNAP_QUIET, false);
+  }, { passive: true });
+  const remeasure = () => { measure(); snapNow(); };
   addEventListener('resize', remeasure);
   addEventListener('load', remeasure);
   if (window.ResizeObserver) new ResizeObserver(remeasure).observe(stage);
   reduced.addEventListener('change', () => location.reload());
   measure();
-  frame();
+  snapNow();
 })();
