@@ -54,4 +54,8 @@ void intro_frame(double t_ms, const IntroTarget *cara_final, IntroFrame *out);
 // Salto: el tiempo al que hay que ir si el usuario pulsa algo (INTRO_DONE_MS, o el mismo t si ya pasó).
 double intro_skip(double t_ms);
 
+// Esquina de dibujo (px enteros) de una imagen cuyo contenido visible mide vis_w x vis_h y debe quedar centrado en (cx, cy).
+// Con posición fraccionaria y filtro GPU_NEAREST la GPU muestrea justo en el borde entre texeles: filas duplicadas y puntos.
+void intro_snap_origin(float cx, float cy, int vis_w, int vis_h, int *x, int *y);
+
 #endif

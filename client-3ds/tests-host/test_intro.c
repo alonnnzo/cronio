@@ -161,6 +161,19 @@ static void test_all_finite_on_screen(void) {
   CHECK(f.done && f.over);
 }
 
+static void test_snap_origin(void) {
+  int x, y;
+  intro_snap_origin(160.0f, 104.0f, 232, 61, &x, &y); // reposo: 104 - 30.5 era medio píxel
+  CHECK_EQ_INT(x, 44);
+  CHECK_EQ_INT(y, 74);
+  intro_snap_origin(160.0f, 133.7f, 232, 61, &x, &y);
+  CHECK_EQ_INT(y, 103);
+  for (float cy = 90.0f; cy < 140.0f; cy += 0.37f) { // siempre entero y a menos de 1 px del ideal
+    intro_snap_origin(160.0f, cy, 232, 61, &x, &y);
+    CHECK(fabsf((float)y - (cy - 30.5f)) <= 0.5001f);
+  }
+}
+
 int main(void) {
   TEST_BEGIN("intro: animación de entrada (curvas, línea de tiempo, cara final)");
   RUN(test_curves);
@@ -171,6 +184,7 @@ int main(void) {
   RUN(test_final_face);
   RUN(test_bottom);
   RUN(test_skip);
+  RUN(test_snap_origin);
   RUN(test_all_finite_on_screen);
   TEST_END();
 }

@@ -171,3 +171,8 @@ void intro_frame(double t, const IntroTarget *target, IntroFrame *o) {
 }
 
 double intro_skip(double t_ms) { return t_ms < INTRO_DONE_MS ? INTRO_DONE_MS : t_ms; }
+
+void intro_snap_origin(float cx, float cy, int vis_w, int vis_h, int *x, int *y) {
+  *x = (int)floor((double)cx - vis_w / 2.0 + 0.5);
+  *y = (int)floor((double)cy - vis_h / 2.0 + 0.5);
+}

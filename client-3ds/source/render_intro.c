@@ -1,6 +1,7 @@
 #include "render_intro.h"
 
 #include "cronio_palabra_t3x.h" // el .t3x de gfx/cronio_palabra.t3s, incrustado en el ejecutable
+#include "logic/intro.h"
 #include "logic/palette.h"
 #include "ui_draw.h"
 #include "ui_scale.h"
@@ -9,6 +10,11 @@
 #define ORANGE 0xEE7446u
 #define INK 0x12131Au
 #define LOGO_CX 160.0f
+// El PNG (240x64) es el logo de 232x61 con margen transparente (4 px a los lados, 1 arriba, 2 abajo).
+#define LOGO_VIS_W 232
+#define LOGO_VIS_H 61
+#define LOGO_MARGIN_X 4
+#define LOGO_MARGIN_Y 1
 #define TAGLINE "Tu agente en la 3DS"
 
 static C2D_SpriteSheet g_sheet;
@@ -49,8 +55,10 @@ void render_intro_bottom(const IntroFrame *f) {
     C2D_Image img = C2D_SpriteSheetGetImage(g_sheet, 0);
     C2D_ImageTint tint;
     C2D_AlphaImageTint(&tint, f->logo_alpha);
-    float w = (float)img.subtex->width, h = (float)img.subtex->height;
-    C2D_DrawImageAt(img, LOGO_CX - w / 2.0f, f->logo_y - h / 2.0f, 0.0f, &tint, 1.0f, 1.0f);
+    // Posición entera y escala 1: con GPU_NEAREST una posición con medio píxel deja puntos y una línea punteada en los bordes.
+    int x, y;
+    intro_snap_origin(LOGO_CX, f->logo_y, LOGO_VIS_W, LOGO_VIS_H, &x, &y);
+    C2D_DrawImageAt(img, (float)(x - LOGO_MARGIN_X), (float)(y - LOGO_MARGIN_Y), 0.0f, &tint, 1.0f, 1.0f);
   }
   if (f->text_alpha > 0.0f) // ~13 px, centrado en y 150 (ui_text_draw pone y arriba de la celda de 30 px)
     ui_text_draw(TAGLINE, LOGO_CX, 150.0f - S_SMALL * UI_TEXT_CELL_H / 2.0f, S_SMALL, S_MIN, 300.0f, ui_rgb(pal()->mute, f->text_alpha),
