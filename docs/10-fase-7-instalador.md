@@ -80,7 +80,7 @@ Barra lateral con los pasos y una marca ✓ en cada uno cuando la comprobación 
   Necesita administrador: la app lanza `netsh advfirewall firewall add rule ...` elevado (Windows muestra su
   aviso de UAC). Comprobación ✓: `netsh advfirewall firewall show rule name="Agent Companion"`.
 - **Iniciar con Windows**: `app.setLoginItemSettings({ openAtLogin, args: ["--hidden"] })`. Con `--hidden` la app
-  arranca en la bandeja y levanta el puente sin abrir la ventana.
+  arranca en la bandeja y levanta el puente sin abrir la ventana (ni siquiera existe: ver «Segundo plano y bandeja»).
 
 ### 4. La 3DS — instalar la app
 
@@ -108,7 +108,8 @@ Barra lateral con los pasos y una marca ✓ en cada uno cuando la comprobación 
 ```
 packages/installer/          app Electron
   package.json               "main": "dist/main.js" o tsx en desarrollo; script "start"
-  src/main.ts                ventana, bandeja, IPC, puente hijo, servidor del .cia
+  src/main.ts                ventana (se destruye al cerrar), bandeja y su menú, IPC, puente hijo, servidor del .cia
+  src/setup/bandeja.ts       menú de la bandeja, tooltip y variante del ícono (puro, con pruebas)
   src/preload.ts             expone window.companion (contextBridge), nada más
   src/setup/*.ts             lógica pura y probada: fusión de settings, comandos netsh, IP local, rutas
   renderer/index.html, app.js, styles.css   la interfaz (sin framework)
@@ -151,6 +152,112 @@ client-3ds/
   `Cronio.exe` como Node (`ELECTRON_RUN_AS_NODE=1`) y guarda sus datos en `%APPDATA%/agent-companion/bridge`.
   Junto a él van, en `resources/`, los hooks, el simulador, el `.cia`, el `.3dsx` y el `.ico`. Todas las rutas se
   resuelven en `src/paths.ts` (modo empaquetado o desarrollo). Para generarlo hacen falta `client-3ds/agent-companion.cia` y `.3dsx`.
+
+## Segundo plano y bandeja
+
+Cronio puede vivir en la bandeja de Windows **sin molestar y gastando lo mínimo**. Dos ideas: sin ventana no hay proceso de interfaz, y todo lo
+que corre en segundo plano vive en el proceso principal.
+
+### La ventana se destruye, no se oculta
+
+- Cerrar con la X **destruye** el `BrowserWindow` (no hay `hide()`): desaparece el proceso renderer. Arrancar con `--hidden` (inicio con Windows)
+  tampoco crea ninguna ventana. Se crea solo cuando el usuario la pide: doble clic o clic en el ícono, «Abrir Cronio», o abrir el programa otra vez
+  (`requestSingleInstanceLock` + `second-instance`, que ya existía). La interfaz lee todo del proceso principal al abrirse, así que queda igual.
+- **Qué vive en el proceso principal** (nada depende de la ventana): el puente hijo y su estado, la bandeja y su menú, la búsqueda de actualizaciones
+  (`Actualizador`: 10 s después de abrir y luego según el origen; con carpeta local cada 60 s, con GitHub cada 6 h; el reloj late cada 30 s con
+  `unref`) y las notificaciones. La ventana solo pinta y pide cosas por IPC.
+- **Sondeos**: con la ventana abierta, el estado del puente se pide cada 2 s y las actualizaciones cada 3 s (la interfaz no sondea con la ventana
+  minimizada u oculta: `document.hidden`). Las comprobaciones caras ya no corren «de fondo» siempre: `netsh` (firewall) solo en Inicio y en el paso 3,
+  `node --version` solo en Inicio y en el paso 1, y la red (`Get-NetRoute`/`Get-NetConnectionProfile` por PowerShell) solo al entrar a Inicio y en el
+  paso 4. **Sin ventana no hay ninguno.** Lo único que corre sin ventana es **un `GET /health` a 127.0.0.1 cada 20 s** (para el menú y el ícono de la
+  bandeja) y la revisión de actualizaciones con su regla de siempre; con la ventana abierta la bandeja reutiliza lo que la ventana ya sondeó.
+- **Ajuste «Al cerrar la ventana»** (Ajustes): «Seguir en la bandeja» (por defecto) o «Salir del todo» (cerrar la ventana cierra el programa y detiene el
+  puente propio). Se guarda en `app.json` como `alCerrar: "bandeja" | "salir"`.
+- **Primera vez que se cierra la ventana** con «seguir en la bandeja»: una notificación única, «Cronio sigue en la bandeja…». Queda anotada en
+  `app.json` (`avisoBandejaMostrado: true`) para no repetirla.
+- **Notificaciones del sistema**: solo tres, y sin repetir. Versión nueva (una vez por versión, ya existía), puente caído sin que nadie lo pidiera
+  (se confirma 2 s después con otro `/health`; no se avisa si se detuvo desde la ventana, desde la bandeja o en una pausa) y el aviso único de arriba.
+  Las acciones del menú además confirman con una notificación breve («Puente detenido: la 3DS no recibirá avisos.», pausa activada) o avisan si fallan.
+
+### Menú de la bandeja
+
+Clic derecho en el ícono. En Windows lo natural es que **el clic simple y el doble clic abran la ventana** (como Discord o Steam) y que el menú sea el clic derecho,
+así que es lo que hace. El menú se reconstruye solo cuando algo cambia (clave de plantilla + tooltip + ícono). La plantilla es una **función pura**
+(`plantillaMenu` en `src/setup/bandeja.ts`, con pruebas en `test/bandeja.test.ts`: estado → elementos); `main.ts` solo la convierte en un `Menu` y cada
+elemento llama a una función con nombre (`ejecutarAccion`, sin nada genérico; las dos URL son fijas).
+
+```
+Cronio 0.3.3                          (deshabilitado)
+Puente: en marcha / detenido / en pausa hasta las 15:30
+3DS: conectada (app 0.3.3) / sin conexión
+─────────
+Abrir Cronio
+─────────
+Detener el puente   |   Iniciar el puente   |   Reactivar los avisos ahora (en pausa)
+Pausar avisos por…  ▸ 30 minutos · 1 hora · Hasta que lo reactive
+─────────
+Actualizar a x.y.z                    (si hay una nueva; abre la ventana: el instalador necesita que se vea)
+Buscar actualizaciones                (o «Actualizaciones: desactivadas» + «Configurar…» si el origen es ninguno)
+─────────
+Mostrar el QR de instalación          (abre la ventana en el paso 4)
+☐ Iniciar con Windows
+Ver el registro del puente
+Página web y ayuda  ▸ Página web de Cronio · Ayuda y reportes
+─────────
+Salir                                 (cierra todo, también el puente propio)
+```
+
+- «Detener el puente» solo se ofrece activo si **lo lanzó Cronio**: uno ajeno (de otra terminal) se muestra pero no se toca. **Pausar** detiene el puente y un
+  temporizador (en memoria) lo vuelve a iniciar al cumplirse el plazo; «hasta que lo reactive» no tiene plazo. Si Cronio se cierra durante una pausa, al volver
+  a abrirlo el puente arranca normal.
+- **Ícono**: `crearIconoPng(tam, { apagado, punto })` en `src/icon.ts`. Normal = la cara naranja; **apagado** (gris, ojos oscuros) cuando el puente está
+  detenido o en pausa; **punto** azul con aro blanco arriba a la derecha cuando hay una versión nueva. **Tooltip**: «Cronio · puente en marcha · 3DS conectada»
+  (o «puente detenido», «avisos en pausa hasta las 15:30», y al final «hay una versión nueva (x.y.z)»).
+- «Actualizar a x.y.z» y «Mostrar el QR» abren la ventana con una **orden** (`ordenPendiente` en el proceso principal): la interfaz la pide al abrirse
+  (`ordenPendiente()`) o cuando se le avisa por `companion:orden`, y hace lo mismo que el botón de la ventana (con su pantalla de progreso).
+
+### Menos procesos y memoria (medido)
+
+Medido con `electron-builder --dir` (`win-unpacked`), `--user-data-dir` y `AGENT_COMPANION_CONFIG_DIR` temporales, puertos propios del puente
+(`CRONIO_PUERTOS_PRUEBA`, ver abajo), working set con `Get-CimInstance Win32_Process`, 25–35 s después de abrir. «Antes» es la 0.3.3 tal como salió (el
+puente de la medición de antes es el del usuario reutilizado: se suma aparte su medida suelta, 58 MB, lanzado con las mismas banderas).
+
+| Estado | Antes (programa + puente suelto) | Después |
+|---|---|---|
+| Ventana abierta | principal 117 + GPU 100 + utility 51 + renderer 83 = **351** (+58 puente ≈ 409), 4 procesos | principal 143 + renderer 86 + puente 63 = **292**, 3 procesos |
+| Ventana cerrada (bandeja) | principal 113 + GPU 95 + utility 51 + renderer 75 = **334** (+58 ≈ 392), 4 procesos (la ventana solo se ocultaba) | principal 138 + puente 56 = **194**, 2 procesos |
+| Arrancado con `--hidden` | principal 113 + GPU 95 + utility 51 + renderer 82 = **340** (+58 ≈ 398), 4 procesos | principal 90 + puente 71 = **162**, 2 procesos |
+
+CPU en reposo en la bandeja: 0,0 a 0,3 % de un núcleo (15–30 ms en 10–20 s); con la ventana abierta, ~1–2 % por su sondeo de 2 s. En los tres estados el
+renderer solo existe con la ventana abierta.
+
+**Banderas de Chromium que se quedaron** (en `main.ts`, antes de `ready`; cada una medida en la 0.3.3 con la ventana abierta, solo el programa):
+
+| Bandera | Resultado | Decisión |
+|---|---|---|
+| ninguna (línea base) | 351 MB, 4 procesos | |
+| `--disable-gpu` solo | 316 MB; el proceso GPU baja de 100 a 66 MB pero sigue ahí | insuficiente |
+| `--in-process-gpu` solo | 301 MB, 3 procesos (sin GPU; el principal sube a 167) | sirve |
+| `--enable-features=NetworkServiceInProcess2` solo | 293 MB, 3 procesos (sin el «utility» de 51 MB, que era el **servicio de red** de Chromium, `network.mojom.NetworkService`) | sirve |
+| `--disable-gpu` + `NetworkServiceInProcess2` | 251 MB, 3 procesos | |
+| **`disableHardwareAcceleration()` + `--in-process-gpu` + `NetworkServiceInProcess2`** | **220 MB, 2 procesos** (principal + renderer) | **la que quedó** |
+
+La interfaz (sombras, degradados, fuentes) se dibuja igual sin GPU: se comprobó con `--debug-shots`. Sin GPU de hardware y con el servicio de red dentro del
+principal no hay actividad de red del programa en segundo plano salvo el `/health` local y la revisión de actualizaciones.
+
+**Banderas del puente** (el propio `Cronio.exe` como Node, 58 MB suelto): `--max-old-space-size=48` 58 MB, `--optimize-for-size` 62, `--max-semi-space-size=1`
+58, `--single-threaded` 59, `--jitless` 56, `--lite-mode` 55 (y 55 combinadas). Ninguna baja más de ~3 MB (5 %) y `--lite-mode`/`--jitless` apagan el compilador que
+acelera el cifrado y el protocolo, así que **no se usó ninguna**: el piso de un proceso Node está ahí.
+
+### Probar la bandeja sin tocar nada real
+
+Dos variables de entorno, solo para quien desarrolla (sin ellas el programa se comporta como siempre):
+
+- `CRONIO_PUERTOS_PRUEBA=api,consola,udp,ws` (cuatro puertos, p. ej. `43335,43334,43333,43340`): el programa y el puente hijo usan puertos propios, así que no
+  chocan con un Cronio instalado ni lo detienen (sin esto, un puente de otra versión en el 33335 se cerraría).
+- `CRONIO_PRUEBA_BANDEJA=<carpeta>`: el menú, el tooltip y el estado se vuelcan en `<carpeta>/bandeja.json`; se ejecuta el `AccionBandeja` que se escriba en
+  `<carpeta>/accion.txt` (`abrir`, `puente-detener`, `pausa-30`, …) con las mismas funciones que el clic; las notificaciones van a `notificaciones.log`, las URL a
+  `urls.log` y «Iniciar con Windows» es una variable en memoria. Con `--debug-shots` no hay bandeja ni se ejecuta ninguna acción.
 
 ## Actualizar desde la 3DS (QR ya no hace falta)
 
@@ -195,7 +302,7 @@ bandeja (`--hidden`) solo notifica. No hay servidor propio. La 3DS se entera sol
 (ver «Actualizar desde la 3DS»).
 
 - **Ajustes**: `%APPDATA%/agent-companion/app.json` (`AGENT_COMPANION_CONFIG_DIR` lo cambia; lo usan las pruebas):
-  `{ "actualizaciones": { "origen": "ninguno" | "local" | "github", "carpeta"?: "C:/..." }, "ultimaVersionAvisada"?: "0.3.0" }`.
+  `{ "actualizaciones": { "origen": "ninguno" | "local" | "github", "carpeta"?: "C:/..." }, "ultimaVersionAvisada"?: "0.3.0", "alCerrar"?: "bandeja" | "salir", "avisoBandejaMostrado"?: true }`.
   Código en `src/setup/app-ajustes.ts`. Un archivo ausente, roto o con otro origen vuelve al valor por defecto.
 - **Valor por defecto** (cuando `app.json` no trae `actualizaciones`): origen «ninguno». Solo el instalador de quien desarrolla (`npm run dist:installer:local`, que pone `CRONIO_ORIGEN_LOCAL=1`) parte con origen «local» y la carpeta `release` **de la máquina donde se construyó**, y solo si esa carpeta existe. Cómo se detecta: `scripts/dist.mjs` escribe `build/origen-local.json` (`{ "carpeta": "<paquete>/release" }` con esa variable; `{}` sin ella, que es el instalador público) y
   `extraResources` lo lleva a `resources/origen-local.json`; el programa instalado lo lee y comprueba que la carpeta exista en este PC. Es más limpio que
