@@ -1,5 +1,7 @@
 # Cronio
 
+**Estado: beta.** · Página y demo: <https://alonnnzo.github.io/cronio/>
+
 Cronio convierte tu Nintendo 3DS en un compañero de escritorio para tus agentes de código: muestra qué está haciendo cada sesión,
 te deja aprobar o rechazar permisos, contestar preguntas y mandar instrucciones desde la consola, y avisa cuando algo termina.
 Es un programa para Windows (el puente) más una app homebrew para la New 3DS que se hablan por tu red local.
@@ -107,7 +109,7 @@ make test                # en client-3ds/tests-host: núcleo del cliente en C (t
 
 ## Estado del proyecto
 
-Versión 0.3.0: funciona de punta a punta con una New 3DS XL (estado de sesiones, permisos, preguntas, avisos con sonido,
+Cronio está en **beta**: funciona, pero puede tener fallos y cambiar entre versiones. Versión 0.3.1: funciona de punta a punta con una New 3DS XL (estado de sesiones, permisos, preguntas, avisos con sonido,
 lector del último mensaje e instrucciones). Es un proyecto personal en marcha: puede haber errores y cambios entre versiones.
 
 | Agente | Estado |
@@ -116,6 +118,34 @@ lector del último mensaje e instrucciones). Es un proyecto personal en marcha: 
 | Gemini, Codex, Cursor, Hermes | Planeados: ya tienen su color en la interfaz, pero todavía no se conectan |
 
 Más detalle en [docs/02-plan-de-trabajo.md](docs/02-plan-de-trabajo.md) y los demás documentos de [`docs/`](docs/).
+
+## Hoja de ruta
+
+Son planes, no promesas: sin fechas y pueden cambiar.
+
+**Nuevas funciones**
+
+- Más agentes: Gemini CLI, Cursor, Codex y Hermes, cada uno con su color de cara.
+- Voz: hablarle a la consola para dar instrucciones.
+- Asistente general: pedirle cosas rápidas desde la 3DS, como recordatorios o preguntas.
+- Más personalidad para la cara: sonidos por estado y pequeños extras.
+- Banner 3D en el menú de la consola.
+- Versión en inglés.
+
+**Cómo va a crecer**
+
+- Más plataformas: el programa para macOS y Linux (hoy es Windows) y pruebas en Old 3DS y 2DS.
+- Uso fuera de casa: un modo opcional, cifrado de punta a punta. El modo local sigue siendo la base.
+- Instalación desde la propia consola, con las tiendas de homebrew de la comunidad.
+- Instalador con firma de código, para que Windows no muestre la advertencia.
+- Abierto a la comunidad: código GPL-3.0, y sugerencias y aportes bienvenidos.
+
+## Cómo ayudar
+
+- **Reporta problemas:** abre un [reporte](https://github.com/alonnnzo/cronio/issues) y cuenta qué pasó, tu versión y tu consola.
+  Si es una vulnerabilidad, usa el canal privado de [SECURITY.md](SECURITY.md).
+- **Prueba en otras consolas** (New 3DS, New 2DS XL, Old 3DS, 2DS) y cuenta cómo te fue en un reporte.
+- **Sugiere ideas** en los reportes, y manda **pull requests**: las correcciones pequeñas son muy bienvenidas.
 
 ## Marcas y licencia
 
