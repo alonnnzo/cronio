@@ -14,7 +14,7 @@ import {
   sha512Base64,
   tocaBuscar,
 } from "../src/setup/actualizaciones.ts";
-import { actualizacionesPorDefecto, guardarActualizaciones, guardarVersionAvisada, leerAjustesApp, rutaAjustes } from "../src/setup/app-ajustes.ts";
+import { actualizacionesPorDefecto, guardarActualizaciones, guardarAlCerrar, guardarAvisoBandejaMostrado, guardarVersionAvisada, leerAjustesApp, rutaAjustes } from "../src/setup/app-ajustes.ts";
 
 let dir: string;
 beforeEach(() => {
@@ -154,7 +154,7 @@ describe("leerConfigGithub", () => {
 
 describe("app.json (ajustes del programa)", () => {
   it("sin archivo y sin carpeta conocida: origen ninguno", () => {
-    expect(leerAjustesApp(dir)).toEqual({ actualizaciones: { origen: "ninguno" }, porDefecto: true });
+    expect(leerAjustesApp(dir)).toEqual({ actualizaciones: { origen: "ninguno" }, alCerrar: "bandeja", avisoBandejaMostrado: false, porDefecto: true });
   });
 
   it("por defecto es local solo si la carpeta conocida existe en este PC", () => {
@@ -174,9 +174,21 @@ describe("app.json (ajustes del programa)", () => {
     mkdirSync(release);
     guardarVersionAvisada(dir, "0.3.0");
     guardarActualizaciones(dir, { origen: "github" });
-    expect(leerAjustesApp(dir, release)).toEqual({ actualizaciones: { origen: "github" }, ultimaVersionAvisada: "0.3.0", porDefecto: false });
+    expect(leerAjustesApp(dir, release)).toEqual({ actualizaciones: { origen: "github" }, ultimaVersionAvisada: "0.3.0", alCerrar: "bandeja", avisoBandejaMostrado: false, porDefecto: false });
     guardarActualizaciones(dir, { origen: "ninguno" });
     expect(leerAjustesApp(dir, release)).toMatchObject({ actualizaciones: { origen: "ninguno" }, ultimaVersionAvisada: "0.3.0", porDefecto: false });
+  });
+
+  it("al cerrar la ventana: por defecto sigue en la bandeja; «salir» y el aviso único se guardan sin tocar lo demás", () => {
+    expect(leerAjustesApp(dir)).toMatchObject({ alCerrar: "bandeja", avisoBandejaMostrado: false });
+    guardarActualizaciones(dir, { origen: "github" });
+    guardarAlCerrar(dir, "salir");
+    guardarAvisoBandejaMostrado(dir);
+    expect(leerAjustesApp(dir)).toMatchObject({ actualizaciones: { origen: "github" }, alCerrar: "salir", avisoBandejaMostrado: true });
+    guardarAlCerrar(dir, "bandeja");
+    expect(leerAjustesApp(dir)).toMatchObject({ actualizaciones: { origen: "github" }, alCerrar: "bandeja", avisoBandejaMostrado: true });
+    writeFileSync(rutaAjustes(dir), JSON.stringify({ alCerrar: "otra-cosa", avisoBandejaMostrado: "sí" }));
+    expect(leerAjustesApp(dir)).toMatchObject({ alCerrar: "bandeja", avisoBandejaMostrado: false });
   });
 
   it("un archivo roto o con otro origen vuelve al valor por defecto", () => {

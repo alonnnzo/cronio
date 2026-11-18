@@ -13,8 +13,15 @@ export interface AjustesActualizaciones {
   carpeta?: string;
 }
 
+/** Qué pasa al cerrar la ventana: seguir en la bandeja (el valor por defecto) o salir del todo. */
+export type AlCerrar = "bandeja" | "salir";
+
 export interface AjustesApp {
   actualizaciones: AjustesActualizaciones;
+  /** Al cerrar la ventana. Por defecto `bandeja`. */
+  alCerrar: AlCerrar;
+  /** Ya se mostró (una sola vez) el aviso «Cronio sigue en la bandeja». */
+  avisoBandejaMostrado: boolean;
   /** Última versión nueva de la que ya se mostró una notificación del sistema (una vez por versión). */
   ultimaVersionAvisada?: string;
   /** `actualizaciones` salió del valor por defecto (el archivo no lo tenía). */
@@ -47,7 +54,11 @@ export function leerAjustesApp(datosDir: string, carpetaLocalConocida?: string):
   const d = leerCrudo(datosDir);
   const a = d.actualizaciones as { origen?: unknown; carpeta?: unknown } | null | undefined;
   const ultima = typeof d.ultimaVersionAvisada === "string" ? d.ultimaVersionAvisada : undefined;
-  const base = { ...(ultima ? { ultimaVersionAvisada: ultima } : {}) };
+  const base = {
+    ...(ultima ? { ultimaVersionAvisada: ultima } : {}),
+    alCerrar: (d.alCerrar === "salir" ? "salir" : "bandeja") as AlCerrar,
+    avisoBandejaMostrado: d.avisoBandejaMostrado === true,
+  };
   if (a && typeof a === "object" && (a.origen === "ninguno" || a.origen === "local" || a.origen === "github")) {
     const carpeta = typeof a.carpeta === "string" && a.carpeta ? a.carpeta : undefined;
     return { ...base, actualizaciones: { origen: a.origen, ...(carpeta ? { carpeta } : {}) }, porDefecto: false };
@@ -68,4 +79,12 @@ export function guardarActualizaciones(datosDir: string, a: AjustesActualizacion
 
 export function guardarVersionAvisada(datosDir: string, version: string): void {
   escribir(datosDir, { ...leerCrudo(datosDir), ultimaVersionAvisada: version });
+}
+
+export function guardarAlCerrar(datosDir: string, alCerrar: AlCerrar): void {
+  escribir(datosDir, { ...leerCrudo(datosDir), alCerrar });
+}
+
+export function guardarAvisoBandejaMostrado(datosDir: string): void {
+  escribir(datosDir, { ...leerCrudo(datosDir), avisoBandejaMostrado: true });
 }

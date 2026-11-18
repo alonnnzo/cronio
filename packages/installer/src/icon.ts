@@ -6,6 +6,17 @@ import { deflateSync } from "node:zlib";
 const NARANJA = [0xee, 0x74, 0x46] as const;
 const TINTA = [0x12, 0x13, 0x1a] as const;
 const BLANCO = [0xff, 0xff, 0xff] as const;
+// variantes de la bandeja: gris (puente detenido) y el punto de «hay una versión nueva»
+const GRIS = [0x9b, 0x9d, 0xa5] as const;
+const GRIS_TINTA = [0x5a, 0x5c, 0x66] as const;
+const PUNTO = [0x1f, 0x8e, 0xf1] as const;
+
+export interface OpcionesIcono {
+  /** Atenuado y en gris: el puente está detenido. */
+  apagado?: boolean;
+  /** Un punto pequeño arriba a la derecha: hay una versión nueva. */
+  punto?: boolean;
+}
 
 const TABLA_CRC = (() => {
   const t = new Uint32Array(256);
@@ -43,17 +54,24 @@ function enElipse(x: number, y: number, cx: number, cy: number, rx: number, ry: 
 }
 
 /** Color de un punto del ícono, con coordenadas en 0..100: naranja lleno, dos ojos tinta y un brillo blanco al 85 %. */
-function muestra(x: number, y: number): Color {
-  let c: Color = NARANJA;
+function muestra(x: number, y: number, o: OpcionesIcono): Color {
+  const fondo = o.apagado ? GRIS : NARANJA;
+  const tinta = o.apagado ? GRIS_TINTA : TINTA;
+  let c: Color = fondo;
   if (enElipse(x, y, 34, 50, 11, 17) || enElipse(x, y, 66, 50, 11, 17)) {
-    c = TINTA;
-    if (enElipse(x, y, 30, 43, 4, 4) || enElipse(x, y, 62, 43, 4, 4)) c = mezclar(TINTA, BLANCO, 0.85);
+    c = tinta;
+    if (enElipse(x, y, 30, 43, 4, 4) || enElipse(x, y, 62, 43, 4, 4)) c = mezclar(tinta, BLANCO, 0.85);
+  }
+  if (o.punto) {
+    // punto azul con un aro blanco para que se lea sobre el naranja y sobre el gris
+    if (enElipse(x, y, 75, 25, 17, 17)) c = PUNTO;
+    else if (enElipse(x, y, 75, 25, 22, 22)) c = BLANCO;
   }
   return c;
 }
 
-/** PNG de `tam`×`tam` píxeles: el ícono de Cronio a borde completo. */
-export function crearIconoPng(tam: number): Buffer {
+/** PNG de `tam`×`tam` píxeles: el ícono de Cronio a borde completo (con `opciones`, las variantes de la bandeja). */
+export function crearIconoPng(tam: number, opciones: OpcionesIcono = {}): Buffer {
   const filas: Buffer[] = [];
   const sub = 4; // suavizado por sobremuestreo
   for (let py = 0; py < tam; py++) {
@@ -62,7 +80,7 @@ export function crearIconoPng(tam: number): Buffer {
       let r = 0, g = 0, b = 0;
       for (let sy = 0; sy < sub; sy++) {
         for (let sx = 0; sx < sub; sx++) {
-          const c = muestra(((px + (sx + 0.5) / sub) / tam) * 100, ((py + (sy + 0.5) / sub) / tam) * 100);
+          const c = muestra(((px + (sx + 0.5) / sub) / tam) * 100, ((py + (sy + 0.5) / sub) / tam) * 100, opciones);
           r += c[0]; g += c[1]; b += c[2];
         }
       }

@@ -9,4 +9,19 @@ describe("icono generado", () => {
     expect(png.readUInt32BE(20)).toBe(32); // alto
     expect(png.subarray(-8, -4).toString("ascii")).toBe("IEND");
   });
+
+  it("las variantes de la bandeja (apagado, con punto) son PNG válidos y distintos del normal", () => {
+    const normal = crearIconoPng(32);
+    const apagado = crearIconoPng(32, { apagado: true });
+    const punto = crearIconoPng(32, { punto: true });
+    for (const png of [apagado, punto]) {
+      expect(png.readUInt32BE(16)).toBe(32);
+      expect(png.subarray(-8, -4).toString("ascii")).toBe("IEND");
+    }
+    expect(apagado.equals(normal)).toBe(false);
+    expect(punto.equals(normal)).toBe(false);
+    expect(apagado.equals(punto)).toBe(false);
+    // sin opciones es el mismo ícono de siempre
+    expect(crearIconoPng(32, {}).equals(normal)).toBe(true);
+  });
 });
