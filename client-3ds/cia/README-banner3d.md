@@ -95,7 +95,7 @@ Instálalas **de a una**, en orden, y prueba cada una antes de pasar a la siguie
 1. En el PC: `node client-3ds/cia/servir-pruebas.mjs`. Muestra la URL de cada variante con la IP del PC en la red local
    (puerto 33338). El PC y la 3DS deben estar en la misma red. Si ya estaba corriendo de antes, reinícialo (la E es nueva).
 2. En la 3DS: FBI → **Remote Install** → **Enter URL**, y escribe la dirección de la variante (por ejemplo
-   `http://192.168.1.20:33338/cronio-banner-test-a.cia`). Confirma la instalación.
+   `http://192.168.0.20:33338/cronio-banner-test-a.cia`). Confirma la instalación.
 
 **Por QR:** genera un QR con esa misma URL (cualquier generador) y úsalo en FBI → Remote Install → Scan QR Code.
 

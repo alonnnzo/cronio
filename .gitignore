@@ -28,3 +28,7 @@ packages/installer/build/origen-local.json
 *.pem
 *.pfx
 logo_hmackey*
+
+# Pruebas locales
+art/marca/qr-banners-prueba.html
+__pycache__/
