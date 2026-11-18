@@ -3,9 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cronio</title>
-<meta name="description" content="Tus agentes de código en una consola de bolsillo: estado de cada sesión, permisos, preguntas y avisos en la New 3DS.">
+<title>Cronio: tus agentes de código en tu 3DS</title>
+<meta name="description" content="Cronio muestra en tu New 3DS lo que hace Claude Code en tu PC. Aprueba permisos, responde preguntas y manda instrucciones desde la consola. Gratis y de código abierto.">
 <meta name="color-scheme" content="light">
+<meta name="theme-color" content="#e6e9ee">
+<link rel="canonical" href="https://alonnnzo.github.io/cronio/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="Cronio">
+<meta property="og:title" content="Cronio: tus agentes de código en tu 3DS">
+<meta property="og:description" content="Aprueba permisos, responde preguntas y manda instrucciones a Claude Code desde tu New 3DS.">
+<meta property="og:url" content="https://alonnnzo.github.io/cronio/">
+<meta property="og:image" content="https://alonnnzo.github.io/cronio/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cronio. Tus agentes de código, en tu 3DS.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cronio: tus agentes de código en tu 3DS">
+<meta name="twitter:description" content="Aprueba permisos, responde preguntas y manda instrucciones a Claude Code desde tu New 3DS.">
+<meta name="twitter:image" content="https://alonnnzo.github.io/cronio/og.png">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -13,99 +29,114 @@
 </head>
 <body>
 
-
+<a class="skip" href="#funciones">Saltar al contenido</a>
 <header class="topnav">
-  <a class="brand" href="#inicio"><span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span></a>
-  <nav class="topnav-links"><a href="#demo">Demo</a><a class="btn-rojo" href="#descarga">Descargar</a></nav>
+  <a class="brand" href="#inicio" aria-label="Cronio, inicio"><span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span></a>
+  <nav class="topnav-links" aria-label="Principal"><a class="hide-s" href="#funciones">Funciones</a><a class="hide-s" href="#demo">Demo</a><a class="hide-s" href="#preguntas">Preguntas</a><a class="btn-rojo" href="#descarga">Descargar</a></nav>
 </header>
 
-<main id="inicio">
-  <!-- Historia: la consola cerrada se abre con el scroll y muestra las funciones una a una -->
-  <section class="story" id="story" aria-label="Recorrido por las funciones">
-    <div class="stage" id="stage">
-      <div class="hero-copy" id="hero-copy">
-        <h1>Tus agentes de código,<br>en una consola de bolsillo.</h1>
-        <p>Cronio te muestra qué hacen Claude Code y compañía, y te deja aprobar sus permisos y responder sus preguntas desde la New 3DS, sin volver al teclado.</p>
+<main>
+  <!-- Recorrido de producto: la cámara pasa por la consola mientras bajas. La consola es decoración (aria-hidden); los textos son reales. -->
+  <section class="tour" id="story" aria-label="Recorrido por la consola">
+    <div class="stage" id="inicio">
+      <div class="cam-wrap" id="cam-wrap" aria-hidden="true"></div>
+
+      <div class="caps">
+        <article class="cap has-links" data-shot="0"><div class="cap-in">
+          <h1>Tus agentes de código, en tu 3DS</h1>
+          <p class="sub">Cronio muestra en tu New 3DS lo que hace Claude Code en tu PC. Apruebas permisos, respondes preguntas y mandas instrucciones sin volver al teclado.</p>
+          <div class="cta-row">
+            <a class="btn-rojo cta" data-releases href="https://github.com/alonnnzo/cronio/releases/latest">Descargar para Windows</a>
+            <a class="btn-claro cta2" href="#funciones">Ver cómo funciona</a>
+          </div>
+          <p class="ver">Versión 0.3.1 · gratis · código abierto</p>
+        </div></article>
+
+        <article class="cap" data-shot="1"><div class="cap-in">
+          <h2>Se abre y ya está contigo.</h2>
+          <p>Dos pantallas: arriba, la cara de Cronio; abajo, tus sesiones y lo que te piden.</p>
+        </div></article>
+
+        <article class="cap" data-shot="2"><div class="cap-in">
+          <h2>Te avisa cuando te necesita.</h2>
+          <p>La cara cambia de ánimo y dice qué pasa: «Claude te espera».</p>
+        </div></article>
+
+        <article class="cap" data-shot="3"><div class="cap-in">
+          <h2>Tú decides qué se ejecuta.</h2>
+          <p>Cuando Claude pide permiso, ves el comando exacto antes de aprobarlo.</p>
+        </div></article>
+
+        <article class="cap right" data-shot="4"><div class="cap-in">
+          <h2>Aprueba con A. Rechaza con B.</h2>
+          <p>Un botón y listo. Si algo es riesgoso, la consola te pide mantener A.</p>
+        </div></article>
+
+        <article class="cap" data-shot="5"><div class="cap-in">
+          <h2>En 3D de verdad.</h2>
+          <p>Con el control 3D de la consola, la cara se separa en capas: el fondo atrás, los ojos y el globo adelante.</p>
+        </div></article>
+
+        <article class="cap right" data-shot="6"><div class="cap-in">
+          <h2>Suena y parpadea cuando terminan.</h2>
+          <p>Un aviso corto y la luz de la consola, para que no tengas que mirar el PC.</p>
+        </div></article>
+
+        <article class="cap" data-shot="7"><div class="cap-in">
+          <h2>Todas tus sesiones, de un vistazo.</h2>
+          <p>Modelo, estado y tiempo de cada una, en tema claro u oscuro.</p>
+        </div></article>
+
+        <article class="cap has-links" data-shot="8"><div class="cap-in">
+          <h2>Instálala en tu consola.</h2>
+          <p>Un programa para Windows te guía paso a paso. Cronio no usa servidores propios.</p>
+          <div class="cta-row">
+            <a class="btn-rojo cta" data-releases href="https://github.com/alonnnzo/cronio/releases/latest">Descargar para Windows</a>
+            <a class="btn-claro cta2" href="#descarga">Cómo se instala</a>
+          </div>
+        </div></article>
       </div>
       <p class="scroll-cue" id="scroll-cue" aria-hidden="true">Desliza para abrirla</p>
+    </div>
+  </section>
 
-      <div class="scene">
-        <div class="device" id="device" aria-hidden="true">
-          <div class="lid" id="lid">
-            <div class="lid-front">
-              <div class="speaker l" aria-hidden="true"></div>
-              <div class="screen top-screen"><canvas id="face" width="800" height="480" aria-label="Pantalla superior: la cara del agente" role="img"></canvas></div>
-              <div class="speaker r" aria-hidden="true"></div>
-            </div>
-            <div class="lid-back" aria-hidden="true">
-              <span class="logo lid-logo"><span aria-hidden="true">CR<i></i>NI<i></i></span></span>
-            </div>
-          </div>
-          <div class="base">
-            <div class="hinge" aria-hidden="true"></div>
-            <div class="pad" aria-hidden="true"></div>
-            <div class="dpad" aria-hidden="true"><span></span><span></span></div>
-            <div class="screen bottom-screen" id="bottom-screen"></div>
-            <div class="face-btns" aria-hidden="true"><span>X</span><span>Y</span><span>A</span><span>B</span></div>
-            <div class="pills" aria-hidden="true"><span></span><span></span><span></span></div>
-            <div class="led" id="led" aria-hidden="true"></div>
-          </div>
-        </div>
+  <!-- Menú de funciones: dos pantallas apiladas, como una consola abierta -->
+  <section class="home" id="funciones" aria-labelledby="home-title">
+    <h2 id="home-title">Todo lo que haces desde la consola.</h2>
+    <p class="lede">Elige una función con el ratón, el dedo o las flechas.</p>
+    <div class="home-console">
+      <div class="home-top">
+        <div class="screen-frame" id="home-panel" role="tabpanel" tabindex="-1" aria-live="polite"></div>
+      </div>
+      <div class="home-hinge" aria-hidden="true"></div>
+      <div class="home-bottom">
+        <div class="channels" id="home-tabs" role="tablist" aria-label="Funciones de Cronio"></div>
       </div>
     </div>
+  </section>
 
-    <div class="steps">
-      <div class="step step-open" data-step="open"></div>
-
-      <article class="step" data-step="sessions">
-        <div class="caption">
-          <h2>La pantalla es la cara.</h2>
-          <p>Arriba, toda la pantalla es una cara: toma el color del agente que habla y cuenta qué está haciendo. Abajo eliges el agente y ves todas sus sesiones abiertas.</p>
-        </div>
-      </article>
-
-      <article class="step" data-step="permission">
-        <div class="caption">
-          <h2>Aprueba sin levantarte.</h2>
-          <p>Cuando un agente pide permiso, la tarjeta muestra el comando exacto. A aprueba, B rechaza e Y aprueba y no vuelve a preguntar por lo mismo. Lo riesgoso pide mantener A un segundo.</p>
-        </div>
-      </article>
-
-      <article class="step" data-step="waiting">
-        <div class="caption">
-          <h2>Sabes cuándo te espera.</h2>
-          <p>Si el agente termina con una pregunta, su sesión dice «te espera» y el detalle trae la pregunta completa, antes que nada.</p>
-        </div>
-      </article>
-
-      <article class="step" data-step="reader">
-        <div class="caption">
-          <h2>Lee el mensaje entero.</h2>
-          <p>El último mensaje del agente llega sin markdown, en letra de consola. Lo recorres con la cruceta, línea por línea.</p>
-        </div>
-      </article>
-
-      <article class="step" data-step="menu">
-        <div class="caption">
-          <h2>Se ajusta con SELECT.</h2>
-          <p>Cuándo avisar, si pedir «Visto», el sonido y qué agentes aparecen. Todo desde la consola, y el puente lo recuerda.</p>
-        </div>
-      </article>
-
-      <article class="step" data-step="notice">
-        <div class="caption">
-          <h2>Avisos que no se pierden.</h2>
-          <p>Al terminar un turno suena un aviso corto y queda una tarjeta hasta que marcas «Visto». Cada sesión elige su modo: todo, lo importante, solo al terminar o silencio.</p>
-        </div>
-      </article>
-
-      <article class="step" data-step="question">
-        <div class="caption">
-          <h2>Responde preguntas con alternativas.</h2>
-          <p>Cuando Claude Code pregunta con opciones, eliges en la consola y la respuesta le llega como si la hubieras marcado en el PC. «Responder en el PC» siempre está a mano. Llega en la próxima versión.</p>
-        </div>
-      </article>
-    </div>
+  <section class="how" id="como-funciona" aria-labelledby="how-title">
+    <h2 id="how-title">Cómo funciona.</h2>
+    <p class="lede">Todo pasa dentro de tu casa: tu PC y tu consola hablan entre ellos, sin servidores de nadie.</p>
+    <figure class="flow">
+      <svg viewBox="0 0 760 230" role="img" aria-labelledby="flow-t flow-d">
+        <title id="flow-t">Claude Code en tu PC, Cronio como puente y tu 3DS, todo en la red de tu casa</title>
+        <desc id="flow-d">Claude Code envía sus eventos a Cronio en el PC. Cronio los manda por la Wi-Fi de tu casa a la 3DS. Tu respuesta vuelve por el mismo camino.</desc>
+        <rect x="6" y="6" width="748" height="218" rx="22" class="f-home"/>
+        <text x="26" y="34" class="f-tag">Red de tu casa · todo local</text>
+        <g class="f-node"><rect x="34" y="62" width="196" height="120" rx="16"/><text x="132" y="108" class="f-h">Tu PC</text><text x="132" y="136" class="f-s">Claude Code</text><text x="132" y="160" class="f-s2">y sus hooks</text></g>
+        <g><rect x="292" y="80" width="176" height="84" rx="16" class="f-bridge"/><text x="380" y="116" class="f-h w">Cronio</text><text x="380" y="144" class="f-s w">el puente</text></g>
+        <g class="f-node"><rect x="530" y="62" width="196" height="120" rx="16"/><text x="628" y="108" class="f-h">Tu 3DS</text><text x="628" y="136" class="f-s">Cronio, la app</text><text x="628" y="160" class="f-s2">New 3DS</text></g>
+        <path d="M232 122h58M282 116l8 6-8 6M240 116l-8 6 8 6" class="f-arrow"/>
+        <path d="M470 122h58M520 116l8 6-8 6M478 116l-8 6 8 6" class="f-arrow"/>
+        <text x="261" y="206" class="f-lab">en el PC</text><text x="499" y="206" class="f-lab">por la Wi-Fi</text>
+      </svg>
+    </figure>
+    <ol class="how-steps">
+      <li><h3>Cronio escucha a Claude Code.</h3><p>Los hooks avisan al puente cuando Claude pide un permiso, hace una pregunta o termina.</p></li>
+      <li><h3>Lo manda a tu 3DS.</h3><p>Por la Wi-Fi de casa, cifrado y con la consola emparejada por un código.</p></li>
+      <li><h3>Tú decides desde la consola.</h3><p>Tu respuesta vuelve al PC y Claude sigue, como si la hubieras dado en el teclado.</p></li>
+    </ol>
   </section>
 
   <section class="demo" id="demo" aria-labelledby="demo-title">
@@ -172,20 +203,19 @@
   <section class="download" id="descarga" aria-labelledby="download-title">
     <h2 id="download-title">Instálala en tu consola.</h2>
     <p class="lede">Un programa para tu PC que te guía paso a paso y, desde ahí, la app para la consola.</p>
-    <!-- El enlace real se pone en app.js (RELEASES_URL), el único lugar de la página con el nombre del repositorio. -->
-    <a class="btn-rojo cta" id="releases-link" aria-disabled="true">Descargar Cronio para Windows</a>
-    <p class="cta-sub" id="releases-sub">Se publica como <code>Cronio-Setup-&lt;versión&gt;.exe</code> en las Releases de GitHub.</p>
+    <a class="btn-rojo cta big" data-releases href="https://github.com/alonnnzo/cronio/releases/latest">Descargar Cronio para Windows</a>
+    <p class="cta-sub">Versión 0.3.1 · <a data-releases href="https://github.com/alonnnzo/cronio/releases/latest">todas las versiones y huellas SHA-256</a> · <a href="https://github.com/alonnnzo/cronio">código fuente</a> · <a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">SECURITY.md</a></p>
 
     <div class="install">
       <h3>Instalación</h3>
       <ol class="install-steps">
         <li>
           <h4>Instala Cronio en el PC</h4>
-          <p>Abre <code>Cronio-Setup.exe</code>. Windows puede avisar que es de un editor desconocido: elige <em>Más información → Ejecutar de todas formas</em>. El instalador no tiene firma de código: descárgalo solo desde los <a href="https://github.com/alonnnzo/cronio/releases">Releases oficiales</a> y, si quieres, compara su SHA-256 con el de las notas de la versión.</p>
+          <p>Abre <code>Cronio-Setup.exe</code>. Windows puede avisar que es de un editor desconocido: elige <em>Más información → Ejecutar de todas formas</em>. El instalador no tiene firma de código: descárgalo solo desde los <a href="https://github.com/alonnnzo/cronio/releases/latest">Releases oficiales</a> y compara su SHA-256 con el de las notas de la versión.</p>
         </li>
         <li>
           <h4>Conecta Claude Code</h4>
-          <p>En el paso 2 del programa, pulsa <em>Hacerlo por mí</em> y elige en qué carpetas se activa. Cronio no usa servidores propios: todo pasa entre tu PC y tu consola. Solo consulta GitHub si activas las actualizaciones automáticas.</p>
+          <p>En el paso 2 del programa, pulsa <em>Hacerlo por mí</em> y elige en qué carpetas se activa. Cronio no usa servidores propios: todo pasa entre tu PC y tu consola.</p>
         </li>
         <li>
           <h4>Instala la app en la consola</h4>
@@ -211,15 +241,40 @@
       </dl>
     </div>
   </section>
+
+  <section class="security" id="seguridad" aria-labelledby="sec-title">
+    <h2 id="sec-title">Seguridad y privacidad.</h2>
+    <ul class="sec-list">
+      <li><h3>Tráfico cifrado</h3><p>La consola se empareja con tu PC mediante un código. Sin ese código, nadie más se conecta.</p></li>
+      <li><h3>Sin servidores propios</h3><p>Tus comandos, mensajes y proyectos no salen de tu red. Cronio no tiene nube ni analítica.</p></li>
+      <li><h3>Código abierto</h3><p>Todo el código está en GitHub con licencia GPL-3.0. Puedes leerlo antes de instalarlo.</p></li>
+      <li><h3>Instalador sin firma</h3><p>Windows avisará que el editor es desconocido. Descárgalo solo de los Releases oficiales y compara su SHA-256.</p></li>
+    </ul>
+    <p class="sec-links"><a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">Cómo reportar un problema (SECURITY.md)</a> · <a href="https://github.com/alonnnzo/cronio">Ver el código</a></p>
+  </section>
+
+  <section class="faq" id="preguntas" aria-labelledby="faq-title">
+    <h2 id="faq-title">Preguntas frecuentes.</h2>
+    <div class="faq-list">
+      <details><summary>¿Necesito una 3DS modificada?</summary><p>Sí. Cronio es una app homebrew: hace falta una New 3DS con firmware personalizado (Luma3DS) y FBI para instalarla.</p></details>
+      <details><summary>¿Funciona con Old 3DS o 2DS?</summary><p>Sin probar. Cronio está hecha y probada en una New 3DS XL; en otros modelos puede fallar.</p></details>
+      <details><summary>¿Con qué agentes funciona?</summary><p>Con Claude Code, hoy. Gemini, Codex, Cursor y Hermes ya tienen su color en la consola y se conectarán más adelante.</p></details>
+      <details><summary>¿Envía mis datos a algún lado?</summary><p>No. Todo pasa entre tu PC y tu consola por tu red. Cronio no tiene servidores propios ni analítica. Solo consulta GitHub si activas las actualizaciones automáticas.</p></details>
+      <details><summary>¿Es oficial?</summary><p>No. Es un proyecto independiente, sin afiliación ni respaldo de Nintendo ni de Anthropic.</p></details>
+    </div>
+  </section>
 </main>
 
 <footer class="foot">
   <span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span>
+  <nav class="foot-links" aria-label="Enlaces"><a href="https://github.com/alonnnzo/cronio">Código</a><a href="https://github.com/alonnnzo/cronio/releases/latest">Versiones</a><a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">Seguridad</a><a href="#descarga">Descargar</a></nav>
   <p>Nintendo 3DS es una marca de Nintendo. Claude es una marca de Anthropic. Cronio es un proyecto independiente, sin afiliación ni respaldo de ninguna de las dos. Software libre bajo GPL-3.0.</p>
 </footer>
 
-<!-- Scroll suave (opcional: sin él la página funciona igual). Se apaga con prefers-reduced-motion. -->
 <script src="vendor/lenis.min.js"></script>
+<script src="pieces.js"></script>
+<script src="tour.js"></script>
+<script src="home.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

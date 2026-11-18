@@ -1,7 +1,5 @@
-// Página de Cronio (marca en docs/11-marca-cronio.md, rama fase-7).
-//  1. Recorrido: la consola se abre con el scroll y muestra las funciones una a una.
-//  2. Demo: una segunda consola que responde a botones, teclado y toques.
-// Sin compilar. Con prefers-reduced-motion la consola del recorrido queda abierta y todo cambia solo con fundidos.
+// Página de Cronio (marca en docs/11-marca-cronio.md). Este archivo: la demo interactiva y el arranque.
+// El recorrido de producto está en tour.js y el menú de funciones en home.js; las piezas comunes, en pieces.js.
 (() => {
   'use strict';
 
@@ -9,55 +7,10 @@
   // (el otro es `publish` en packages/installer/package.json). Vacío = el botón queda apagado.
   const RELEASES_URL = 'https://github.com/alonnnzo/cronio/releases/latest';
 
-  const AGENTS = {
-    claude: { name: 'Claude', color: '#ee7446' },
-    gemini: { name: 'Gemini', color: '#5b8cff' },
-    codex: { name: 'Codex', color: '#2fd08a' },
-    cursor: { name: 'Cursor', color: '#c9ced9' },
-    hermes: { name: 'Hermes', color: '#f6c544' },
-  };
+  const { AGENTS, $, reduced, bar, tile, permCard, noticeCard, questionCard, menuRows } = window.Cronio;
   const KINDS = Object.keys(AGENTS);
   const NEUTRAL = '#aab1bc';
   const STATE_LABEL = { idle: 'inactivo', working: 'trabajando', ask: 'te espera', done: 'terminó', error: 'error' };
-  const NOTIFY = ['todo', 'lo importante', 'solo al terminar', 'silencio'];
-  const $ = id => document.getElementById(id);
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const C = AGENTS.claude.color;
-
-  // ---------- piezas de la pantalla inferior (mismos textos que la app) ----------
-  const bar = (title, sub, { color = '', back = false, mode = 'En fila' } = {}) =>
-    `<div class="bar">${color ? `<i class="bar-dot" style="background:${color}"></i>` : ''}<b class="bar-title">${title}</b><span class="bar-sub">${sub}</span>` +
-    (back ? '<span class="mini" data-key="B">B Volver</span>' : '') + (mode ? `<span class="mini">${mode}</span>` : '') + '</div>';
-  const tile = (k, { n = 0, label = 'sin sesiones', cur = false, ask = false } = {}) => {
-    const a = AGENTS[k];
-    return `<div class="tile${n ? '' : ' off'}${cur ? ' cur' : ''}${ask ? ' ask' : ''}" data-kind="${k}">` +
-      (n ? `<div class="badge">${n}</div>` : '') +
-      `<i style="background:${a.color}"></i><b>${a.name}</b><span>${label}</span></div>`;
-  };
-  const permCard = (owner, cmd, color) =>
-    `<div class="card"><div class="card-head"><span>${owner}</span><span class="card-timer">0:12</span></div>` +
-    `<pre class="card-lines">Bash\n${cmd}</pre>` +
-    `<div class="btn always" data-key="Y">Y: sí, siempre · Bash(${cmd})</div>` +
-    `<div class="btns"><div class="btn ok" data-key="A">A · Aprobar</div><div class="btn no" data-key="B">B · Rechazar</div></div></div>`;
-  const noticeCard = (owner, title, text) =>
-    `<div class="card notice"><div class="card-head"><b class="notice-label">AVISO</b><span>${owner}</span></div>` +
-    `<div class="notice-title">${title}</div><pre class="card-lines">${text}</pre>` +
-    `<div class="btns"><div class="btn seen" data-key="A">A: Visto</div><div class="btn no" data-act="read">Leer todo</div></div></div>`;
-  const questionCard = (cursor = 0) =>
-    `<div class="q-card"><div class="q-head">Despliegue<span>1/1</span></div>` +
-    `<p class="q-text">¿A qué entorno publico el sitio?</p>` +
-    `<div class="opt${cursor === 0 ? ' cur' : ''}" data-opt="0"><b>Vista previa <span class="star">★</span></b><small>Una URL temporal para revisarlo antes</small></div>` +
-    `<div class="opt${cursor === 1 ? ' cur' : ''}" data-opt="1"><b>Producción</b><small>Reemplaza el sitio publicado</small></div>` +
-    `<div class="opt-row"><div class="opt${cursor === 2 ? ' cur' : ''}" data-opt="2"><b>Otra…</b></div><div class="opt${cursor === 3 ? ' cur' : ''}" data-opt="3"><b>Responder en el PC</b></div></div></div>`;
-  const menuRows = (set, cursor, full) => {
-    const row = (i, title, value, on, hint) => `<div class="menu-row${cursor === i ? ' cur' : ''}" data-row="${i}"><div class="menu-line"><b>${title}</b><em${on ? ' class="on"' : ''}>${value}</em></div>${hint ? `<small>${hint}</small>` : ''}</div>`;
-    return `<div class="menu">` +
-      row(0, 'Avisos por defecto', NOTIFY[set.notify], false, 'Sesiones nuevas · cada sesión cambia el suyo') +
-      row(1, 'Pedir "Visto" en los avisos', set.ack ? 'sí' : 'no', set.ack, 'Cada aviso queda en una tarjeta con "Visto"') +
-      row(2, 'Sonido', set.sound ? 'sí' : 'no', set.sound) +
-      (full ? row(3, 'Agentes', '4 de 5') + row(4, 'Guía de botones', '') + row(5, 'Diagnóstico', '') : '<p class="menu-help">A o ◀ ▶ cambian el valor</p>') +
-      `</div>`;
-  };
 
   // ---------- pantalla superior: la cara. La pantalla entera toma el color del agente y lleva dos ojos; una por canvas ----------
   const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
@@ -120,130 +73,7 @@
   }
 
   // =====================================================================================================
-  // 1. Recorrido
-  // =====================================================================================================
-  const storyGrid = (gemini = 'trabajando') => `<div class="grid">` +
-    tile('claude', { n: 2, label: 'trabajando', cur: true }) + tile('gemini', { n: 1, label: gemini }) +
-    tile('codex', { n: 1, label: 'inactivo' }) + tile('cursor') + tile('hermes') + `</div>`;
-  const STEPS = {
-    sessions: {
-      face: { kind: 'claude', mood: 'working', lines: ['Claude en mi-portal', 'Editando hero.astro'] }, led: 'working',
-      bottom: () => bar('Agentes', '4 sesiones') + storyGrid(),
-    },
-    permission: {
-      face: { kind: 'claude', mood: 'ask', lines: ['Claude necesita permiso', 'npm install sharp · mi-portal'] }, led: 'ask',
-      bottom: () => bar('Claude', 'mi-portal', { color: C, back: true }) +
-        `<div class="detail"><p><b>Proyecto:</b> mi-portal</p><p><b>Modelo:</b> Opus · te espera</p><p><b>Ahora:</b> Pide permiso</p></div>` +
-        permCard('Claude · mi-portal', 'npm install sharp', C),
-    },
-    waiting: {
-      face: { kind: 'claude', mood: 'ask', lines: ['Claude te espera', '¿Publico la rama o la reviso contigo?'] }, led: 'ask',
-      bottom: () => bar('Claude', 'OTRO-SISTEMA', { color: C, back: true }) +
-        `<div class="detail"><p><b>Proyecto:</b> OTRO-SISTEMA</p><p><b>Modelo:</b> Sonnet · te espera</p>` +
-        `<p class="question"><b>Te pregunta:</b>\n¿Publico la rama ahora o prefieres\nrevisarla antes conmigo?</p>` +
-        `<p><b>Último mensaje:</b><br>Agregué el módulo de reportes y la suite pasa completa (128 pruebas).</p></div>` +
-        `<div class="strips"><span class="read-btn">A: leer todo el mensaje</span><span class="read-btn notify">Y: avisos · todo</span></div>`,
-    },
-    reader: {
-      face: { kind: 'claude', mood: 'ask', lines: ['Claude te espera', '¿Publico la rama o la reviso contigo?'] }, led: 'ask',
-      bottom: () => bar('Claude', 'OTRO-SISTEMA · 1-13/38', { color: C, back: true }) +
-        `<pre class="reader-lines"><span class="h">Te pregunta:</span>
-¿Publico la rama ahora o prefieres
-revisarla antes conmigo?
-
-Agregué el módulo de reportes:
-- ficha con foto, instrumento y bio
-- listado con filtro por cátedra
-- exportación para el sitio público
-
-La suite pasa completa (128 pruebas).
-Quedan dos cosas por decidir:
-1. si la bio admite enlaces
-2. el orden por defecto del listado</pre>`,
-    },
-    menu: {
-      face: { kind: 'claude', mood: 'idle', lines: ['Configuración'] }, led: '',
-      bottom: () => bar('Configuración', 'SELECT/B: cerrar', { back: true }) + menuRows({ notify: 0, ack: true, sound: true }, 2, true),
-    },
-    notice: {
-      face: { kind: 'gemini', mood: 'done', lines: ['¡Gemini terminó!', 'otro-sitio · Formulario listo y probado.'] }, led: 'done',
-      bottom: () => bar('Gemini', 'otro-sitio', { color: AGENTS.gemini.color, back: true }) +
-        `<div class="detail"><p><b>Proyecto:</b> otro-sitio</p><p><b>Modelo:</b> Pro · terminó</p></div>` +
-        noticeCard('Gemini · otro-sitio', 'Terminó', 'Formulario listo y probado. El envío valida el correo y muestra el error.'),
-    },
-    question: {
-      face: { kind: 'claude', mood: 'ask', lines: ['Claude te hace una pregunta', 'Despliegue · mi-portal'] }, led: 'ask',
-      bottom: () => bar('Claude', 'mi-portal', { color: C, back: true }) + questionCard(0),
-    },
-  };
-  STEPS.open = { face: { kind: 'claude', mood: 'working', lines: ['Hola, soy Cronio'] }, led: 'working', bottom: STEPS.sessions.bottom };
-
-  const storyFace = makeFace($('face'));
-  const layer = document.createElement('div');
-  layer.className = 'bs';
-  $('bottom-screen').append(layer);
-  let shown = null, swapTimer = 0;
-  function showStep(name) {
-    if (name === shown) return;
-    const first = shown === null;
-    shown = name;
-    const st = STEPS[name];
-    storyFace.set(st.face, performance.now());
-    $('led').dataset.led = st.led || '';
-    clearTimeout(swapTimer);
-    if (first) { layer.innerHTML = st.bottom(); return; }
-    layer.classList.add('fade');
-    swapTimer = setTimeout(() => { layer.innerHTML = STEPS[shown].bottom(); layer.classList.remove('fade'); }, 160);
-  }
-
-  const story = $('story'), device = $('device'), lid = $('lid'), heroCopy = $('hero-copy'), cue = $('scroll-cue');
-  const stepEls = [...document.querySelectorAll('.step')];
-  const openEl = stepEls[0];
-  let W = 0, H = 0, mobile = false, stageVisible = true;
-  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-  const lerp = (a, b, k) => a + (b - a) * k;
-  const ease = k => (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
-
-  function poses() {
-    if (mobile) {
-      const s = Math.min(.9 * W / 460, .5 * H / 580);
-      return { hero: { x: 0, y: H * .07, s: s * .82, tilt: 34 }, open: { x: 0, y: -H * .15, s, tilt: 6 } };
-    }
-    const sOpen = Math.min(.4 * W / 460, .8 * H / 580);
-    const sHero = Math.min(.46 * W / 460, .5 * H / 580);
-    return { hero: { x: 0, y: H * .16, s: sHero, tilt: 30 }, open: { x: W * .22, y: 0, s: sOpen, tilt: 6 } };
-  }
-
-  function frame() {
-    // tamaños leídos en cada cuadro: algunos navegadores cambian el ancho sin avisar con "resize"
-    if (innerWidth !== W || innerHeight !== H) { W = innerWidth; H = innerHeight; mobile = W < 900; sizeDemo(); }
-    const rect = story.getBoundingClientRect();
-    stageVisible = rect.bottom > 0;
-    const still = reduced.matches;
-    const P = poses();
-    const raw = still ? 1 : clamp(-rect.top / (openEl.offsetHeight * .85));   // 0 cerrada, 1 abierta
-    const k = ease(raw);
-    const x = lerp(P.hero.x, P.open.x, k), y = lerp(P.hero.y, P.open.y, k), s = lerp(P.hero.s, P.open.s, k);
-    device.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${s}) rotateX(${lerp(P.hero.tilt, P.open.tilt, k)}deg)`;
-    lid.style.transform = `rotateX(${-178 * (1 - k)}deg)`;
-
-    if (still) heroCopy.classList.toggle('hidden', -rect.top >= openEl.offsetHeight * .5);
-    else {
-      heroCopy.style.opacity = String(1 - clamp(raw * 2.4));
-      heroCopy.style.transform = `translateY(${-raw * 60}px)`;
-      cue.style.opacity = String(1 - clamp(raw * 5));
-    }
-
-    // paso activo: el que cruza la mitad de la pantalla
-    let active = stepEls[0];
-    for (const el of stepEls) { if (el.getBoundingClientRect().top <= H * .5) active = el; }
-    const inStory = rect.bottom >= H * .6;
-    for (const el of stepEls) el.classList.toggle('active', inStory && el === active && el !== openEl);
-    showStep(active.dataset.step);
-  }
-
-  // =====================================================================================================
-  // 2. Demo interactiva
+  // Demo interactiva
   // =====================================================================================================
   const demoFace = makeFace($('demo-face'));
   const demoLayer = document.createElement('div');
@@ -441,25 +271,10 @@ Quedan dos cosas por decidir:
   // Arranque
   // =====================================================================================================
   if (RELEASES_URL) {
-    const a = $('releases-link');
-    a.href = RELEASES_URL; a.removeAttribute('aria-disabled'); a.textContent = 'Descargar Cronio para Windows';
-    $('releases-sub').textContent = 'Desde las Releases de GitHub.';
+    document.querySelectorAll('[data-releases]').forEach(a => { a.href = RELEASES_URL; });
   }
 
-  let queued = false;
-  const request = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; frame(); }); } };
-  function resize() {
-    W = innerWidth; H = innerHeight; mobile = W < 900;
-    document.documentElement.classList.toggle('reduced', reduced.matches);
-    sizeDemo();
-    frame();
-  }
-  addEventListener('scroll', request, { passive: true });
-  addEventListener('resize', resize);
-  reduced.addEventListener('change', () => { heroCopy.removeAttribute('style'); cue.removeAttribute('style'); resize(); });
-
-  // Scroll suave con Lenis (si cargó y no se pidió reducir el movimiento). Mueve la ventana de verdad, así que el
-  // manejador de scroll de arriba sigue funcionando igual.
+  // Scroll suave con Lenis (si cargó y no se pidió reducir el movimiento). Mueve la ventana de verdad.
   if (window.Lenis && !reduced.matches) {
     const lenis = new window.Lenis({ lerp: 0.09, smoothWheel: true });
     document.documentElement.classList.add('lenis-on');
@@ -467,30 +282,29 @@ Quedan dos cosas por decidir:
     requestAnimationFrame(raf);
     document.addEventListener('click', e => {
       const a = e.target.closest('a[href^="#"]');
-      const target = a && document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); lenis.scrollTo(target); history.replaceState(null, '', a.getAttribute('href')); }
+      const target = a && a.getAttribute('href').length > 1 && document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); lenis.scrollTo(target, { offset: -56 }); history.replaceState(null, '', a.getAttribute('href')); }
     });
   }
 
   const demoSection = $('demo');
-  let lastSaid = '';
+  let lastSaid = '', W = innerWidth, H = innerHeight;
+  addEventListener('resize', () => { W = innerWidth; H = innerHeight; sizeDemo(); });
   function loop(t) {
     const still = reduced.matches;
-    if (innerWidth !== W || innerHeight !== H) frame();
-    if (stageVisible) storyFace.draw(t, still);
     const r = demoSection.getBoundingClientRect();
     if (r.bottom > 0 && r.top < H) {
       const st = demoFaceState(t);
       demoFace.set(st, t);
       demoFace.draw(t, still);
       $('demo-led').dataset.led = st.led || '';
-      const said = st.lines.join('. ');   // lo que dice la cara
+      const said = st.lines.join('. ');
       if (said !== lastSaid) { lastSaid = said; $('demo-live').textContent = said; }
     }
     requestAnimationFrame(loop);
   }
 
   renderDemo();
-  resize();
+  sizeDemo();
   requestAnimationFrame(loop);
 })();
