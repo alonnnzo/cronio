@@ -14,11 +14,11 @@ Luego abre `http://localhost:4873/`.
 
 ## Secciones (en orden)
 
-1. **Portada y recorrido de producto** (`tour.js`). Una sección de unas 8 pantallas con un escenario fijo. La consola es
-   HTML y CSS en 3D (dos mitades con grosor, bisagra, pantallas, cruceta, A/B/X/Y, LED) y una «cámara» (un `transform` sobre el
-   contenedor) pasa por 9 planos según el scroll: cerrada con titular y botón de descarga, se abre, cara de arriba, tarjeta de
-   permiso, botones A y B (A se hunde y la tarjeta se aprueba), vista lateral con la cara en capas, LED y bisagra, sesiones en
-   tema oscuro y plano general con la descarga. Los fotogramas clave están en `KF` (escritorio) y `MOB` (móvil).
+1. **Portada y recorrido de producto** (`tour.js`). Una sección de 6 pantallas de alto con un escenario fijo. La consola es
+   HTML y CSS en 3D y una «cámara» (un `transform` sobre el contenedor) pasa por 10 planos según el scroll: cerrada con titular
+   y botón de descarga, canto y bisagra, se abre, cara de arriba, tarjeta de permiso, botones A y B (A se hunde y la tarjeta se
+   aprueba), vista lateral con la cara en capas, luces y ranuras del borde, sesiones en tema oscuro y plano general con la
+   descarga. Los fotogramas clave están en `KF` (escritorio) y `MOB` (móvil). Puntos laterales saltan a cada plano.
 2. **Menú de funciones** (`home.js`). Dos pantallas apiladas: abajo, 8 canales con cursor celeste (ratón, toque, flechas, Tab,
    Enter o A); arriba, el banner de la función elegida. Es un `tablist` con `aria-selected`.
 3. **Cómo funciona.** Diagrama PC ↔ puente ↔ 3DS y tres pasos. Todo local.
@@ -37,10 +37,16 @@ Luego abre `http://localhost:4873/`.
 ## Detalles
 
 - Sin servicios externos: fuentes (OFL) en `fonts/` y CSP estricta (`'self'`; `style-src` lleva `'unsafe-inline'` por los
-  `style=""` de la demo). Scroll suave con [Lenis](https://github.com/darkroomengineering/lenis) 1.1.13 (MIT) en `vendor/`; si
-  no carga, la página funciona igual. La versión (0.3.1) está fija en el HTML: no se llama a la API de GitHub.
+  `style=""` de la demo y de la consola). La versión (0.3.1) está fija en el HTML: no se llama a la API de GitHub.
+- El scroll es el nativo del navegador (rueda, barra, teclado y táctil). Antes se usaba Lenis, pero su interpolación
+  (`lerp`) retrasaba cada movimiento y el recorrido «se sentía trabado»; se quitó. `tour.js` solo lee `scrollY` dentro de
+  `requestAnimationFrame` y aplica `transform` y `opacity`. El fondo va en una capa `position: fixed` propia (con
+  `background-attachment: fixed` se repintaba en cada scroll).
+- La consola es maciza: cada mitad es una pila de láminas con la misma forma redondeada separadas en Z (base 44 de grosor,
+  9,6 % del ancho, 26 láminas; tapa 26, 5,7 %, 19 láminas), dos tapas con el detalle, una bisagra de 12 caras con topes,
+  gatillos traseros y piezas pegadas a los cantos (luces, jack, muesca, ranura, lápiz). Unos 240 elementos en total.
 - La cámara solo anima `transform` y `opacity`. Los textos de cada plano son HTML real; la consola va con `aria-hidden`.
-- Con `prefers-reduced-motion` no hay cámara ni Lenis: cada plano es un bloque estático con su encuadre y su texto.
+- Con `prefers-reduced-motion` no hay cámara: cada plano es un bloque estático con su encuadre y su texto.
 - En menos de 900 px los encuadres son otros (`MOB`) y el texto va en una tarjeta abajo.
 
 ## Pendiente
