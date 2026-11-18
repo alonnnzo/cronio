@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Banner del menú HOME (256x128): el logo elegido "La palabra es la cara" (art/marca/logos.html, opción 1).
+     Lo convierte en PNG gen-banner.cjs (Electron). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap">
+<style>
+html, body { margin: 0; width: 256px; height: 128px; overflow: hidden; }
+body { display: grid; place-items: center; background: linear-gradient(#ffffff, #e6e9ee); }
+.palabra-cara { display: inline-flex; align-items: center; gap: .06em; background: #ee7446; color: #12131a;
+  font-family: "Dela Gothic One", sans-serif; font-weight: 400; font-size: 36px; line-height: 1;
+  padding: .32em .45em .38em; border-radius: 12px; letter-spacing: .02em; box-shadow: 0 3px 0 #c9cfd8; }
+.palabra-cara i { display: inline-block; width: .42em; height: .66em; border-radius: 50%; background: #12131a; position: relative; margin: 0 .08em; top: .02em; }
+.palabra-cara i::after { content: ""; position: absolute; left: .07em; top: .1em; width: .14em; height: .14em; border-radius: 50%; background: rgba(255,255,255,.85); }
+</style>
+</head>
+<body><div class="palabra-cara">CR<i></i>NI<i></i></div></body>
+</html>

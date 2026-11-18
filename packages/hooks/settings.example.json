@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/yo/developer/3ds-agent-companion/packages/hooks/permission-hook.mjs\"",
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      { "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "*", "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "*", "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ],
+    "PostToolUseFailure": [
+      { "matcher": "*", "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ],
+    "Notification": [
+      { "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 },
+          {
+            "type": "command",
+            "command": "node \"C:/Users/yo/developer/3ds-agent-companion/packages/hooks/permission-hook.mjs\"",
+            "timeout": 3600
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "http", "url": "http://127.0.0.1:33335/hook/claude", "timeout": 2 }] }
+    ]
+  }
+}

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentes como puntos</title>
+<style>
+  :root { --bg:#14131c; --panel:#1e1c2b; --ink:#ece9f5; --mute:#a5a1bd; --line:#34314a; --screen:#0d0e13; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,"Segoe UI",sans-serif; padding:24px 16px 48px; }
+  main { max-width:860px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--mute); margin:0 0 18px; max-width:70ch; }
+  .wrap { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+  .console { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  canvas { display:block; width:400px; max-width:100%; aspect-ratio:400/240; border-radius:4px; background:var(--screen); }
+  .hinge { width:100%; height:6px; border-radius:3px; background:#2a2838; }
+  .bottom { width:320px; height:240px; background:var(--screen); border-radius:4px; padding:6px; display:flex; flex-direction:column; gap:3px; font-size:12px; overflow:hidden; }
+  .row { display:flex; align-items:center; gap:8px; padding:2px 8px; border-radius:6px; border:1px solid transparent; background:#161821; color:var(--ink); font:inherit; text-align:left; cursor:pointer; width:100%; }
+  .row[aria-pressed="true"] { border-color:#565a70; background:#1d2030; }
+  .row i { width:10px; height:10px; border-radius:50%; flex:none; }
+  .row b { font-weight:600; width:58px; }
+  .row span { color:var(--mute); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row em { font-style:normal; color:var(--mute); }
+  .ask { margin-top:auto; border-radius:8px; padding:7px 8px; background:#1d2030; border:1px solid #565a70; display:none; }
+  .ask.on { display:block; }
+  .ask code { display:block; font:12px Consolas,monospace; color:#fff; margin:2px 0 6px; }
+  .ask div { display:flex; gap:6px; }
+  .ask button { flex:1; padding:5px; border-radius:6px; border:0; font:600 12px system-ui,sans-serif; cursor:pointer; }
+  .ok { background:#2fd08a; color:#06281a; } .no { background:#2b2e3d; color:var(--ink); }
+  aside { flex:1; min-width:240px; }
+  h2 { font-size:14px; margin:0 0 8px; color:var(--mute); font-weight:600; }
+  .states { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .states button { font:inherit; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:7px 12px; cursor:pointer; }
+  ul { margin:0; padding-left:18px; color:var(--mute); font-size:14px; }
+  li { margin-bottom:6px; } li b { color:var(--ink); font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Agentes como puntos</h1>
+  <p class="lead">Cada agente es un punto con ojos. No hay personaje que dibujar: la identidad está en el color y en cómo se mueve cada uno.
+  Elige un agente en la pantalla de abajo y cambia su estado.</p>
+  <div class="wrap">
+    <div class="console">
+      <canvas id="top" width="800" height="480"></canvas>
+      <div class="hinge"></div>
+      <div class="bottom" id="bottom"></div>
+    </div>
+    <aside>
+      <h2>Estado del agente elegido</h2>
+      <div class="states" id="states">
+        <button data-s="idle">Inactivo</button><button data-s="working">Trabajando</button>
+        <button data-s="ask">Pide permiso</button><button data-s="done">Terminó</button><button data-s="error">Error</button>
+      </div>
+      <h2>Cómo se distingue cada uno</h2>
+      <ul>
+        <li><b>Claude:</b> naranja, con chispas que respiran a su alrededor.</li>
+        <li><b>Gemini:</b> azul y violeta; son dos, un gemelo gira alrededor del otro.</li>
+        <li><b>Codex:</b> verde; deja tres puntitos como si estuviera escribiendo.</li>
+        <li><b>Cursor:</b> gris claro y cuadrado; se mueve a saltos y parpadea como un cursor.</li>
+        <li><b>Hermes:</b> dorado, con dos alitas; flota más alto y más rápido.</li>
+      </ul>
+    </aside>
+  </div>
+</main>
+
+<script>
+const AGENTS = [
+  { id:'claude', name:'Claude', color:'#ee7446', model:'Opus',   proj:'mi-portal',  cmd:'npm install sharp' },
+  { id:'gemini', name:'Gemini', color:'#5b8cff', color2:'#b274ff', model:'Pro', proj:'otro-sitio', cmd:'git push origin main' },
+  { id:'codex',  name:'Codex',  color:'#2fd08a', model:'GPT',    proj:'ATLAS',      cmd:'rm -rf dist' },
+  { id:'cursor', name:'Cursor', color:'#d5d9e2', model:'Auto',   proj:'grafito',    cmd:'npm run build' },
+  { id:'hermes', name:'Hermes', color:'#f6c544', model:'Hermes', proj:'hermes-config', cmd:'bash mac-setup.sh' },
+].map((a, i) => ({ ...a, x: 56 + i * 72, y: 128, ph: i * 1.7, state: 'idle', since: 0 }));
+const LABEL = { idle:'inactivo', working:'trabajando', ask:'pide permiso', done:'terminó', error:'error' };
+let selected = 0, pointer = null;
+
+function setState(i, s) { AGENTS[i].state = s; AGENTS[i].since = performance.now(); renderBottom(); }
+
+// ---------- pantalla inferior ----------
+const bottom = document.getElementById('bottom');
+function renderBottom() {
+  const asking = AGENTS.findIndex(a => a.state === 'ask');
+  bottom.innerHTML = AGENTS.map((a, i) =>
+    `<button class="row" data-i="${i}" aria-pressed="${i === selected}"><i style="background:${a.color}"></i><b>${a.name}</b><span>${a.proj}</span><em>${LABEL[a.state]}</em></button>`).join('') +
+    `<div class="ask ${asking >= 0 ? 'on' : ''}">${asking >= 0 ? `<span style="color:${AGENTS[asking].color}">${AGENTS[asking].name} pide permiso</span>
+      <code>${AGENTS[asking].cmd}</code><div><button class="ok" data-ans="done" data-i="${asking}">A · Aprobar</button><button class="no" data-ans="idle" data-i="${asking}">B · Rechazar</button></div>` : ''}</div>`;
+}
+bottom.addEventListener('click', e => {
+  const ans = e.target.closest('[data-ans]'); if (ans) return setState(+ans.dataset.i, ans.dataset.ans);
+  const row = e.target.closest('.row'); if (row) { selected = +row.dataset.i; renderBottom(); }
+});
+document.getElementById('states').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setState(selected, b.dataset.s); });
+
+// ---------- pantalla superior ----------
+const cv = document.getElementById('top'), ctx = cv.getContext('2d');
+ctx.scale(2, 2);
+cv.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); pointer = { x: (e.clientX - r.left) / r.width * 400, y: (e.clientY - r.top) / r.height * 240 }; });
+cv.addEventListener('pointerleave', () => pointer = null);
+const BG = '#0d0e13';
+const dot = (x, y, r, c, a = 1) => { ctx.globalAlpha = a; ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, Math.max(r, 0), 0, 7); ctx.fill(); ctx.globalAlpha = 1; };
+
+function drawAgent(a, i, t) {
+  const s = a.state, st = (t - a.since) / 1000;
+  let x = a.x, y = a.y + Math.sin(t / 900 + a.ph) * 4, r = 15, alpha = 1, color = a.color;
+  if (a.id === 'hermes') y += Math.sin(t / 210) * 2 - 12;
+  if (a.id === 'cursor') x += Math.round(Math.sin(t / 1300) * 1.4) * 7;
+  if (s === 'idle')  { r = 12.5; alpha = .55; }
+  if (s === 'ask')   { y -= Math.abs(Math.sin(t / 260)) * 14; r = 18; }
+  if (s === 'done')  { r = 15 + Math.max(0, 1 - st * 1.5) * 7; }
+  if (s === 'error') { x += Math.sin(t / 38) * 3.5 * Math.max(0, 1 - st / 1.4); color = '#ff4d5e'; }
+
+  // resplandor
+  const g = ctx.createRadialGradient(x, y, r * .6, x, y, r * 2.8);
+  g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = .28 * alpha; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.8, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+
+  // ondas al pedir permiso
+  if (s === 'ask') for (let k = 0; k < 2; k++) {
+    const p = ((t / 900) + k * .5) % 1;
+    ctx.globalAlpha = (1 - p) * .7; ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, r + p * 26, 0, 7); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  // firma de cada agente
+  let twinFront = null;
+  if (a.id === 'claude') for (let k = 0; k < 8; k++) {
+    const ang = k / 8 * Math.PI * 2 + t / 5000, d = r + 7 + Math.sin(t / 600 + k * .8) * 3;
+    dot(x + Math.cos(ang) * d, y + Math.sin(ang) * d, k % 2 ? 1.6 : 2.4, color, alpha);
+  }
+  if (a.id === 'gemini') {
+    const ang = t / 700, tx = x + Math.cos(ang) * r * 1.5, ty = y + Math.sin(ang) * r * .55;
+    const draw = () => dot(tx, ty, r * .5, a.color2, alpha);
+    if (Math.sin(ang) < 0) draw(); else twinFront = draw;
+  }
+  if (a.id === 'codex') for (let k = 0; k < 3; k++) {
+    const on = s === 'idle' ? .3 : (Math.floor(t / 260) % 4 > k ? 1 : .25);
+    dot(x + r + 7 + k * 7, y + r * .55, 2.2, color, on * alpha);
+  }
+  if (a.id === 'hermes') [-1, 1].forEach(d => {
+    ctx.save(); ctx.translate(x + d * r * .95, y - 2); ctx.rotate(d * (-.5 + Math.sin(t / 110) * .5));
+    ctx.globalAlpha = alpha; ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.ellipse(d * 7, 0, 8, 4, 0, 0, 7); ctx.fill(); ctx.restore(); ctx.globalAlpha = 1;
+  });
+
+  // cuerpo
+  ctx.globalAlpha = a.id === 'cursor' && s !== 'ask' ? alpha * ((t % 1100) < 620 ? 1 : .45) : alpha;
+  ctx.fillStyle = color; ctx.beginPath();
+  if (a.id === 'cursor') ctx.roundRect(x - r * .9, y - r * .9, r * 1.8, r * 1.8, r * .38); else ctx.arc(x, y, r, 0, 7);
+  ctx.fill(); ctx.globalAlpha = 1;
+  dot(x - r * .35, y - r * .4, r * .2, '#fff', .35 * alpha);          // brillo
+
+  // ojos: miran al puntero, o al agente que pide permiso
+  const asking = AGENTS.find(o => o.state === 'ask' && o !== a);
+  const target = pointer || (asking ? { x: asking.x, y: asking.y } : { x, y: y + 40 });
+  const dx = target.x - x, dy = target.y - y, dl = Math.hypot(dx, dy) || 1;
+  const lx = dx / dl * r * .18, ly = dy / dl * r * .14;
+  const blink = ((t + i * 700) % 3600) > 3480;
+  ctx.strokeStyle = BG; ctx.fillStyle = BG; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  [-1, 1].forEach(d => {
+    const ex = x + d * r * .34 + lx, ey = y - r * .08 + ly, er = r * (s === 'ask' ? .19 : .15);
+    ctx.beginPath();
+    if (s === 'error')      { ctx.moveTo(ex - 3, ey - 3); ctx.lineTo(ex + 3, ey + 3); ctx.moveTo(ex + 3, ey - 3); ctx.lineTo(ex - 3, ey + 3); ctx.stroke(); }
+    else if (s === 'done')  { ctx.arc(ex, ey + 2, 3.2, Math.PI, 0); ctx.stroke(); }
+    else if (blink || s === 'idle') { ctx.moveTo(ex - 3, ey); ctx.lineTo(ex + 3, ey); ctx.stroke(); }
+    else                    { ctx.arc(ex, ey, er, 0, 7); ctx.fill(); }
+  });
+  if (twinFront) twinFront();
+
+  // trabajando: tres puntos en órbita
+  if (s === 'working') for (let k = 0; k < 3; k++) {
+    const ang = t / 380 + k * 2.094; dot(x + Math.cos(ang) * (r + 9), y + Math.sin(ang) * (r + 9) * .45 + 2, 2.6, '#fff', .9);
+  }
+  // pide permiso: signo sobre la cabeza
+  if (s === 'ask') {
+    dot(x + 6, y - r - 7, 2, color); dot(x + 11, y - r - 13, 3, color); dot(x + 20, y - r - 24, 9, color);
+    ctx.fillStyle = BG; ctx.font = '700 13px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('?', x + 20, y - r - 19.5);
+  }
+  // terminó: estallido de puntos
+  if (s === 'done' && st < 1.3) for (let k = 0; k < 14; k++) {
+    const ang = k / 14 * Math.PI * 2 + i, d = r + (1 - Math.pow(1 - st / 1.3, 3)) * 46;
+    dot(x + Math.cos(ang) * d, y + Math.sin(ang) * d, k % 3 ? 2.2 : 3.2, k % 2 ? '#fff' : color, 1 - st / 1.3);
+  }
+  // error: puntos que caen
+  if (s === 'error') for (let k = 0; k < 5; k++) {
+    const p = ((st * .9) + k * .2) % 1; dot(x - 14 + k * 7, y + r + p * 26, 1.8, color, 1 - p);
+  }
+  // nombre
+  ctx.globalAlpha = s === 'idle' ? .45 : .9; ctx.fillStyle = '#e9e7f2'; ctx.font = '600 9px system-ui,sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(a.name, a.x, 178); ctx.globalAlpha = .5; ctx.font = '8px system-ui,sans-serif'; ctx.fillText(a.model, a.x, 189); ctx.globalAlpha = 1;
+
+  if ((s === 'done' || s === 'error') && st > 2.8) setState(i, 'idle');
+}
+
+function loop(t) {
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, 400, 240);
+  for (let gx = 10; gx < 400; gx += 20) for (let gy = 10; gy < 240; gy += 20) dot(gx, gy, .8, '#23252f');
+  const busy = AGENTS.filter(a => a.state !== 'idle').length;
+  ctx.fillStyle = '#8b8fa3'; ctx.font = '600 9px system-ui,sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(busy ? `${busy} de ${AGENTS.length} agentes activos` : 'Todo tranquilo', 10, 16);
+  AGENTS.forEach((a, i) => drawAgent(a, i, t));
+  requestAnimationFrame(loop);
+}
+AGENTS[0].state = 'working'; AGENTS[1].state = 'ask'; AGENTS[2].state = 'working';
+renderBottom(); requestAnimationFrame(loop);
+</script>
+</body>
+</html>

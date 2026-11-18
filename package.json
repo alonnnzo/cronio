@@ -1,0 +1,28 @@
+{
+  "name": "3ds-agent-companion",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "version": "0.0.0",
+  "description": "Compañero de escritorio para Nintendo 3DS que muestra y controla agentes de IA del PC",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "spike:hooks": "node spikes/hooks-claude-code/test.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p packages/protocol && tsc --noEmit -p packages/bridge && tsc --noEmit -p packages/installer",
+    "companion": "tsx packages/bridge/src/cli.ts",
+    "installer": "npm run start -w packages/installer",
+    "dist:installer": "npm run dist -w packages/installer",
+    "dist:installer:local": "npm run dist:local -w packages/installer"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cronio</title>
+<meta name="description" content="Tus agentes de código en una consola de bolsillo: estado de cada sesión, permisos, preguntas y avisos en la New 3DS.">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+<header class="topnav">
+  <a class="brand" href="#inicio"><span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span></a>
+  <nav class="topnav-links"><a href="#demo">Demo</a><a class="btn-rojo" href="#descarga">Descargar</a></nav>
+</header>
+
+<main id="inicio">
+  <!-- Historia: la consola cerrada se abre con el scroll y muestra las funciones una a una -->
+  <section class="story" id="story" aria-label="Recorrido por las funciones">
+    <div class="stage" id="stage">
+      <div class="hero-copy" id="hero-copy">
+        <h1>Tus agentes de código,<br>en una consola de bolsillo.</h1>
+        <p>Cronio te muestra qué hacen Claude Code y compañía, y te deja aprobar sus permisos y responder sus preguntas desde la New 3DS, sin volver al teclado.</p>
+      </div>
+      <p class="scroll-cue" id="scroll-cue" aria-hidden="true">Desliza para abrirla</p>
+
+      <div class="scene">
+        <div class="device" id="device" aria-hidden="true">
+          <div class="lid" id="lid">
+            <div class="lid-front">
+              <div class="speaker l" aria-hidden="true"></div>
+              <div class="screen top-screen"><canvas id="face" width="800" height="480" aria-label="Pantalla superior: la cara del agente" role="img"></canvas></div>
+              <div class="speaker r" aria-hidden="true"></div>
+            </div>
+            <div class="lid-back" aria-hidden="true">
+              <span class="logo lid-logo"><span aria-hidden="true">CR<i></i>NI<i></i></span></span>
+            </div>
+          </div>
+          <div class="base">
+            <div class="hinge" aria-hidden="true"></div>
+            <div class="pad" aria-hidden="true"></div>
+            <div class="dpad" aria-hidden="true"><span></span><span></span></div>
+            <div class="screen bottom-screen" id="bottom-screen"></div>
+            <div class="face-btns" aria-hidden="true"><span>X</span><span>Y</span><span>A</span><span>B</span></div>
+            <div class="pills" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="led" id="led" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step step-open" data-step="open"></div>
+
+      <article class="step" data-step="sessions">
+        <div class="caption">
+          <h2>La pantalla es la cara.</h2>
+          <p>Arriba, toda la pantalla es una cara: toma el color del agente que habla y cuenta qué está haciendo. Abajo eliges el agente y ves todas sus sesiones abiertas.</p>
+        </div>
+      </article>
+
+      <article class="step" data-step="permission">
+        <div class="caption">
+          <h2>Aprueba sin levantarte.</h2>
+          <p>Cuando un agente pide permiso, la tarjeta muestra el comando exacto. A aprueba, B rechaza e Y aprueba y no vuelve a preguntar por lo mismo. Lo riesgoso pide mantener A un segundo.</p>
+        </div>
+      </article>
+
+      <article class="step" data-step="waiting">
+        <div class="caption">
+          <h2>Sabes cuándo te espera.</h2>
+          <p>Si el agente termina con una pregunta, su sesión dice «te espera» y el detalle trae la pregunta completa, antes que nada.</p>
+        </div>
+      </article>
+
+      <article class="step" data-step="reader">
+        <div class="caption">
+          <h2>Lee el mensaje entero.</h2>
+          <p>El último mensaje del agente llega sin markdown, en letra de consola. Lo recorres con la cruceta, línea por línea.</p>
+        </div>
+      </article>
+
+      <article class="step" data-step="menu">
+        <div class="caption">
+          <h2>Se ajusta con SELECT.</h2>
+          <p>Cuándo avisar, si pedir «Visto», el sonido y qué agentes aparecen. Todo desde la consola, y el puente lo recuerda.</p>
+        </div>
+      </article>
+
+      <article class="step" data-step="notice">
+        <div class="caption">
+          <h2>Avisos que no se pierden.</h2>
+          <p>Al terminar un turno suena un aviso corto y queda una tarjeta hasta que marcas «Visto». Cada sesión elige su modo: todo, lo importante, solo al terminar o silencio.</p>
+        </div>
+      </article>
+
+      <article class="step" data-step="question">
+        <div class="caption">
+          <h2>Responde preguntas con alternativas.</h2>
+          <p>Cuando Claude Code pregunta con opciones, eliges en la consola y la respuesta le llega como si la hubieras marcado en el PC. «Responder en el PC» siempre está a mano. Llega en la próxima versión.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="demo" id="demo" aria-labelledby="demo-title">
+    <h2 id="demo-title">Pruébala aquí.</h2>
+    <p class="lede">Esta consola responde. Haz que pase algo en el PC y contéstalo con sus botones, con el teclado o tocando la pantalla de abajo.</p>
+
+    <div class="demo-grid">
+      <div class="demo-wrap" id="demo-wrap">
+        <div class="device flat" id="demo-device" tabindex="0" role="group" aria-label="Consola de demostración. Flechas, A, B, Y y S para SELECT.">
+          <div class="lid">
+            <div class="lid-front">
+              <div class="speaker l" aria-hidden="true"></div>
+              <div class="screen top-screen"><canvas id="demo-face" width="800" height="480" aria-label="Pantalla superior de la demostración" role="img"></canvas></div>
+              <div class="speaker r" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="base">
+            <div class="hinge" aria-hidden="true"></div>
+            <div class="pad" aria-hidden="true"></div>
+            <div class="dpad">
+              <span aria-hidden="true"></span><span aria-hidden="true"></span>
+              <button type="button" data-key="up" aria-label="Arriba"></button>
+              <button type="button" data-key="down" aria-label="Abajo"></button>
+              <button type="button" data-key="left" aria-label="Izquierda"></button>
+              <button type="button" data-key="right" aria-label="Derecha"></button>
+            </div>
+            <div class="screen bottom-screen" id="demo-bottom"></div>
+            <div class="face-btns">
+              <span aria-hidden="true">X</span>
+              <button type="button" data-key="Y">Y</button>
+              <button type="button" data-key="A">A</button>
+              <button type="button" data-key="B">B</button>
+            </div>
+            <div class="pills"><span aria-hidden="true"></span><button type="button" data-key="select" aria-label="SELECT"></button><span aria-hidden="true"></span></div>
+            <div class="led" id="demo-led" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="sr-only" id="demo-live" aria-live="polite"></p>
+
+      <div class="demo-side">
+        <h3>Haz que pase algo en el PC</h3>
+        <div class="demo-events" id="demo-events">
+          <button type="button" class="btn-claro" data-ev="perm">Claude pide permiso</button>
+          <button type="button" class="btn-claro" data-ev="done">Gemini termina su turno</button>
+          <button type="button" class="btn-claro" data-ev="question">Claude pregunta con opciones</button>
+          <button type="button" class="btn-claro" data-ev="quiet">Todo tranquilo</button>
+        </div>
+        <h3>Botones de la consola</h3>
+        <div class="demo-keys" id="demo-keys">
+          <button type="button" class="btn-claro" data-key="A">A</button>
+          <button type="button" class="btn-claro" data-key="B">B</button>
+          <button type="button" class="btn-claro" data-key="Y">Y</button>
+          <button type="button" class="btn-claro" data-key="up" aria-label="Arriba">▲</button>
+          <button type="button" class="btn-claro" data-key="down" aria-label="Abajo">▼</button>
+          <button type="button" class="btn-claro" data-key="select">SELECT</button>
+        </div>
+        <p class="note">Es una simulación en el navegador con los textos de la app. Con sonido activado en SELECT, los avisos suenan. Hoy el puente se conecta con Claude Code; Gemini, Codex, Cursor y Hermes ya tienen su color y se conectan más adelante.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="download" id="descarga" aria-labelledby="download-title">
+    <h2 id="download-title">Instálala en tu consola.</h2>
+    <p class="lede">Un programa para tu PC que te guía paso a paso y, desde ahí, la app para la consola.</p>
+    <!-- El enlace real se pone en app.js (RELEASES_URL), el único lugar de la página con el nombre del repositorio. -->
+    <a class="btn-rojo cta" id="releases-link" aria-disabled="true">Descargar Cronio para Windows</a>
+    <p class="cta-sub" id="releases-sub">Se publica como <code>Cronio-Setup-&lt;versión&gt;.exe</code> en las Releases de GitHub.</p>
+
+    <div class="install">
+      <h3>Instalación</h3>
+      <ol class="install-steps">
+        <li>
+          <h4>Instala Cronio en el PC</h4>
+          <p>Abre <code>Cronio-Setup.exe</code>. Windows puede avisar que es de un editor desconocido: elige <em>Más información → Ejecutar de todas formas</em>. El instalador no tiene firma de código: descárgalo solo desde los <a href="https://github.com/alonnnzo/cronio/releases">Releases oficiales</a> y, si quieres, compara su SHA-256 con el de las notas de la versión.</p>
+        </li>
+        <li>
+          <h4>Conecta Claude Code</h4>
+          <p>En el paso 2 del programa, pulsa <em>Hacerlo por mí</em> y elige en qué carpetas se activa. Cronio no usa servidores propios: todo pasa entre tu PC y tu consola. Solo consulta GitHub si activas las actualizaciones automáticas.</p>
+        </li>
+        <li>
+          <h4>Instala la app en la consola</h4>
+          <p>En el paso 4 aparece un QR. En la consola abre FBI → <em>Remote Install</em> → <em>Scan QR Code</em> y apúntalo. Cronio queda en el menú HOME.</p>
+        </li>
+        <li>
+          <h4>Empareja la consola</h4>
+          <p>Con la consola y el PC en la misma red, abre Cronio y sigue el paso 5. La primera vez prepara el sonido en un instante.</p>
+        </li>
+      </ol>
+      <p class="note">¿Prefieres no instalarla? El archivo <code>agent-companion.3dsx</code> también funciona desde el Homebrew Launcher.</p>
+    </div>
+
+    <div class="reqs">
+      <h3>Qué necesitas</h3>
+      <dl>
+        <div><dt>Consola</dt><dd>New 3DS o New 3DS XL con firmware personalizado (Luma3DS y FBI). Probada en New 3DS XL; Old 3DS y 2DS sin probar.</dd></div>
+        <div><dt>Tarjeta SD</dt><dd>La de la consola. La app ocupa menos de 1 MB.</dd></div>
+        <div><dt>PC</dt><dd>Windows 10 u 11 con Node.js 22 o superior (lo usan los hooks de Claude Code).</dd></div>
+        <div><dt>Red</dt><dd>Consola y PC en la misma red Wi-Fi.</dd></div>
+        <div><dt>Agente</dt><dd>Claude Code. El programa instala los hooks por ti.</dd></div>
+        <div><dt>Sonido</dt><dd>Opcional. Sube el volumen de la consola: los avisos suenan bajo a propósito.</dd></div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span>
+  <p>Nintendo 3DS es una marca de Nintendo. Claude es una marca de Anthropic. Cronio es un proyecto independiente, sin afiliación ni respaldo de ninguna de las dos. Software libre bajo GPL-3.0.</p>
+</footer>
+
+<!-- Scroll suave (opcional: sin él la página funciona igual). Se apaga con prefers-reduced-motion. -->
+<script src="vendor/lenis.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

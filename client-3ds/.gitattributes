@@ -1,0 +1,2 @@
+# El Makefile y los datos generados deben quedar con LF también en Windows.
+* text=auto eol=lf

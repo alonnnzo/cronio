@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Logo completo para la intro de la app (gfx/cronio_palabra.png). Mismo dibujo que banner.html, con fondo
+     transparente. Lo genera gen-intro-logo.cjs. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap">
+</head>
+<body>
+<script>
+async function render(ancho) {
+  const F = 100, fuente = `400 ${F}px "Dela Gothic One"`;
+  await document.fonts.load(fuente);
+  const ok = document.fonts.check(fuente);
+  const m0 = document.createElement("canvas").getContext("2d"); m0.font = fuente;
+  const ls = 0.02 * F, gap = 0.06 * F, ojoW = 0.42 * F, ojoH = 0.66 * F, ojoM = 0.08 * F;
+  const w = (t) => m0.measureText(t).width + ls * t.length;
+  const piezas = [w("CR"), ojoW + 2 * ojoM, w("NI"), ojoW + 2 * ojoM];
+  const fila = piezas.reduce((a, b) => a + b, 0) + gap * 3;
+  const padX = 0.45 * F, padT = 0.32 * F, padB = 0.38 * F, alto = 0.74 * F;
+  const W = fila + 2 * padX, H = alto + padT + padB, relieve = 0.06 * F;
+  const k = ancho / W, c = document.createElement("canvas");
+  c.width = ancho; c.height = Math.ceil((H + relieve) * k);
+  const g = c.getContext("2d"); g.scale(k, k);
+  g.fillStyle = "#a8481f"; g.beginPath(); g.roundRect(0, relieve, W, H, 0.27 * F); g.fill();
+  g.fillStyle = "#ee7446"; g.beginPath(); g.roundRect(0, 0, W, H, 0.27 * F); g.fill();
+  const br = g.createLinearGradient(0, 0, 0, H); br.addColorStop(0, "rgba(255,255,255,.22)"); br.addColorStop(.5, "rgba(255,255,255,0)");
+  g.fillStyle = br; g.beginPath(); g.roundRect(0, 0, W, H, 0.27 * F); g.fill();
+  const m = g.measureText ? (g.font = fuente, g.measureText("CRNI")) : null;
+  const yM = padT + alto / 2, yB = yM + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  let x = padX;
+  g.fillStyle = "#12131a";
+  const letras = (t) => { for (const ch of t) { g.fillText(ch, x + ls / 2, yB); x += g.measureText(ch).width + ls; } x += gap; };
+  const ojo = () => {
+    const cx = x + ojoM + ojoW / 2;
+    g.fillStyle = "#12131a"; g.beginPath(); g.ellipse(cx, yM, ojoW / 2, ojoH / 2, 0, 0, 7); g.fill();
+    g.fillStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.arc(cx - ojoW * 0.17, yM - ojoH * 0.24, ojoW * 0.17, 0, 7); g.fill();
+    g.fillStyle = "#12131a"; x += ojoW + 2 * ojoM + gap;
+  };
+  letras("CR"); ojo(); letras("NI"); ojo();
+  return { ok, png: c.toDataURL("image/png"), w: c.width, h: c.height };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opciones de mascota</title>
+<style>
+  :root { --bg:#14131c; --panel:#1e1c2b; --ink:#ece9f5; --mute:#a5a1bd; --line:#34314a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui,"Segoe UI",sans-serif; padding:24px 16px 48px; }
+  main { max-width:1000px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--mute); margin:0 0 8px; max-width:70ch; }
+  h2 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); margin:26px 0 10px; font-weight:600; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  article { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 12px 12px; }
+  .pic { background:#f6f1e7; border-radius:8px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .pic svg { width:86%; height:86%; animation:bob 1.6s ease-in-out infinite alternate; }
+  @keyframes bob { from { transform:translateY(2px) } to { transform:translateY(-3px) } }
+  @media (prefers-reduced-motion: reduce) { .pic svg { animation:none; } }
+  h3 { font-size:15px; margin:10px 0 2px; }
+  h3 span { color:var(--mute); font-weight:400; margin-right:6px; }
+  article p { margin:0; color:var(--mute); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Opciones de mascota</h1>
+  <p class="lead">Dieciséis candidatas originales con la misma base: cabeza grande, formas simples y redondas de avatar de consola, ojos de anime.
+  Es una ronda para elegir personaje, no dibujo final: la elegida se trabaja después en detalle, dibujada y en 3D, con sus accesorios.</p>
+  <div id="out"></div>
+</main>
+<script>
+const O = '#2b2530';
+const st = `stroke="${O}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+const body = (c, shade, belly) => `
+  <ellipse cx="50" cy="114" rx="9" ry="5" fill="${shade}" ${st}/><ellipse cx="70" cy="114" rx="9" ry="5" fill="${shade}" ${st}/>
+  <rect x="41" y="76" width="38" height="38" rx="15" fill="${c}" ${st}/>
+  ${belly ? `<ellipse cx="60" cy="101" rx="11" ry="11" fill="${belly}"/>` : ''}
+  <ellipse cx="39" cy="94" rx="6" ry="9" fill="${c}" ${st} transform="rotate(20 39 94)"/>
+  <ellipse cx="81" cy="94" rx="6" ry="9" fill="${c}" ${st} transform="rotate(-20 81 94)"/>`;
+const head = (c, rx = 37, ry = 32, cy = 52) => `<ellipse cx="60" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c}" ${st}/>`;
+const eye = (x, y, r = 1) => `<ellipse cx="${x}" cy="${y}" rx="${4.6 * r}" ry="${6.6 * r}" fill="${O}"/><circle cx="${x - 1.5 * r}" cy="${y - 2.6 * r}" r="${1.9 * r}" fill="#fff"/>`;
+const eyes = (y = 54, dx = 14, r = 1) => eye(60 - dx, y, r) + eye(60 + dx, y, r);
+const blush = (y = 65, dx = 24, c = '#ff8fa0') => `<ellipse cx="${60 - dx}" cy="${y}" rx="6" ry="3.4" fill="${c}" opacity=".6"/><ellipse cx="${60 + dx}" cy="${y}" rx="6" ry="3.4" fill="${c}" opacity=".6"/>`;
+const line = d => `<path d="${d}" fill="none" stroke="${O}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+const catMouth = (y = 64) => line(`M54 ${y} Q57 ${y + 4} 60 ${y} Q63 ${y + 4} 66 ${y}`);
+const smile = (y = 64, w = 7) => line(`M${60 - w} ${y} Q60 ${y + 7} ${60 + w} ${y}`);
+const fang = (x = 63, y = 66) => `<path d="M${x} ${y} l4 0 l-2 5Z" fill="#fff" stroke="${O}" stroke-width="1.2" stroke-linejoin="round"/>`;
+const tri = (pts, c) => `<path d="${pts}" fill="${c}" ${st}/>`;
+const coin = (x, y, r = 8) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f6c443" ${st}/><circle cx="${x}" cy="${y}" r="${r - 4}" fill="none" stroke="#c9952a" stroke-width="1.5"/>`;
+
+const PETS = [
+ ['Animales', [
+  ['Gato de la suerte', 'El gato que llama a las monedas: junta (y esconde) tus tokens.', `
+    ${tri('M30 36 L33 9 L53 24Z', '#fff')}${tri('M90 36 L87 9 L67 24Z', '#fff')}
+    <path d="M35 30 L36 17 L46 25Z M85 30 L84 17 L74 25Z" fill="#f2798a"/>
+    ${body('#fff', '#efe8dc')}<ellipse cx="86" cy="76" rx="6" ry="10" fill="#fff" ${st} transform="rotate(-12 86 76)"/>
+    <path d="M44 79 Q60 88 76 79" fill="none" stroke="#e5484d" stroke-width="5" stroke-linecap="round"/><circle cx="60" cy="87" r="4.5" fill="#f6c443" ${st}/>
+    ${head('#fff')}${eyes()}${blush()}${catMouth()}${line('M27 58 L16 56 M27 63 L17 66 M93 58 L104 56 M93 63 L103 66')}${coin(34, 100)}`],
+  ['Shiba', 'Leal y cabezón. Mueve la cola cuando un agente termina.', `
+    <circle cx="86" cy="96" r="9" fill="#e9a04b" ${st}/><circle cx="87" cy="95" r="3.5" fill="#fff3dc"/>
+    ${tri('M30 36 L32 10 L52 24Z', '#e9a04b')}${tri('M90 36 L88 10 L68 24Z', '#e9a04b')}
+    ${body('#e9a04b', '#c98232', '#fff3dc')}${head('#e9a04b')}
+    <ellipse cx="60" cy="64" rx="27" ry="16" fill="#fff3dc"/><circle cx="46" cy="41" r="3.2" fill="#fff3dc"/><circle cx="74" cy="41" r="3.2" fill="#fff3dc"/>
+    ${head('none')}${eyes(53)}<ellipse cx="60" cy="60" rx="3.6" ry="2.6" fill="${O}"/>${catMouth(64)}${blush(66, 25)}`],
+  ['Zorro', 'Astuto. Es el que más calza con una mascota traviesa.', `
+    <ellipse cx="90" cy="98" rx="10" ry="17" fill="#f2792e" ${st} transform="rotate(-28 90 98)"/><circle cx="98" cy="86" r="5.5" fill="#fff"/>
+    ${tri('M27 38 L25 3 L52 23Z', '#f2792e')}${tri('M93 38 L95 3 L68 23Z', '#f2792e')}
+    <path d="M27 14 L25 3 L34 10Z M93 14 L95 3 L86 10Z" fill="${O}"/>
+    ${body('#f2792e', '#3a2b2b', '#fff')}${head('#f2792e')}
+    <ellipse cx="40" cy="66" rx="14" ry="10" fill="#fff"/><ellipse cx="80" cy="66" rx="14" ry="10" fill="#fff"/><ellipse cx="60" cy="68" rx="12" ry="9" fill="#fff"/>
+    ${head('none')}${eyes(54)}${line('M38 43 L52 47 M82 43 L68 47')}<ellipse cx="60" cy="61" rx="3.2" ry="2.4" fill="${O}"/>${smile(65, 6)}${fang(63, 67)}`],
+  ['Tanuki', 'El mapache del folclor japonés: bromista y cambiaformas.', `
+    <circle cx="33" cy="27" r="10" fill="#9b6b43" ${st}/><circle cx="87" cy="27" r="10" fill="#9b6b43" ${st}/>
+    ${body('#9b6b43', '#5a3a22', '#f3e2c4')}${head('#9b6b43')}
+    <ellipse cx="45" cy="54" rx="12" ry="10" fill="#5a3a22" transform="rotate(-18 45 54)"/><ellipse cx="75" cy="54" rx="12" ry="10" fill="#5a3a22" transform="rotate(18 75 54)"/>
+    <ellipse cx="60" cy="66" rx="13" ry="9" fill="#f3e2c4"/>
+    <ellipse cx="46" cy="54" rx="5.6" ry="7.4" fill="#fff"/><ellipse cx="74" cy="54" rx="5.6" ry="7.4" fill="#fff"/>${eyes(55, 14, .7)}
+    <ellipse cx="60" cy="62" rx="3.4" ry="2.5" fill="${O}"/>${catMouth(66)}
+    <path d="M60 22 Q50 8 64 4 Q74 12 60 22Z" fill="#6cc04a" ${st}/>`],
+  ['Pingüino', 'Torpe y simpático. Se desliza de una pantalla a la otra.', `
+    <ellipse cx="50" cy="114" rx="9" ry="5" fill="#f59a2f" ${st}/><ellipse cx="70" cy="114" rx="9" ry="5" fill="#f59a2f" ${st}/>
+    <rect x="41" y="76" width="38" height="38" rx="15" fill="#2c3e66" ${st}/><ellipse cx="60" cy="100" rx="12" ry="12" fill="#fff"/>
+    <ellipse cx="38" cy="94" rx="6" ry="11" fill="#2c3e66" ${st} transform="rotate(24 38 94)"/><ellipse cx="82" cy="94" rx="6" ry="11" fill="#2c3e66" ${st} transform="rotate(-24 82 94)"/>
+    ${head('#2c3e66')}<ellipse cx="60" cy="58" rx="28" ry="21" fill="#fff"/>${eyes(53)}${blush(64, 22)}
+    <path d="M53 61 Q60 58 67 61 Q60 71 53 61Z" fill="#f59a2f" ${st}/>`],
+  ['Rana', 'Boca enorme para comerse los tokens. Croa cuando hay un error.', `
+    ${body('#6cc04a', '#4a9a33', '#d9f2b8')}${head('#6cc04a', 38, 28, 56)}
+    <circle cx="42" cy="31" r="12" fill="#6cc04a" ${st}/><circle cx="78" cy="31" r="12" fill="#6cc04a" ${st}/>
+    <circle cx="42" cy="31" r="7.5" fill="#fff"/><circle cx="78" cy="31" r="7.5" fill="#fff"/>${eye(43, 32, .8)}${eye(79, 32, .8)}
+    ${line('M36 62 Q60 78 84 62')}${blush(62, 28)}`],
+  ['Ajolote', 'Siempre sonríe. Sus branquias se mueven cuando escucha el micrófono.', `
+    <g stroke="${O}" stroke-width="10" stroke-linecap="round"><path d="M28 44 L11 33 M25 55 L6 55 M28 66 L11 76 M92 44 L109 33 M95 55 L114 55 M92 66 L109 76"/></g>
+    <g stroke="#e86a9a" stroke-width="5" stroke-linecap="round"><path d="M28 44 L11 33 M25 55 L6 55 M28 66 L11 76 M92 44 L109 33 M95 55 L114 55 M92 66 L109 76"/></g>
+    ${body('#f9b3cc', '#e88fb0', '#ffe1ec')}${head('#f9b3cc', 38, 28, 54)}
+    <circle cx="40" cy="52" r="3.6" fill="${O}"/><circle cx="80" cy="52" r="3.6" fill="${O}"/><circle cx="39" cy="50.6" r="1.2" fill="#fff"/><circle cx="79" cy="50.6" r="1.2" fill="#fff"/>
+    ${line('M46 60 Q60 72 74 60')}${blush(62, 28, '#f2638f')}`],
+ ]],
+ ['Personas', [
+  ['Avatar', 'Una personita simple, como los avatares de consola. Neutra y fácil de vestir.', `
+    ${body('#e5484d', '#3b5bdb')}<circle cx="29" cy="56" r="6" fill="#ffd9b8" ${st}/><circle cx="91" cy="56" r="6" fill="#ffd9b8" ${st}/>
+    ${head('#ffd9b8', 31, 32)}<path d="M29 48 Q27 16 60 16 Q93 16 91 48 Q82 30 62 33 Q44 30 29 48Z" fill="#5a3a22" ${st}/>
+    ${eyes(56, 12)}${line('M42 45 L52 44 M68 44 L78 45')}${smile(66, 6)}${blush(66, 22)}`],
+  ['Ninja', 'Aparece y desaparece. Roba tokens sin que lo veas.', `
+    <path d="M90 36 Q104 34 108 44 M90 38 Q102 42 102 54" fill="none" stroke="${O}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M90 36 Q104 34 108 44 M90 38 Q102 42 102 54" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round"/>
+    ${body('#27304f', '#1b2138')}<path d="M42 96 H78" stroke="#e5484d" stroke-width="5"/>
+    ${head('#27304f')}<rect x="35" y="45" width="50" height="20" rx="10" fill="#ffd9b8" ${st}/>
+    <path d="M24 38 Q60 28 96 38" fill="none" stroke="#e5484d" stroke-width="6" stroke-linecap="round"/>
+    ${eyes(55, 12, .85)}${line('M40 47 L52 50 M80 47 L68 50')}`],
+  ['Aprendiz de bruja', 'Lanza hechizos que salen mal. El sombrero es el primer accesorio.', `
+    ${body('#6b4bd6', '#3d2a8c')}<circle cx="60" cy="82" r="4" fill="#f6c443" ${st}/>
+    ${head('#ffd9b8', 31, 30, 56)}<path d="M30 54 Q24 70 34 78 Q34 64 38 56Z M90 54 Q96 70 86 78 Q86 64 82 56Z" fill="#f2792e" ${st}/>
+    ${eyes(58, 12)}${smile(68, 6)}${fang(62, 70)}${blush(68, 21)}
+    <path d="M36 34 Q50 -2 82 4 Q72 14 86 34Z" fill="#6b4bd6" ${st}/><ellipse cx="60" cy="34" rx="42" ry="8" fill="#6b4bd6" ${st}/>
+    <path d="M40 31 Q60 37 82 31" fill="none" stroke="#f6c443" stroke-width="4" stroke-linecap="round"/>
+    <path transform="translate(62 18) scale(.5)" d="M0 -12 L3.5 -4 L12 -4 L5 2 L8 11 L0 5.5 L-8 11 L-5 2 L-12 -4 L-3.5 -4Z" fill="#f6c443"/>`],
+ ]],
+ ['Personajes', [
+  ['Fantasma', 'Atraviesa la bisagra de la consola y saca la lengua con cada error.', `
+    <ellipse cx="22" cy="74" rx="7" ry="9" fill="#fff" ${st}/><ellipse cx="98" cy="74" rx="7" ry="9" fill="#fff" ${st}/>
+    <path d="M24 60 Q24 14 60 14 Q96 14 96 60 L96 108 Q87 98 78 108 Q69 118 60 108 Q51 118 42 108 Q33 98 24 108Z" fill="#fff" ${st}/>
+    ${eyes(52)}${blush(63, 24, '#8fb8ff')}${line('M51 66 Q60 72 69 66')}<path d="M56 69 Q60 84 65 69Z" fill="#f2798a" ${st}/>`],
+  ['Robot', 'Cara de pantalla: sus ojos muestran el estado de los agentes.', `
+    <path d="M60 24 V10" stroke="${O}" stroke-width="3"/><circle cx="60" cy="9" r="5" fill="#e5484d" ${st}/>
+    <circle cx="24" cy="50" r="6" fill="#8f9db3" ${st}/><circle cx="96" cy="50" r="6" fill="#8f9db3" ${st}/>
+    ${body('#b8c4d6', '#8f9db3')}<circle cx="60" cy="96" r="5" fill="#4be3b9" ${st}/>
+    <rect x="26" y="22" width="68" height="56" rx="14" fill="#b8c4d6" ${st}/><rect x="34" y="32" width="52" height="36" rx="8" fill="#1d2a3a" ${st}/>
+    <g fill="#4be3b9"><rect x="43" y="40" width="8" height="11" rx="2"/><rect x="69" y="40" width="8" height="11" rx="2"/><path d="M50 58 h4 v3 h12 v-3 h4 v3 h-4 v3 h-12 v-3 h-4Z"/></g>`],
+  ['Daruma', 'El muñeco de las metas: se le pinta el segundo ojo cuando terminas la tarea.', `
+    <ellipse cx="60" cy="66" rx="43" ry="47" fill="#d8343a" ${st}/>
+    <path d="M36 96 Q60 108 84 96 M44 104 Q60 110 76 104" fill="none" stroke="#f6c443" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="60" cy="54" rx="29" ry="24" fill="#fff1dc" ${st}/>
+    <path d="M36 44 Q46 34 56 44 M64 44 Q74 34 84 44" fill="none" stroke="${O}" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="46" cy="55" r="7" fill="${O}"/><circle cx="43.5" cy="52.5" r="2.2" fill="#fff"/>
+    <circle cx="74" cy="55" r="7" fill="#fff" stroke="${O}" stroke-width="2.5"/>
+    ${line('M50 68 Q55 64 60 68 Q65 64 70 68')}${blush(65, 20)}`],
+  ['Dragoncito', 'Escupe chispas cuando falla un test. Guarda los tokens como tesoro.', `
+    <path d="M40 84 Q18 70 16 92 Q28 88 26 100 Q36 94 42 98Z M80 84 Q102 70 104 92 Q92 88 94 100 Q84 94 78 98Z" fill="#3d9c6c" ${st}/>
+    <path d="M44 24 L38 6 L54 18Z M76 24 L82 6 L66 18Z" fill="#fff1dc" ${st}/>
+    ${body('#59c08a', '#3d9c6c', '#f8e08a')}${head('#59c08a')}
+    <ellipse cx="60" cy="66" rx="19" ry="11" fill="#8fdcb0"/>${head('none')}
+    ${eyes(52)}<circle cx="55" cy="64" r="1.5" fill="${O}"/><circle cx="65" cy="64" r="1.5" fill="${O}"/>${smile(70, 7)}${fang(63, 72)}${blush(62, 27)}`],
+  ['Onigiri', 'Una bolita de arroz con patas. Simple, rara y fácil de recordar.', `
+    <ellipse cx="46" cy="110" rx="8" ry="5" fill="${O}"/><ellipse cx="74" cy="110" rx="8" ry="5" fill="${O}"/>
+    <path d="M60 12 Q70 12 76 24 L104 82 Q112 104 90 106 L30 106 Q8 104 16 82 L44 24 Q50 12 60 12Z" fill="#fff" ${st}/>
+    <path d="M40 80 H80 V106 H40Z" fill="#2b2f36" ${st}/>
+    ${eyes(58)}${blush(68, 24)}${catMouth(67)}`],
+  ['Alien', 'Vino a estudiar a los agentes. Sus antenas se prenden con el color del que trabaja.', `
+    <path d="M44 26 L36 8 M76 26 L84 8" stroke="${O}" stroke-width="3" stroke-linecap="round"/><circle cx="35" cy="7" r="5" fill="#f6c443" ${st}/><circle cx="85" cy="7" r="5" fill="#f6c443" ${st}/>
+    ${body('#c9d3e0', '#8f9db3')}<circle cx="60" cy="94" r="5" fill="#7a52e0" ${st}/>
+    ${head('#9be36a', 38, 31)}
+    <ellipse cx="45" cy="54" rx="9" ry="12" fill="${O}" transform="rotate(18 45 54)"/><ellipse cx="75" cy="54" rx="9" ry="12" fill="${O}" transform="rotate(-18 75 54)"/>
+    <circle cx="42" cy="49" r="3" fill="#fff"/><circle cx="72" cy="49" r="3" fill="#fff"/>${smile(70, 5)}`],
+ ]],
+];
+
+let n = 0, html = '';
+for (const [group, list] of PETS) {
+  html += `<h2>${group}</h2><div class="grid">`;
+  for (const [name, why, svg] of list) {
+    n++;
+    html += `<article><div class="pic"><svg viewBox="0 0 120 124" xmlns="http://www.w3.org/2000/svg" style="animation-delay:${-(n * 0.37).toFixed(2)}s">${svg}</svg></div>
+      <h3><span>${n}</span>${name}</h3><p>${why}</p></article>`;
+  }
+  html += '</div>';
+}
+document.getElementById('out').innerHTML = html;
+</script>
+</body>
+</html>

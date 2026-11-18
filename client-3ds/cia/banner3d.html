@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Texturas del banner 3D del menú HOME (gen-banner3d.py las pide con gen-banner3d.cjs). Mismo logo que banner.html
+     ("La palabra es la cara"), pero en capas separadas para que la 3DS las ponga a distinta profundidad:
+     fondo (atrás), placa naranja con «CR NI» y su sombra (medio) y los dos ojos (adelante). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap">
+</head>
+<body>
+<script>
+// Devuelve { fondo, placa, sombra, ojo: dataURL PNG, medidas: {...} }. Todo en "unidades de letra" (F = cuerpo).
+async function render() {
+  const F = 100;               // cuerpo de letra de trabajo (px); después se escala a cada textura
+  const fuente = `400 ${F}px "Dela Gothic One"`;
+  await document.fonts.load(fuente);
+  const okFuente = document.fonts.check(fuente);
+  const c = document.createElement("canvas"), g = c.getContext("2d");
+  g.font = fuente;
+  const ls = 0.02 * F, gap = 0.06 * F;           // letter-spacing y gap del logo plano
+  const ojoW = 0.42 * F, ojoH = 0.66 * F, ojoM = 0.08 * F;
+  const wCR = g.measureText("CR").width + 2 * ls, wNI = g.measureText("NI").width + 2 * ls;
+  const padX = 0.45 * F, padT = 0.32 * F, padB = 0.38 * F;
+  const m = g.measureText("CRNI");
+  const asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
+  const altoTxt = Math.max(F * 0.74, asc + desc);
+  // fila: CR | ojo | NI | ojo
+  const piezas = [wCR, ojoW + 2 * ojoM, wNI, ojoW + 2 * ojoM];
+  const anchoFila = piezas.reduce((a, b) => a + b, 0) + gap * (piezas.length - 1);
+  const W = anchoFila + 2 * padX, H = altoTxt + padT + padB;
+  const yMedio = padT + altoTxt / 2;
+  let x = padX;
+  const xCR = x; x += wCR + gap;
+  const ojo1 = x + ojoM + ojoW / 2; x += ojoW + 2 * ojoM + gap;
+  const xNI = x; x += wNI + gap;
+  const ojo2 = x + ojoM + ojoW / 2;
+  const radio = 0.27 * F;
+
+  function lienzo(w, h) { const k = document.createElement("canvas"); k.width = w; k.height = h; return [k, k.getContext("2d")]; }
+  function rrect(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+
+  // placa: 256x128, estirada a la proporción W:H (el cuadro 3D devuelve la proporción real)
+  const [kp, gp] = lienzo(256, 128);
+  gp.scale(256 / W, 128 / H);
+  gp.fillStyle = "#ee7446"; rrect(gp, 0, 0, W, H, radio); gp.fill();
+  // brillo suave arriba (relieve de botón)
+  const brillo = gp.createLinearGradient(0, 0, 0, H);
+  brillo.addColorStop(0, "rgba(255,255,255,.22)"); brillo.addColorStop(0.5, "rgba(255,255,255,0)");
+  gp.fillStyle = brillo; rrect(gp, 0, 0, W, H, radio); gp.fill();
+  gp.fillStyle = "#12131a"; gp.font = fuente; gp.textBaseline = "alphabetic";
+  const yBase = yMedio + (asc - desc) / 2;
+  function letras(txt, x0) { for (const ch of txt) { gp.fillText(ch, x0 + ls, yBase); x0 += gp.measureText(ch).width + ls; } }
+  letras("CR", xCR); letras("NI", xNI);
+
+  // sombra: la misma silueta en naranja oscuro (relieve de 2 px de la marca, aquí es una capa detrás)
+  const [ks, gs] = lienzo(256, 128);
+  gs.scale(256 / W, 128 / H);
+  gs.fillStyle = "#a8481f"; rrect(gs, 0, 0, W, H, radio); gs.fill();
+
+  // ojo: 64x128, elipse tinta con brillo blanco al 85 % arriba a la izquierda
+  const [ko, go] = lienzo(64, 128);
+  go.fillStyle = "#12131a"; go.beginPath(); go.ellipse(32, 64, 31, 63, 0, 0, Math.PI * 2); go.fill();
+  go.fillStyle = "rgba(255,255,255,.85)"; go.beginPath();
+  // como en banner.html: brillo de .14em a .07em del borde izquierdo y .1em del de arriba (ojo de .42 x .66em)
+  go.arc(1 + 62 * (0.14 / 0.42), 1 + 126 * (0.17 / 0.66), 62 * (0.07 / 0.42), 0, Math.PI * 2);
+  go.fill();
+
+  // fondo: 256x128 opaco, blanco -> plata con rayitas 135° (menú HOME)
+  const [kf, gf] = lienzo(256, 128);
+  const deg = gf.createLinearGradient(0, 0, 0, 128);
+  deg.addColorStop(0, "#ffffff"); deg.addColorStop(1, "#e6e9ee");
+  gf.fillStyle = deg; gf.fillRect(0, 0, 256, 128);
+  gf.strokeStyle = "rgba(255,255,255,.55)"; gf.lineWidth = 1.2;
+  for (let i = -128; i < 256 + 128; i += 6) { gf.beginPath(); gf.moveTo(i, 0); gf.lineTo(i + 128, 128); gf.stroke(); }
+
+  return {
+    okFuente,
+    fondo: kf.toDataURL("image/png"), placa: kp.toDataURL("image/png"),
+    sombra: ks.toDataURL("image/png"), ojo: ko.toDataURL("image/png"),
+    medidas: { W, H, ojo1, ojo2, yMedio, ojoW, ojoH },
+  };
+}
+</script>
+</body>
+</html>

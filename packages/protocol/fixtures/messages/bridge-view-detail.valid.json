@@ -1,0 +1,1 @@
+{"t":"view","rev":8,"view":{"sessions":[{"id":"s2","kind":"codex","title":"ATLAS","project":"ATLAS","model":"GPT","state":"idle","activity":"Esperando instrucciones"}],"request":null,"pendingCount":0,"mode":"manual","face":{"kind":null,"mood":"idle","lines":["Todo tranquilo"]},"detail":{"sessionId":"s2","lastMessage":["Listo el refactor del runner."]},"led":"off"}}

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intro de Cronio</title>
+<!-- Vista previa de la animación de entrada de la app (misma línea de tiempo que client-3ds/source/logic/intro.c). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<style>
+  :root { --plata: #e6e9ee; --grafito: #2f343c; --gris: #6b737f; --celeste: #3fb0e6; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(#fff, var(--plata));
+    font-family: "M PLUS Rounded 1c", sans-serif; color: var(--grafito); }
+  .consola { background: #d9dde3; border-radius: 28px; padding: 22px 26px 26px; box-shadow: 0 3px 0 #b9c0ca; display: grid; gap: 18px; justify-items: center; }
+  canvas { display: block; border: 7px solid #1b1e24; border-radius: 6px; image-rendering: pixelated; }
+  #arriba { width: 400px; height: 240px; } #abajo { width: 320px; height: 240px; }
+  .pie { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+  button { font: 800 14px "M PLUS Rounded 1c", sans-serif; color: #fff; border: 0; border-radius: 999px; padding: 8px 18px;
+    background: linear-gradient(#5cc4f2, #1f8fc8); box-shadow: 0 2px 0 #176f9c; cursor: pointer; }
+  button:active { transform: translateY(2px); box-shadow: none; }
+  label { display: flex; gap: 6px; align-items: center; }
+  @media (max-width: 480px) { #arriba { width: 100%; height: auto; } #abajo { width: 80%; height: auto; } .consola { margin: 16px; } }
+</style>
+</head>
+<body>
+<div class="consola">
+  <canvas id="arriba" width="400" height="240"></canvas>
+  <canvas id="abajo" width="320" height="240"></canvas>
+  <div class="pie">
+    <button id="otra">Ver otra vez</button>
+    <label><input type="checkbox" id="lento"> cámara lenta</label>
+    <label><input type="checkbox" id="oscuro"> tema oscuro</label>
+  </div>
+</div>
+<script>
+const NARANJA = "#ee7446", TINTA = "#12131a";
+const logo = new Image(); logo.src = "../../client-3ds/gfx/cronio_palabra.png";
+const A = document.getElementById("arriba").getContext("2d"), B = document.getElementById("abajo").getContext("2d");
+const cl = (x) => Math.max(0, Math.min(1, x));
+const seg = (t, a, b) => cl((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const outBack = (x, s = 1.70158) => 1 + (s + 1) * (x - 1) ** 3 + s * (x - 1) ** 2;
+const outCubic = (x) => 1 - (1 - x) ** 3;
+const inOut = (x) => x < .5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2;
+
+// cuadrado de 96 (proporciones de pal_agent_square, k = 3) -> ojos de la cara (face_math.h)
+const SQ = 96, K = SQ / 32;
+const OJO_SQ = { dx: [11.5 * K - SQ / 2, 20.5 * K - SQ / 2], dy: 16 * K - SQ / 2, rx: 2.5 * K, ry: 4 * K };
+const OJO_CARA = { x: [200 - 31, 200 + 31], y: 78, rx: 15, ry: 22 };
+
+function frame(t) {
+  const f = { bgNegro: 1 };
+  // 2. aparece el cuadrado
+  let s = t < 120 ? 0 : outBack(seg(t, 120, 520));
+  let sx = s, sy = s;
+  if (t >= 380 && t < 520) { const k = seg(t, 380, 520); sx *= lerp(1.08, 1, k); sy *= lerp(.92, 1, k); }
+  // 6. saltito
+  let dy = 0;
+  if (t >= 1350 && t < 1435) dy = -12 * outCubic(seg(t, 1350, 1435));
+  else if (t >= 1435 && t < 1520) dy = -12 * (1 - seg(t, 1435, 1520) ** 2);
+  if (t >= 1520 && t < 1620) { const k = seg(t, 1520, 1620); sx *= lerp(1.06, 1, k); sy *= lerp(.94, 1, k); }
+  // 7. se convierte en la cara
+  const e = inOut(seg(t, 1520, 1880));
+  const w = lerp(SQ, 400, e) * sx, h = lerp(SQ, 240, e) * sy;
+  f.sq = { x: 200 - w / 2, y: 120 - h / 2 + dy * (1 - e), w, h, r: lerp(SQ * .2, 0, e) * Math.min(sx, sy), vis: t >= 120 };
+  // 3-5. ojos
+  let mira = 0;
+  if (t >= 950 && t < 1050) mira = -5 * inOut(seg(t, 950, 1050));
+  else if (t >= 1050 && t < 1150) mira = -5;
+  else if (t >= 1150 && t < 1250) mira = lerp(-5, 5, inOut(seg(t, 1150, 1250)));
+  else if (t >= 1250 && t < 1350) mira = lerp(5, 0, inOut(seg(t, 1250, 1350)));
+  let parp = 1;
+  if (t >= 800 && t < 900) parp = t < 850 ? lerp(1, .1, seg(t, 800, 850)) : lerp(.1, 1, seg(t, 850, 900));
+  f.ojos = [0, 1].map((i) => {
+    const t0 = i ? 520 : 450;
+    const abre = t < t0 ? 0 : outBack(seg(t, t0, t0 + 180));
+    const cx = lerp(200 + OJO_SQ.dx[i] * sx, OJO_CARA.x[i], e) + mira * (1 - e);
+    const cy = lerp(120 + OJO_SQ.dy * sy + dy, OJO_CARA.y, e);
+    return { cx, cy, rx: lerp(OJO_SQ.rx, OJO_CARA.rx, e), ry: lerp(OJO_SQ.ry, OJO_CARA.ry, e) * abre * parp };
+  });
+  // abajo
+  f.velo = 1 - seg(t, 0, 300);
+  const kl = seg(t, 600, 1000);
+  f.logoY = 104 + 30 * (1 - outBack(kl));
+  f.logoA = seg(t, 600, 750) * (1 - seg(t, 1700, 1880));
+  f.textoA = seg(t, 1000, 1200) * (1 - seg(t, 1700, 1880));
+  f.done = t >= 1880;
+  return f;
+}
+
+function fondoAbajo(g, oscuro) {
+  const d = g.createLinearGradient(0, 0, 0, 240);
+  d.addColorStop(0, oscuro ? "#23272f" : "#ffffff"); d.addColorStop(1, oscuro ? "#1a1d23" : "#e6e9ee");
+  g.fillStyle = d; g.fillRect(0, 0, 320, 240);
+  g.strokeStyle = oscuro ? "rgba(255,255,255,.04)" : "rgba(255,255,255,.55)"; g.lineWidth = 2;
+  for (let i = -240; i < 320; i += 9) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 240, 240); g.stroke(); }
+}
+
+function dibujar(t) {
+  const f = frame(t), oscuro = document.getElementById("oscuro").checked;
+  A.fillStyle = "#000"; A.fillRect(0, 0, 400, 240);
+  if (f.sq.vis && f.sq.w > 0 && f.sq.h > 0) {
+    A.fillStyle = NARANJA; A.beginPath(); A.roundRect(f.sq.x, f.sq.y, f.sq.w, f.sq.h, Math.max(0, f.sq.r)); A.fill();
+    for (const o of f.ojos) {
+      if (o.ry <= .2) continue;
+      A.fillStyle = TINTA; A.beginPath(); A.ellipse(o.cx, o.cy, o.rx, o.ry, 0, 0, 7); A.fill();
+      const gr = o.rx * .3;
+      if (o.ry > o.rx * .8) { A.fillStyle = "rgba(255,255,255,.85)"; A.beginPath(); A.arc(o.cx - o.rx * .33, o.cy - o.ry * .36, gr, 0, 7); A.fill(); }
+    }
+  }
+  fondoAbajo(B, oscuro);
+  if (logo.complete && f.logoA > 0) { B.globalAlpha = f.logoA; B.drawImage(logo, 160 - 116, f.logoY - 30); B.globalAlpha = 1; }
+  if (f.textoA > 0) {
+    B.globalAlpha = f.textoA; B.fillStyle = oscuro ? "#9aa3af" : "#6b737f";
+    B.font = "500 13px 'M PLUS Rounded 1c'"; B.textAlign = "center"; B.fillText("Tu agente en la 3DS", 160, 154); B.globalAlpha = 1;
+  }
+  if (f.velo > 0) { B.fillStyle = `rgba(0,0,0,${f.velo})`; B.fillRect(0, 0, 320, 240); }
+  return f.done;
+}
+
+let inicio = 0, anterior = 0, t = 0;
+function bucle(ahora) {
+  const dt = ahora - anterior; anterior = ahora;
+  t += document.getElementById("lento").checked ? dt / 4 : dt;
+  const fin = dibujar(t);
+  if (!fin || t < 2600) requestAnimationFrame(bucle);
+}
+function otra() { t = -300; anterior = performance.now(); requestAnimationFrame(bucle); }
+document.getElementById("otra").onclick = otra;
+logo.onload = otra;
+</script>
+</body>
+</html>

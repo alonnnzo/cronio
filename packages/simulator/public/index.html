@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cronio · simulador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <div class="console" id="console">
+    <div class="topbar">
+      <span class="conn" id="conn" data-state="off" role="status">Conectando…</span>
+      <span class="led" id="led" data-led="off" role="img" aria-label="LED de la consola"></span>
+    </div>
+    <canvas id="top" width="800" height="480" aria-label="Pantalla superior: la cara del agente"></canvas>
+    <div class="hinge"></div>
+    <div class="bottom" id="bottom"></div>
+    <div class="offline-msg" role="alert">Sin conexión con el puente</div>
+  </div>
+  <p class="keys"><kbd>A</kbd> aprobar &nbsp; <kbd>Y</kbd> sí, no volver a preguntar (si la tarjeta lo ofrece) &nbsp; <kbd>B</kbd> rechazar / volver &nbsp; <kbd>←</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>→</kbd> mover &nbsp; <kbd>Enter</kbd> entrar</p>
+  <p class="keys"><kbd>L</kbd> <kbd>R</kbd> (o <kbd>Q</kbd> <kbd>W</kbd>) siguiente permiso &nbsp; <kbd>M</kbd> modo: en fila / elijo yo</p>
+  <p class="keys"><kbd>S</kbd> o <kbd>Retroceso</kbd> (SELECT) menú de configuración (sin permiso pendiente): <kbd>↑</kbd> <kbd>↓</kbd> elegir &nbsp; <kbd>A</kbd> / <kbd>Enter</kbd> / <kbd>←</kbd> <kbd>→</kbd> cambiar &nbsp; <kbd>B</kbd> / <kbd>Esc</kbd> volver o cerrar</p>
+  <p class="keys">En el detalle de una sesión (sin permiso pendiente): <kbd>A</kbd> o <kbd>Enter</kbd> leer todo el mensaje &nbsp; <kbd>↑</kbd> <kbd>↓</kbd> línea &nbsp; <kbd>←</kbd> <kbd>→</kbd> o <kbd>L</kbd> <kbd>R</kbd> página &nbsp; <kbd>B</kbd> / <kbd>Esc</kbd> volver</p>
+  <p class="keys">Instrucciones (detalle, sin tarjeta): <kbd>X</kbd> escribirle a la sesión &nbsp; <kbd>←</kbd> <kbd>→</kbd> Esperar mi respuesta: sí / no &nbsp; <kbd>↓</kbd> borrar la cola &nbsp; Con la tarjeta Espera tu instrucción: <kbd>↑</kbd> <kbd>↓</kbd> <kbd>A</kbd> (<kbd>B</kbd> no hace nada)</p>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

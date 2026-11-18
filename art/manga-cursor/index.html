@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criatura-cursor en estilo manga</title>
+<style>
+  :root { --bg:#14131c; --panel:#1e1c2b; --ink:#ece9f5; --mute:#a5a1bd; --line:#34314a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,"Segoe UI",sans-serif; padding:24px 16px 48px; }
+  main { max-width:900px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--mute); margin:0 0 20px; max-width:66ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
+  article { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  h2 { font-size:16px; margin:12px 0 4px; }
+  article p { margin:0 0 6px; color:var(--mute); font-size:14px; }
+  article p b { color:var(--ink); font-weight:600; }
+  .screen { width:100%; aspect-ratio:4/3; border-radius:4px; overflow:hidden; background:#fbfaf5; position:relative; }
+  .screen canvas, .screen svg { width:100%; height:100%; display:block; }
+  #s3 { background:linear-gradient(#d9f4ff,#f4fbff 60%,#cfeee2 60%,#b9e4d2); }
+  #s4 { background:#fbfaf5 radial-gradient(#d9d6cc 1.2px, transparent 1.4px) 0 0 / 9px 9px; }
+  .err { position:absolute; inset:0; display:none; align-items:center; justify-content:center; color:#555; font-size:13px; padding:20px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>La criatura-cursor en estilo manga</h1>
+  <p class="lead">La misma mascota traviesa, con el token que le acaba de robar a Claude. Dos versiones dibujadas y dos en 3D.
+  Las 3D se pueden girar arrastrando.</p>
+  <div class="grid">
+    <article>
+      <div class="screen"><svg id="ink" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>1. Dibujado: manga a tinta</h2>
+      <p>Blanco y negro con tramas de puntos, líneas de velocidad y onomatopeyas. Un solo color: el del agente.</p>
+      <p><b>A favor:</b> muy propio; el color queda reservado para los agentes; liviano. <b>En contra:</b> pantalla mayormente blanca.</p>
+    </article>
+    <article>
+      <div class="screen"><svg id="chibi" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>2. Dibujado: chibi a color</h2>
+      <p>Línea gruesa, sombra en dos tonos, ojos grandes con brillo.</p>
+      <p><b>A favor:</b> tierno y expresivo; ropa y accesorios lucen. <b>En contra:</b> es el estilo de mascota más común.</p>
+    </article>
+    <article>
+      <div class="screen" id="s3"><canvas id="c3"></canvas><div class="err">No se pudo cargar el 3D (requiere conexión a internet).</div></div>
+      <h2>3. 3D: figura a color</h2>
+      <p>Modelo 3D con sombra en escalones y contorno de tinta, como figura de colección.</p>
+      <p><b>A favor:</b> gira, salta y se asoma con volumen real; aprovecha el 3D de la consola. <b>En contra:</b> en la 3DS hay que hornearlo a cuadros o programar el dibujado 3D.</p>
+    </article>
+    <article>
+      <div class="screen" id="s4"><canvas id="c4"></canvas><div class="err">No se pudo cargar el 3D (requiere conexión a internet).</div></div>
+      <h2>4. 3D: manga con tramas</h2>
+      <p>El mismo modelo, en blanco y negro: la sombra se dibuja con puntos de trama, como una viñeta que se mueve.</p>
+      <p><b>A favor:</b> el más distintivo de los cuatro; combina con la versión 1. <b>En contra:</b> el efecto de trama hay que hornearlo; no corre en vivo en la 3DS.</p>
+    </article>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const CLAUDE = '#e8693f', INK = '#151515';
+
+// ---------- 1. Manga a tinta ----------
+(function () {
+  let rays = '';
+  for (let i = 0; i < 46; i++) {
+    const a = (i / 46) * Math.PI * 2 + (i % 3) * .03, w = .018 + (i % 4) * .008;
+    const r0 = 118 + ((i * 37) % 40), r1 = 320;
+    const p = (ang, r) => `${160 + Math.cos(ang) * r * 1.25} ${122 + Math.sin(ang) * r}`;
+    rays += `<path d="M${p(a, r0)} L${p(a - w, r1)} L${p(a + w, r1)}Z"/>`;
+  }
+  document.getElementById('ink').innerHTML = `
+  <defs>
+    <pattern id="dots" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="2.5" cy="2.5" r="1.25" fill="${INK}"/></pattern>
+    <clipPath id="bodyClip"><path d="M118 62 Q160 54 202 62 Q211 64 211 76 L213 172 Q213 184 200 185 L122 186 Q109 185 109 174 L109 76 Q109 64 118 62Z"/></clipPath>
+  </defs>
+  <rect width="320" height="240" fill="#fbfaf5"/>
+  <g fill="${INK}">${rays}</g>
+  <g id="inkCreature">
+    <path d="M132 184 L130 204 Q130 210 138 210 L150 210 L150 185Z M172 185 L172 210 L186 210 Q193 210 192 203 L190 184Z" fill="#fff" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M206 120 Q230 112 236 86" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>
+    <path d="M206 120 Q230 112 236 86" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M112 128 Q98 134 96 146" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>
+    <path d="M112 128 Q98 134 96 146" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M118 62 Q160 54 202 62 Q211 64 211 76 L213 172 Q213 184 200 185 L122 186 Q109 185 109 174 L109 76 Q109 64 118 62Z" fill="#fff"/>
+    <g clip-path="url(#bodyClip)"><path d="M186 50 Q176 120 190 190 L220 190 L220 50Z" fill="url(#dots)"/><path d="M104 168 Q160 180 216 164 L216 190 L104 190Z" fill="url(#dots)"/></g>
+    <path d="M118 62 Q160 54 202 62 Q211 64 211 76 L213 172 Q213 184 200 185 L122 186 Q109 185 109 174 L109 76 Q109 64 118 62Z" fill="none" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+    <!-- ojos -->
+    <ellipse cx="138" cy="108" rx="14" ry="17" fill="#fff" stroke="${INK}" stroke-width="2.5"/>
+    <ellipse cx="182" cy="106" rx="14" ry="17" fill="#fff" stroke="${INK}" stroke-width="2.5"/>
+    <g id="inkPup">
+      <ellipse cx="142" cy="111" rx="8.5" ry="11.5" fill="${INK}"/><circle cx="138.5" cy="105" r="3.4" fill="#fff"/><circle cx="145.5" cy="117" r="1.6" fill="#fff"/>
+      <ellipse cx="186" cy="109" rx="8.5" ry="11.5" fill="${INK}"/><circle cx="182.5" cy="103" r="3.4" fill="#fff"/><circle cx="189.5" cy="115" r="1.6" fill="#fff"/>
+    </g>
+    <path d="M121 100 Q138 86 157 100 L157 92 Q138 80 121 92Z" fill="#fff"/>
+    <path d="M122 99 Q138 88 156 101" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M166 92 Q182 82 198 92" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M120 84 L154 92 L153 86 L122 76Z" fill="${INK}"/>
+    <path d="M168 78 Q184 70 200 78 L199 83 Q184 76 169 83Z" fill="${INK}"/>
+    <!-- boca -->
+    <path d="M128 142 Q160 176 198 136 Q166 152 128 142Z" fill="${INK}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M142 147 L152 149 L149 158Z M176 146 L185 142 L183 151Z" fill="#fff"/>
+    <g stroke="${INK}" stroke-width="2" stroke-linecap="round"><path d="M118 132 l5 -7 M124 134 l5 -7 M130 136 l5 -7"/><path d="M194 128 l5 -7 M200 130 l5 -7"/></g>
+    <!-- token -->
+    <g id="inkToken"><circle cx="238" cy="76" r="17" fill="${CLAUDE}" stroke="${INK}" stroke-width="4"/><path d="M238 66 v20 M228 76 h20 M231 69 l14 14 M245 69 l-14 14" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+    <path d="M260 60 q8 4 10 14 M262 48 q14 6 18 22" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g id="inkSfx" font-family="Impact,'Arial Black',sans-serif" font-style="italic" fill="${INK}" stroke="#fbfaf5" stroke-width="5" paint-order="stroke">
+    <text x="26" y="78" font-size="34" transform="rotate(-14 26 78)">ji ji</text>
+    <text x="54" y="112" font-size="24" transform="rotate(-10 54 112)">ji!</text>
+  </g>
+  <g fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"><path d="M84 176 q-10 -8 0 -16 M74 180 q-16 -12 -2 -26"/></g>`;
+})();
+
+// ---------- 2. Chibi a color ----------
+document.getElementById('chibi').innerHTML = `
+  <defs>
+    <linearGradient id="cbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9f1"/><stop offset="1" stop-color="#e4f3ff"/></linearGradient>
+    <pattern id="cdots" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="13" cy="13" r="4" fill="#fff" opacity=".7"/></pattern>
+    <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2a8c"/><stop offset=".55" stop-color="#7a52e0"/><stop offset="1" stop-color="#ff9ad5"/></linearGradient>
+    <clipPath id="cClip"><rect x="110" y="58" width="100" height="126" rx="26"/></clipPath>
+  </defs>
+  <rect width="320" height="240" fill="url(#cbg)"/><rect width="320" height="240" fill="url(#cdots)"/>
+  <ellipse cx="160" cy="214" rx="56" ry="8" fill="#c9d8ee"/>
+  <g id="chibiCreature">
+    <rect x="130" y="176" width="24" height="34" rx="11" fill="#1fae8a" stroke="#134a44" stroke-width="4"/>
+    <rect x="166" y="176" width="24" height="34" rx="11" fill="#1fae8a" stroke="#134a44" stroke-width="4"/>
+    <path d="M206 124 Q226 116 232 94" fill="none" stroke="#134a44" stroke-width="16" stroke-linecap="round"/>
+    <path d="M206 124 Q226 116 232 94" fill="none" stroke="#3fdcb4" stroke-width="8" stroke-linecap="round"/>
+    <path d="M114 130 Q100 136 98 148" fill="none" stroke="#134a44" stroke-width="16" stroke-linecap="round"/>
+    <path d="M114 130 Q100 136 98 148" fill="none" stroke="#3fdcb4" stroke-width="8" stroke-linecap="round"/>
+    <rect x="110" y="58" width="100" height="126" rx="26" fill="#3fdcb4"/>
+    <g clip-path="url(#cClip)"><path d="M184 50 Q172 120 186 190 L220 190 L220 50Z" fill="#1fae8a"/><path d="M100 164 Q160 178 220 160 V190 H100Z" fill="#1fae8a"/>
+      <path d="M122 70 Q150 62 176 68" fill="none" stroke="#b6f7e4" stroke-width="7" stroke-linecap="round"/></g>
+    <rect x="110" y="58" width="100" height="126" rx="26" fill="none" stroke="#134a44" stroke-width="4.5"/>
+    <ellipse cx="124" cy="138" rx="10" ry="6" fill="#ff8fa6" opacity=".7"/><ellipse cx="196" cy="136" rx="10" ry="6" fill="#ff8fa6" opacity=".7"/>
+    <g id="chibiEyes">
+      <ellipse cx="139" cy="110" rx="15" ry="18" fill="#fff" stroke="#134a44" stroke-width="2.5"/>
+      <ellipse cx="181" cy="108" rx="15" ry="18" fill="#fff" stroke="#134a44" stroke-width="2.5"/>
+      <ellipse cx="142" cy="113" rx="10.5" ry="13.5" fill="url(#iris)"/><ellipse cx="184" cy="111" rx="10.5" ry="13.5" fill="url(#iris)"/>
+      <ellipse cx="142" cy="114" rx="4.5" ry="6.5" fill="#1c1240"/><ellipse cx="184" cy="112" rx="4.5" ry="6.5" fill="#1c1240"/>
+      <circle cx="137.5" cy="105.5" r="4.4" fill="#fff"/><circle cx="179.5" cy="103.5" r="4.4" fill="#fff"/>
+      <circle cx="147" cy="120" r="2" fill="#fff"/><circle cx="189" cy="118" r="2" fill="#fff"/>
+      <path d="M123 101 Q139 87 157 102" fill="none" stroke="#134a44" stroke-width="5" stroke-linecap="round"/>
+      <path d="M165 94 Q181 85 198 96" fill="none" stroke="#134a44" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <path d="M122 84 L152 92" stroke="#134a44" stroke-width="5" stroke-linecap="round"/>
+    <path d="M170 82 Q184 76 198 82" fill="none" stroke="#134a44" stroke-width="5" stroke-linecap="round"/>
+    <path d="M140 146 Q150 158 160 146 Q170 160 184 142" fill="none" stroke="#134a44" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M165 151 L171 152 L168 159Z" fill="#fff" stroke="#134a44" stroke-width="1.5" stroke-linejoin="round"/>
+    <g id="chibiToken"><circle cx="236" cy="82" r="17" fill="${CLAUDE}" stroke="#134a44" stroke-width="4"/><circle cx="231" cy="76" r="4" fill="#fff" opacity=".7"/><path d="M236 73 v18 M227 82 h18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+  </g>
+  <g id="chibiSpark" fill="#fff" stroke="#ffb3d1" stroke-width="2">
+    <path transform="translate(72 70)" d="M0 -12 Q2 -2 12 0 Q2 2 0 12 Q-2 2 -12 0 Q-2 -2 0 -12Z"/>
+    <path transform="translate(264 136) scale(.7)" d="M0 -12 Q2 -2 12 0 Q2 2 0 12 Q-2 2 -12 0 Q-2 -2 0 -12Z"/>
+    <path transform="translate(92 172) scale(.5)" d="M0 -12 Q2 -2 12 0 Q2 2 0 12 Q-2 2 -12 0 Q-2 -2 0 -12Z"/>
+  </g>`;
+
+// ---------- 3 y 4. Modelo 3D ----------
+const views = [];
+function build3D(canvasId, mode) {
+  const canvas = document.getElementById(canvasId);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(1); renderer.setSize(640, 480, false);
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(32, 4 / 3, .1, 50); cam.position.set(0, .3, 9.2); cam.lookAt(0, 0, 0);
+  const lightDir = new THREE.Vector3(.55, .7, .65).normalize();
+
+  const grad = new THREE.DataTexture(new Uint8Array([95, 95, 95, 255, 190, 190, 190, 255, 255, 255, 255, 255]), 3, 1, THREE.RGBAFormat);
+  grad.magFilter = grad.minFilter = THREE.NearestFilter; grad.needsUpdate = true;
+  scene.add(new THREE.AmbientLight(0xffffff, .35));
+  const dl = new THREE.DirectionalLight(0xffffff, 1); dl.position.copy(lightDir).multiplyScalar(10); scene.add(dl);
+
+  const halftone = color => new THREE.ShaderMaterial({
+    uniforms: { base: { value: new THREE.Color(color) }, L: { value: lightDir } },
+    vertexShader: 'varying vec3 n; void main(){ n = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+    fragmentShader: `uniform vec3 base; uniform vec3 L; varying vec3 n;
+      void main(){ float l = dot(normalize(n), L);
+        float shade = smoothstep(.55, -.35, l);
+        mat2 r = mat2(.7071, -.7071, .7071, .7071);
+        vec2 c = fract(r * gl_FragCoord.xy / 7.) - .5;
+        float ink = step(length(c), shade * .62);
+        if (l < -.5) ink = 1.;
+        gl_FragColor = vec4(mix(base, vec3(.08), ink), 1.); }`
+  });
+  const mat = color => mode === 'manga' ? halftone('#ffffff') : new THREE.MeshToonMaterial({ color, gradientMap: grad });
+  const flat = color => new THREE.MeshBasicMaterial({ color });
+  const lineMat = new THREE.MeshBasicMaterial({ color: mode === 'manga' ? 0x111111 : 0x134a44, side: THREE.BackSide });
+
+  const pet = new THREE.Group(); scene.add(pet);
+  function solid(geo, material, outline = 1.07) {
+    const g = new THREE.Group(); g.add(new THREE.Mesh(geo, material));
+    const o = new THREE.Mesh(geo, lineMat); o.scale.setScalar(outline); g.add(o); return g;
+  }
+  // cuerpo: rectángulo redondeado con volumen
+  const w = 1.7, h = 2.2, r = .42, s = new THREE.Shape();
+  s.moveTo(-w / 2 + r, -h / 2); s.lineTo(w / 2 - r, -h / 2); s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
+  s.lineTo(w / 2, h / 2 - r); s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2); s.lineTo(-w / 2 + r, h / 2);
+  s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); s.lineTo(-w / 2, -h / 2 + r); s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+  const bodyGeo = new THREE.ExtrudeGeometry(s, { depth: .7, bevelEnabled: true, bevelThickness: .22, bevelSize: .2, bevelSegments: 6, curveSegments: 10 });
+  bodyGeo.center();
+  const body = solid(bodyGeo, mat('#3fdcb4'), 1.05); pet.add(body);
+  const front = .58;
+
+  // cara (plana, pegada al frente)
+  const face = new THREE.Group(); face.position.z = front; pet.add(face);
+  const disc = (rad, color, x, y, z, sx = 1, sy = 1) => { const m = new THREE.Mesh(new THREE.CircleGeometry(rad, 28), flat(color)); m.position.set(x, y, z); m.scale.set(sx, sy, 1); face.add(m); return m; };
+  const iris = mode === 'manga' ? '#111111' : '#5a3fc8';
+  const pupils = new THREE.Group(); face.add(pupils);
+  [-.42, .42].forEach(x => {
+    disc(.33, '#111111', x, .32, 0, 1, 1.18); disc(.29, '#ffffff', x, .32, .005, 1, 1.18);
+    const p = new THREE.Mesh(new THREE.CircleGeometry(.2, 24), flat(iris)); p.position.set(x + .06, .27, .01); p.scale.y = 1.25; pupils.add(p);
+    const hl = new THREE.Mesh(new THREE.CircleGeometry(.075, 16), flat('#ffffff')); hl.position.set(x - .02, .38, .015); pupils.add(hl);
+  });
+  const brow = (x, rot) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(.62, .1), flat('#111111')); m.position.set(x, .78, .01); m.rotation.z = rot; face.add(m); };
+  brow(-.42, -.32); brow(.42, .12);
+  const mouth = new THREE.Mesh(new THREE.CircleGeometry(.42, 28, Math.PI, Math.PI), flat('#111111')); mouth.position.set(.05, -.3, .01); mouth.rotation.z = .16; mouth.scale.y = .8; face.add(mouth);
+  const fang = new THREE.Mesh(new THREE.CircleGeometry(.09, 3), flat('#ffffff')); fang.position.set(-.12, -.37, .015); fang.rotation.z = -Math.PI / 2; face.add(fang);
+  if (mode !== 'manga') { disc(.16, '#ff8fa6', -.66, -.05, .004, 1, .6); disc(.16, '#ff8fa6', .66, -.05, .004, 1, .6); }
+
+  // piernas, brazos y token
+  const legGeo = new THREE.CylinderGeometry(.2, .22, .5, 16);
+  const legs = [-.42, .42].map(x => { const l = solid(legGeo, mat('#1fae8a'), 1.12); l.position.set(x, -1.45, 0); pet.add(l); return l; });
+  const armGeo = new THREE.CylinderGeometry(.13, .13, .9, 12);
+  const armR = new THREE.Group(); armR.position.set(1.05, .1, .3); pet.add(armR);
+  const a1 = solid(armGeo, mat('#3fdcb4'), 1.18); a1.position.y = .45; armR.add(a1); armR.rotation.z = -.7;
+  const coin = new THREE.Group(); coin.position.y = 1.05; armR.add(coin);
+  const coinMesh = solid(new THREE.CylinderGeometry(.36, .36, .1, 28), flat(CLAUDE), 1.1); coinMesh.rotation.x = Math.PI / 2; coin.add(coinMesh);
+  const armL = solid(armGeo, mat('#3fdcb4'), 1.18); armL.position.set(-1.0, -.25, 0); armL.rotation.z = -2.6; armL.scale.y = .6; pet.add(armL);
+
+  // sombra en el piso
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(1, 32), new THREE.MeshBasicMaterial({ color: mode === 'manga' ? 0x111111 : 0x7fb8a8, transparent: true, opacity: mode === 'manga' ? .85 : .5 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = -1.72; shadow.scale.set(1, .45, 1); scene.add(shadow);
+
+  const v = { renderer, scene, cam, pet, armR, coin, pupils, legs, shadow, drag: 0, mode };
+  let down = null;
+  canvas.style.cursor = 'grab'; canvas.style.touchAction = 'none';
+  canvas.addEventListener('pointerdown', e => { down = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => { if (down !== null) { v.drag += (e.clientX - down) * .012; down = e.clientX; } });
+  canvas.addEventListener('pointerup', () => down = null);
+  views.push(v);
+}
+try { build3D('c3', 'color'); build3D('c4', 'manga'); }
+catch (e) { document.querySelectorAll('.err').forEach(el => el.style.display = 'flex'); console.error(e); }
+
+// ---------- bucle ----------
+const $ = id => document.getElementById(id);
+function loop(t) {
+  // 1: temblor a saltos, como línea de tinta redibujada
+  const k = Math.floor(t / 130) % 4;
+  $('inkCreature').setAttribute('transform', `translate(${[0, 1.2, -.8, .6][k]} ${[0, -1, .8, -.4][k]}) rotate(${[0, .8, -.6, .3][k]} 160 190)`);
+  $('inkSfx').setAttribute('transform', `translate(60 90) scale(${1 + [0, .06, .02, .08][k]}) translate(-60 -90)`);
+  $('inkPup').setAttribute('transform', `translate(${Math.sin(t / 1500) > .2 ? 0 : -6} 0)`);
+  // 2: rebote suave
+  const b = Math.abs(Math.sin(t / 380));
+  $('chibiCreature').setAttribute('transform', `translate(0 ${-b * 10}) translate(160 210) scale(${1 - (1 - b) * .04} ${1 + (1 - b) * .04 - .04}) translate(-160 -210)`);
+  $('chibiToken').setAttribute('transform', `rotate(${Math.sin(t / 200) * 10} 236 82)`);
+  $('chibiSpark').setAttribute('opacity', .6 + .4 * Math.sin(t / 300));
+  const blink = (t % 3300) > 3150;
+  $('chibiEyes').setAttribute('transform', `translate(0 110) scale(1 ${blink ? .12 : 1}) translate(0 -110)`);
+  // 3 y 4
+  views.forEach(v => {
+    const tt = v.mode === 'manga' ? Math.floor(t / 110) * 110 : t;       // el manga se mueve a saltos
+    const hop = Math.abs(Math.sin(tt / 420));
+    v.pet.position.y = hop * .45;
+    v.pet.rotation.y = Math.sin(tt / 1400) * .7 + v.drag;
+    v.pet.rotation.z = Math.sin(tt / 420) * .06;
+    v.pet.scale.set(1 + (1 - hop) * .05, 1 - (1 - hop) * .06, 1 + (1 - hop) * .05);
+    v.armR.rotation.z = -.7 + Math.sin(tt / 210) * .18;
+    v.coin.rotation.y = tt / 300;
+    v.pupils.position.x = Math.sin(tt / 1500) > .2 ? 0 : -.1;
+    v.shadow.scale.set(1 - hop * .25, .45 * (1 - hop * .25), 1);
+    v.renderer.render(v.scene, v.cam);
+  });
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

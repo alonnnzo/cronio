@@ -1,0 +1,1 @@
+{"t":"text","sessionId":"s2","lines":["Listo: migré la tabla users a UUID.","","• Migración 014 aplicada en local","• Los 212 tests pasan","• Falta probar el rollback en staging"],"truncated":false,"mode":"summary"}

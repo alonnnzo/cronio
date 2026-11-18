@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lenguajes visuales — criatura-cursor</title>
+<style>
+  :root { --bg:#14131c; --panel:#1e1c2b; --ink:#ece9f5; --mute:#a5a1bd; --line:#34314a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,"Segoe UI",sans-serif; padding:24px 16px 48px; }
+  main { max-width:900px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--mute); margin:0 0 20px; max-width:66ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
+  article { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  h2 { font-size:16px; margin:12px 0 4px; }
+  article p { margin:0 0 6px; color:var(--mute); font-size:14px; }
+  article p b { color:var(--ink); font-weight:600; }
+  .screen { width:100%; aspect-ratio:4/3; border-radius:4px; overflow:hidden; background:#000; }
+  .screen canvas, .screen svg { width:100%; height:100%; display:block; }
+  canvas { image-rendering:pixelated; image-rendering:crisp-edges; }
+</style>
+</head>
+<body>
+<main>
+  <h1>La criatura-cursor en cuatro lenguajes visuales</h1>
+  <p class="lead">La misma mascota (un cursor de terminal que cobró vida, traviesa, que se roba tokens) dibujada de cuatro maneras,
+  cada una en una pantalla de 320 × 240. En todas acaba de robarse un token de Claude.</p>
+  <div class="grid">
+    <article>
+      <div class="screen"><canvas id="lcd" width="80" height="60"></canvas></div>
+      <h2>1. Pantalla LCD</h2>
+      <p>Un tono oscuro sobre fondo de cristal, más un color de acento por agente.</p>
+      <p><b>A favor:</b> el más liviano y el más reconocible. <b>En contra:</b> poco detalle; el texto largo necesita otra tipografía.</p>
+    </article>
+    <article>
+      <div class="screen"><svg id="menu" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>2. Menú de consola</h2>
+      <p>Blanco, redondeado y limpio, con la mascota en formas planas.</p>
+      <p><b>A favor:</b> el más legible para permisos y preguntas. <b>En contra:</b> el menos distintivo; se parece a muchas apps.</p>
+    </article>
+    <article>
+      <div class="screen"><svg id="term" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>3. Texto de terminal</h2>
+      <p>Todo son caracteres y bloques en ámbar sobre negro. La mascota parpadea como un cursor de verdad.</p>
+      <p><b>A favor:</b> coherencia total con los agentes. <b>En contra:</b> el menos tierno; la tienda y la ropa lucen poco.</p>
+    </article>
+    <article>
+      <div class="screen"><svg id="paper" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>4. Papel y recortes</h2>
+      <p>Figuras de papel en capas con sombra; se mueve a saltos, como animación cuadro a cuadro.</p>
+      <p><b>A favor:</b> cálido y luce el 3D de la pantalla superior. <b>En contra:</b> texturas más pesadas; más trabajo por pieza.</p>
+    </article>
+  </div>
+</main>
+
+<script>
+const CLAUDE = '#d97757';
+
+// ---------- 1. LCD ----------
+const LCD_BG = '#c7d3b3', LCD_INK = '#27301f', LCD_GHOST = '#b9c6a4';
+const BODY = [
+  "..##########..",
+  ".############.",
+  "##############",
+  "##############",
+  "##oo####oo####",
+  "##oo####oo####",
+  "##o#####o#####",
+  "##############",
+  "###o######o###",
+  "####oooooo####",
+  "##############",
+  "##############",
+  "##############",
+  "##############",
+  "##############",
+  ".############.",
+];
+const LEGS_A = ["..###....###..", "..###....###..", ".####...####.."];
+const LEGS_B = ["..###....###..", ".###......###.", "####......####"];
+function px(ctx, rows, ox, oy, ink, hole) {
+  rows.forEach((r, y) => [...r].forEach((ch, x) => {
+    if (ch === '.') return; ctx.fillStyle = ch === '#' ? ink : hole; ctx.fillRect(ox + x, oy + y, 1, 1);
+  }));
+}
+function lcd(ctx, t) {
+  ctx.fillStyle = LCD_BG; ctx.fillRect(0, 0, 80, 60);
+  ctx.fillStyle = LCD_GHOST; for (let i = 0; i < 6; i++) ctx.fillRect(4 + i * 5, 4, 4, 4);   // segmentos apagados
+  ctx.fillStyle = LCD_INK;   for (let i = 0; i < 4; i++) ctx.fillRect(4 + i * 5, 4, 4, 4);   // energía
+  // agentes: un cuadrado de acento por agente activo
+  [CLAUDE, '#4a7dff', LCD_GHOST, LCD_GHOST, LCD_GHOST].forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(52 + i * 5, 4, 4, 4); });
+  ctx.fillStyle = LCD_INK; ctx.fillRect(2, 11, 76, 1); ctx.fillRect(2, 50, 76, 1);
+  const f = Math.floor(t / 420) % 2, blink = (t % 3400) > 3250;
+  const ox = 30, oy = 20 - f;
+  const body = blink ? BODY.map((r, y) => (y >= 4 && y <= 5 ? r.replace(/o/g, '#') : y === 6 ? r.replace(/o#/g, 'oo') : r)) : BODY;
+  px(ctx, body, ox, oy, LCD_INK, LCD_BG);
+  px(ctx, f ? LEGS_B : LEGS_A, ox, oy + 16, LCD_INK, LCD_BG);
+  // brazo levantado con el token robado
+  ctx.fillStyle = LCD_INK; ctx.fillRect(ox + 14, oy + 6 - f, 3, 2); ctx.fillRect(ox + 16, oy + 2 - f, 2, 5);
+  ctx.fillStyle = CLAUDE; ctx.fillRect(ox + 15, oy - 4 - f, 5, 5);
+  ctx.fillStyle = LCD_BG; ctx.fillRect(ox + 17, oy - 2 - f, 1, 1);
+  ctx.fillStyle = LCD_INK; ctx.fillRect(ox - 3, oy + 8, 3, 2);
+  // fila de tokens que se va comiendo
+  const off = Math.floor(t / 140) % 6;
+  for (let x = 4 - off; x < 28; x += 6) if (x > 1) { ctx.fillStyle = LCD_INK; ctx.fillRect(x, 44, 3, 2); }
+  // barra inferior: A / B
+  ctx.fillStyle = LCD_INK; ctx.fillRect(6, 53, 30, 5); ctx.fillRect(44, 53, 30, 1); ctx.fillRect(44, 57, 30, 1); ctx.fillRect(44, 53, 1, 5); ctx.fillRect(73, 53, 1, 5);
+  ctx.fillStyle = LCD_BG; ctx.fillRect(19, 54, 3, 3); ctx.fillStyle = LCD_INK; ctx.fillRect(20, 55, 1, 1); ctx.fillRect(57, 55, 4, 1);
+}
+
+// ---------- 2. Menú de consola ----------
+document.getElementById('menu').innerHTML = `
+  <defs>
+    <pattern id="st" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="12" fill="#e9edf2"/></pattern>
+    <linearGradient id="mint" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4be3b9"/><stop offset="1" stop-color="#19b98f"/></linearGradient>
+  </defs>
+  <rect width="320" height="240" fill="#f4f6f9"/><rect width="320" height="240" fill="url(#st)"/>
+  <rect x="10" y="10" width="300" height="30" rx="15" fill="#fff" stroke="#dfe4ea"/>
+  <circle cx="28" cy="25" r="6" fill="${CLAUDE}"/>
+  <text x="42" y="29" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#39424e">Claude · mi-portal</text>
+  <text x="298" y="29" text-anchor="end" font-family="system-ui,sans-serif" font-size="11" fill="#8a94a3">pide permiso</text>
+  <ellipse cx="160" cy="166" rx="40" ry="6" fill="#dfe4ea"/>
+  <g id="mBody">
+    <rect x="138" y="152" width="14" height="14" rx="6" fill="#129a77"/><rect x="168" y="152" width="14" height="14" rx="6" fill="#129a77"/>
+    <rect x="128" y="62" width="64" height="96" rx="18" fill="url(#mint)"/>
+    <rect x="136" y="68" width="48" height="10" rx="5" fill="#fff" opacity=".35"/>
+    <circle cx="147" cy="98" r="9" fill="#fff"/><circle cx="175" cy="98" r="9" fill="#fff"/>
+    <g id="mPup"><circle cx="150" cy="100" r="4.5" fill="#1f2b33"/><circle cx="178" cy="100" r="4.5" fill="#1f2b33"/></g>
+    <path d="M136 86 L158 91" stroke="#0e7d61" stroke-width="4" stroke-linecap="round"/>
+    <path d="M146 120 Q162 134 178 116" fill="none" stroke="#1f2b33" stroke-width="4" stroke-linecap="round"/>
+    <rect x="188" y="98" width="22" height="10" rx="5" fill="#19b98f" transform="rotate(-38 188 103)"/>
+    <circle cx="212" cy="80" r="11" fill="${CLAUDE}" stroke="#fff" stroke-width="3"/>
+  </g>
+  <rect x="14" y="186" width="140" height="40" rx="20" fill="#19b98f"/>
+  <circle cx="36" cy="206" r="12" fill="#fff"/><text x="36" y="211" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#19b98f">A</text>
+  <text x="96" y="211" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#fff">Aprobar</text>
+  <rect x="166" y="186" width="140" height="40" rx="20" fill="#fff" stroke="#dfe4ea" stroke-width="2"/>
+  <circle cx="188" cy="206" r="12" fill="#eef1f5"/><text x="188" y="211" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#6b7685">B</text>
+  <text x="248" y="211" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#6b7685">Rechazar</text>`;
+
+// ---------- 3. Terminal ----------
+const AMB = '#ffb000', TBG = '#0c0a05';
+const mono = 'font-family="Consolas,Menlo,monospace" font-size="12"';
+document.getElementById('term').innerHTML = `
+  <rect width="320" height="240" fill="${TBG}"/>
+  <g fill="${AMB}" ${mono}>
+    <text x="12" y="24" opacity=".6">claude ~/mi-portal</text>
+    <text x="12" y="44">&gt; npm test</text>
+    <text x="12" y="60" opacity=".75">  42 pruebas correctas</text>
+    <text x="12" y="80">&gt; npm install sharp</text>
+    <text x="12" y="96" opacity=".75">  ¿permitir?  [A] sí  [B] no</text>
+    <text x="12" y="116">&gt; tokens: 11</text>
+    <text x="96" y="116" opacity=".6">(eran 12)</text>
+    <text x="12" y="224" opacity=".6">[L] agentes   [R] comandos   [Y] voz</text>
+  </g>
+  <g id="tCreature">
+    <g id="tBody" fill="${AMB}">
+      <rect x="208" y="118" width="56" height="70"/>
+      <rect x="216" y="188" width="14" height="12"/><rect x="242" y="188" width="14" height="12"/>
+      <rect x="264" y="140" width="14" height="8"/><rect x="272" y="124" width="8" height="20"/>
+    </g>
+    <g fill="${TBG}">
+      <rect x="218" y="134" width="10" height="12"/><rect x="242" y="134" width="10" height="12"/>
+      <rect x="218" y="134" width="10" height="4" opacity=".0"/>
+      <rect x="220" y="164" width="6" height="6"/><rect x="226" y="170" width="20" height="6"/><rect x="246" y="162" width="6" height="8"/>
+    </g>
+    <g fill="${AMB}"><rect x="223" y="140" width="5" height="6"/><rect x="247" y="140" width="5" height="6"/></g>
+    <text x="268" y="118" ${mono} font-weight="700" fill="${CLAUDE}">[1]</text>
+  </g>
+  <g opacity=".12" stroke="#000" stroke-width="1">${Array.from({length:60},(_,i)=>`<path d="M0 ${i*4+.5} H320"/>`).join('')}</g>`;
+
+// ---------- 4. Papel ----------
+document.getElementById('paper').innerHTML = `
+  <defs>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="4" stdDeviation="2.5" flood-color="#4a3424" flood-opacity=".35"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .2  0 0 0 0 .1  0 0 0 .12 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+  </defs>
+  <rect width="320" height="240" fill="#eadcc0"/>
+  <circle cx="250" cy="58" r="26" fill="#f6c453" filter="url(#sh)"/>
+  <path d="M-10 150 Q60 96 130 138 T330 120 V250 H-10Z" fill="#d7b48a" filter="url(#sh)"/>
+  <path d="M-10 182 Q90 140 180 176 T330 164 V250 H-10Z" fill="#c58f68" filter="url(#sh)"/>
+  <g id="pCreature" filter="url(#sh)">
+    <path d="M140 196 L138 214 L154 214 L153 196Z M170 196 L171 214 L187 214 L184 196Z" fill="#b8452f"/>
+    <path d="M128 86 L192 82 L197 196 L125 200Z" fill="#ec6a4b"/>
+    <path d="M192 128 L222 104 L228 112 L196 142Z" fill="#ec6a4b"/>
+    <circle cx="232" cy="98" r="13" fill="#f6c453"/><circle cx="232" cy="98" r="7" fill="none" stroke="#c9952a" stroke-width="2"/>
+    <circle cx="146" cy="120" r="10" fill="#fffaf0"/><circle cx="176" cy="118" r="10" fill="#fffaf0"/>
+    <g id="pPup"><circle cx="150" cy="122" r="4.5" fill="#2e2019"/><circle cx="180" cy="120" r="4.5" fill="#2e2019"/></g>
+    <path d="M133 108 L158 112 L158 107 L134 101Z" fill="#b8452f"/>
+    <path d="M144 146 Q160 164 182 142 Q164 154 144 146Z" fill="#2e2019"/>
+    <path d="M150 149 L156 151 L155 156Z" fill="#fffaf0"/>
+  </g>
+  <path d="M-10 214 Q160 202 330 216 V250 H-10Z" fill="#8f5d4a" filter="url(#sh)"/>
+  <rect width="320" height="240" filter="url(#grain)"/>`;
+
+// ---------- bucle ----------
+const lcdCtx = document.getElementById('lcd').getContext('2d');
+const $ = id => document.getElementById(id);
+function loop(t) {
+  lcd(lcdCtx, t);
+  const s = Math.sin(t / 500);
+  $('mBody').setAttribute('transform', `translate(160 166) scale(${1 + s * .02} ${1 - s * .02}) translate(-160 -166)`);
+  $('mPup').setAttribute('transform', `translate(${Math.sin(t / 1300) > 0 ? 0 : -6} 0)`);
+  $('tBody').setAttribute('opacity', (t % 1060) < 530 ? 1 : .28);          // parpadeo de cursor
+  const step = Math.floor(t / 220) % 4;                                     // movimiento a saltos
+  $('pCreature').setAttribute('transform', `rotate(${[-3, 1, 3, -1][step]} 160 200) translate(0 ${[0, -2, 0, -1][step]})`);
+  $('pPup').setAttribute('transform', `translate(${step < 2 ? 0 : -5} 0)`);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marca — propuesta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plata:#e6e9ee; --plata-2:#d3d8df; --blanco:#ffffff; --grafito:#2f343c; --gris:#6b737f;
+  --rojo:#e5383b; --naranja:#ff8a3d; --naranja-osc:#e86a1c; --cielo:#3fb0e6; --cielo-osc:#1f8fc8;
+  --linea:#c9cfd8;
+  --r-cuerpo:28px; --r-boton:999px; --r-tarjeta:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"M PLUS Rounded 1c",system-ui,sans-serif; color:var(--grafito); line-height:1.55;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 2px, transparent 2px 9px),
+    linear-gradient(#f4f6f9, #e3e7ec);
+  background-attachment:fixed;
+}
+a{color:var(--cielo-osc)}
+:focus-visible{outline:3px solid var(--cielo); outline-offset:3px}
+.wrap{max-width:1080px; margin:0 auto; padding:0 16px}
+
+/* ---------- consola ---------- */
+.hero{padding:40px 0 24px; display:grid; justify-items:center; gap:18px}
+.hero h1{font-size:15px; font-weight:500; color:var(--gris); margin:0; letter-spacing:.02em}
+.consola{width:min(520px,100%); display:grid; gap:0; filter:drop-shadow(0 18px 30px rgba(40,50,70,.22))}
+.tapa,.base{background:linear-gradient(160deg,#fbfcfd,#d9dee5 70%,#c7cdd6); border-radius:var(--r-cuerpo); padding:22px 26px; position:relative}
+.tapa{border-bottom-left-radius:10px; border-bottom-right-radius:10px; padding-bottom:16px}
+.base{border-top-left-radius:10px; border-top-right-radius:10px; padding-top:18px; display:grid; grid-template-columns:52px 1fr 52px; align-items:center; gap:10px}
+.bisagra{height:14px; margin:0 18px; background:linear-gradient(#aeb6c1,#dfe3e9 45%,#aeb6c1); border-radius:7px}
+.pantalla{background:#1b1e24; border-radius:10px; padding:7px; box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.sup .lcd{aspect-ratio:5/3}
+.inf .lcd{aspect-ratio:4/3}
+.lcd{border-radius:4px; overflow:hidden; position:relative;
+  background:repeating-linear-gradient(135deg,#fff 0 3px,#f1f3f6 3px 7px)}
+.barra{display:flex; justify-content:space-between; font-size:11px; color:var(--gris); padding:5px 9px; background:linear-gradient(#fff,#eef1f4); border-bottom:1px solid var(--linea)}
+.sup .lcd .centro{position:absolute; inset:24px 0 0; display:grid; place-items:center; align-content:center; gap:6px}
+.lema{font-size:12px; color:var(--gris)}
+.inf .lcd{display:grid; grid-template-rows:auto 1fr}
+.inf .lista{display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px; align-content:start}
+.btn3ds{font:inherit; font-weight:700; font-size:15px; color:var(--grafito); cursor:pointer;
+  border:1px solid #b9c0ca; border-radius:12px; padding:9px 6px;
+  background:linear-gradient(#ffffff,#e4e8ee); box-shadow:0 2px 0 #b9c0ca, inset 0 1px 0 #fff}
+.btn3ds:active{transform:translateY(2px); box-shadow:0 0 0 #b9c0ca}
+.btn3ds[aria-pressed="true"]{background:linear-gradient(#ffd0ad,#ff9d5c); border-color:var(--naranja-osc); box-shadow:0 2px 0 var(--naranja-osc), inset 0 1px 0 #ffe6d3; color:#4a2207}
+.cruceta,.botones{width:52px; height:52px; position:relative}
+.cruceta::before,.cruceta::after{content:""; position:absolute; background:#6d7480; border-radius:3px}
+.cruceta::before{left:18px; top:2px; width:16px; height:48px}
+.cruceta::after{top:18px; left:2px; width:48px; height:16px}
+.botones i{position:absolute; width:15px; height:15px; border-radius:50%; background:#8a919c; box-shadow:inset 0 -2px 0 rgba(0,0,0,.2)}
+.botones i:nth-child(1){left:18px; top:0} .botones i:nth-child(2){left:36px; top:18px}
+.botones i:nth-child(3){left:18px; top:36px} .botones i:nth-child(4){left:0; top:18px}
+.led{position:absolute; right:22px; top:10px; width:7px; height:7px; border-radius:50%; background:var(--cielo); box-shadow:0 0 6px var(--cielo)}
+.pista{font-size:14px; color:var(--gris); margin:0}
+
+/* ---------- logotipo ---------- */
+.marca{display:inline-flex; align-items:flex-end; font-weight:800; letter-spacing:-.01em; line-height:1; color:var(--grafito)}
+.marca .l{position:relative; display:inline-block}
+.marca .punto{position:absolute; left:50%; transform:translateX(-50%); width:.5em; height:.5em; top:-.22em}
+.marca .anim{display:block; width:100%; height:100%}
+.marca .ojo{display:inline-block; width:.66em; height:.66em; margin:0 .03em -.03em}
+.sup .marca{font-size:clamp(34px,8vw,50px)}
+svg.masc{display:block; width:100%; height:100%; overflow:visible}
+.salta{animation:salto 2.6s ease-in-out infinite}
+@keyframes salto{0%,70%,100%{transform:translateY(0)} 80%{transform:translateY(-10%)} 88%{transform:translateY(0)} 93%{transform:translateY(-4%)}}
+@media (prefers-reduced-motion:reduce){.salta{animation:none}}
+
+/* ---------- secciones ---------- */
+section{padding:36px 0}
+h2{font-size:28px; font-weight:800; margin:0 0 6px; line-height:1.2}
+.intro{margin:0 0 22px; max-width:62ch; color:var(--gris)}
+.panel{background:rgba(255,255,255,.85); border:1px solid var(--linea); border-radius:var(--r-tarjeta); padding:20px; box-shadow:0 1px 0 #fff inset}
+.grid{display:grid; gap:14px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.nombre-card{display:grid; gap:10px; cursor:pointer; text-align:left; font:inherit; color:inherit}
+.nombre-card[aria-pressed="true"]{border-color:var(--naranja); box-shadow:0 0 0 3px rgba(255,138,61,.25)}
+.nombre-card .marca{font-size:34px}
+.nombre-card p{margin:0; font-size:14.5px}
+.nota{font-size:13px; color:var(--gris)}
+.chip{display:inline-block; font-size:12px; font-weight:700; padding:2px 10px; border-radius:var(--r-boton); background:#fff1e6; color:#9a4510; border:1px solid #ffd2b0}
+.chip.azul{background:#e6f5fd; color:#145f86; border-color:#bfe5f8}
+
+.mascota-fila{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+.mascota{display:grid; justify-items:center; text-align:center; gap:6px; padding:16px 10px}
+.mascota .cara{width:64px; height:64px}
+.mascota b{font-size:20px}
+.mascota span{font-size:13px; color:var(--gris)}
+
+#personajes{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.pj{display:grid; gap:12px; align-content:start}
+.pj .retrato{width:100%; aspect-ratio:1; border-radius:20px; background:radial-gradient(circle at 50% 40%,#fff,#e8f4fb 70%); border:1px solid var(--linea); overflow:hidden}
+.pj .retrato svg{width:100%; height:100%; display:block}
+.pj h3{margin:0 0 2px; font-size:22px}
+.pj .rol{font-size:13px; font-weight:700; color:var(--cielo-osc); margin:0 0 6px}
+.pj p{margin:0; font-size:14px}
+.duo{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+.ficha{display:grid; gap:10px}
+.ficha .lamina{border-radius:20px; overflow:hidden; border:1px solid var(--linea)}
+.ficha .lamina svg{display:block; width:100%; height:auto}
+.ficha h3{margin:0; font-size:26px}
+.ficha .rol{margin:0; font-size:13px; font-weight:700; color:var(--cielo-osc)}
+.ficha p{margin:0; font-size:14.5px}
+.palabra-cara{display:inline-flex; align-items:center; gap:.06em; background:#ee7446; color:#12131a; font-family:"Dela Gothic One",sans-serif; font-weight:400; line-height:1; padding:.32em .45em .38em; border-radius:12px; letter-spacing:.02em}
+.palabra-cara i{display:inline-block; width:.42em; height:.66em; border-radius:50%; background:#12131a; position:relative; margin:0 .08em; top:.02em}
+.palabra-cara i::after{content:""; position:absolute; left:.07em; top:.1em; width:.14em; height:.14em; border-radius:50%; background:rgba(255,255,255,.85)}
+.ico-nuevo{background:#ee7446 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='34' cy='50' rx='11' ry='17' fill='%2312131a'/%3E%3Cellipse cx='66' cy='50' rx='11' ry='17' fill='%2312131a'/%3E%3Ccircle cx='30' cy='43' r='4' fill='%23fff' opacity='.85'/%3E%3Ccircle cx='62' cy='43' r='4' fill='%23fff' opacity='.85'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.logo-card{display:grid; gap:12px}
+.logo-card .lienzo{height:170px; border-radius:12px; display:grid; place-items:center; background:repeating-linear-gradient(135deg,#fff 0 3px,#f3f5f8 3px 7px); border:1px solid var(--linea)}
+.logo-card h3{margin:0; font-size:18px}
+.logo-card p{margin:0; font-size:14px}
+
+.apps{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.home{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:14px; border-radius:12px; background:repeating-linear-gradient(135deg,#fff 0 3px,#eef1f4 3px 7px); border:1px solid var(--linea)}
+.home .ic{aspect-ratio:1; border-radius:10px; background:linear-gradient(#fff,#e2e6ec); border:1px solid #c3c9d2; display:grid; place-items:center}
+.home .ic{min-width:0; min-height:0; overflow:hidden}
+.home .icono-app{width:78%; height:auto; aspect-ratio:1}
+.home .ic svg{width:70%; height:70%; display:block}
+.home .ic.sel{outline:3px solid var(--cielo); outline-offset:1px}
+.home .ic.vacio{background:rgba(255,255,255,.5); border-style:dashed}
+.icono-app{width:78%; height:78%; border-radius:22%; background:linear-gradient(160deg,#ffffff,#e9edf2); display:grid; place-items:center; box-shadow:inset 0 0 0 1px #d4d9e0}
+.icono-app svg{width:70%; height:70%}
+.ventana{border-radius:12px; overflow:hidden; border:1px solid #c3c9d2; background:#fff}
+.ventana .tit{display:flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(#fbfcfd,#e6e9ee); border-bottom:1px solid var(--linea); font-weight:700; font-size:13px}
+.ventana .tit .mini{width:18px; height:18px}
+.ventana .cuerpo{display:grid; grid-template-columns:120px 1fr; min-height:150px}
+.ventana .lado{background:linear-gradient(#f4f6f9,#e8ecf1); border-right:1px solid var(--linea); padding:10px; display:grid; gap:6px; align-content:start; font-size:12px}
+.ventana .lado span{padding:5px 8px; border-radius:8px}
+.ventana .lado span.on{background:#fff; box-shadow:0 1px 0 #c9cfd8; font-weight:700}
+.ventana .main{padding:14px; display:grid; gap:10px; align-content:start}
+.pastilla{justify-self:start; font:inherit; font-weight:700; font-size:13px; color:#fff; border:0; border-radius:var(--r-boton); padding:7px 16px; background:linear-gradient(#5cc4f2,var(--cielo-osc)); box-shadow:0 2px 0 #176f9c}
+.web{border-radius:12px; overflow:hidden; border:1px solid #c3c9d2; background:linear-gradient(#ffffff,#eef2f6); padding:22px 18px; display:grid; gap:10px; justify-items:start}
+.web .marca{font-size:30px}
+.web p{margin:0; font-size:14px; max-width:34ch}
+.pastilla.roja{background:linear-gradient(#ff6b6e,var(--rojo)); box-shadow:0 2px 0 #a8191c}
+
+.paleta{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px}
+.color{border-radius:14px; overflow:hidden; border:1px solid var(--linea); background:#fff}
+.color div{height:64px}
+.color p{margin:0; padding:8px 10px; font-size:13px}
+.color p b{display:block; font-size:14px}
+.tipo{display:grid; gap:4px}
+.tipo .a{font-size:44px; font-weight:800; line-height:1.1}
+.tipo .b{font-size:20px; font-weight:700}
+.tipo .c{font-size:15px}
+.aviso{border-left:4px solid var(--cielo); padding:10px 14px; background:#f2fafe; border-radius:8px; font-size:14px; margin-top:16px}
+footer{padding:30px 0 50px; color:var(--gris); font-size:13px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="gMasc" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#ffb27a"/><stop offset=".55" stop-color="#ff8a3d"/><stop offset="1" stop-color="#e86a1c"/>
+    </radialGradient>
+    <symbol id="masc" viewBox="0 0 100 100">
+      <circle cx="50" cy="52" r="44" fill="url(#gMasc)"/>
+      <ellipse cx="36" cy="34" rx="13" ry="7" fill="#fff" opacity=".45" transform="rotate(-25 36 34)"/>
+      <ellipse cx="37" cy="54" rx="8.5" ry="11" fill="#fff"/>
+      <ellipse cx="63" cy="54" rx="8.5" ry="11" fill="#fff"/>
+      <circle cx="39" cy="56" r="5" fill="#2f343c"/>
+      <circle cx="65" cy="56" r="5" fill="#2f343c"/>
+      <circle cx="41" cy="53.5" r="1.7" fill="#fff"/><circle cx="67" cy="53.5" r="1.7" fill="#fff"/>
+    </symbol>
+    <symbol id="chispas" viewBox="0 0 100 100">
+      <path d="M86 14l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#ffc94a"/>
+      <path d="M10 22l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z" fill="#ffc94a"/>
+    </symbol>
+    <symbol id="clamshell" viewBox="0 0 100 100">
+      <rect x="14" y="8" width="72" height="44" rx="10" fill="#e9edf2" stroke="#9aa3ae" stroke-width="3"/>
+      <rect x="22" y="15" width="56" height="30" rx="4" fill="#fff"/>
+      <rect x="10" y="56" width="80" height="38" rx="10" fill="#dfe4ea" stroke="#9aa3ae" stroke-width="3"/>
+      <rect x="30" y="62" width="40" height="26" rx="3" fill="#fff"/>
+      <rect x="20" y="51" width="60" height="7" rx="3.5" fill="#b8c0ca"/>
+      <use href="#masc" x="34" y="13" width="32" height="32"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="hero wrap">
+  <h1>Propuesta de marca · borrador para elegir</h1>
+  <div class="consola" aria-label="Consola de muestra con el nombre elegido">
+    <div class="tapa">
+      <span class="led" aria-hidden="true"></span>
+      <div class="pantalla sup"><div class="lcd">
+        <div class="barra"><span id="horaSup">12:00</span><span>Agentes: 3</span></div>
+        <div class="centro">
+          <div id="marcaSup"></div>
+          <div class="ico-nuevo" style="width:48px;height:48px;margin-top:10px" aria-label="Ícono de Cronio"></div>
+          <div class="lema" id="lemaSup"></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="bisagra" aria-hidden="true"></div>
+    <div class="base">
+      <div class="cruceta" aria-hidden="true"></div>
+      <div class="pantalla inf"><div class="lcd">
+        <div class="barra"><span>Elige un nombre</span><span>Toca</span></div>
+        <div class="lista" id="listaInf" role="group" aria-label="Nombres"></div>
+      </div></div>
+      <div class="botones" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    </div>
+  </div>
+  <p class="pista">Toca un nombre en la pantalla de abajo y mira cómo queda arriba y en todo el tablero.</p>
+</header>
+
+<main class="wrap">
+  <section>
+    <h2>Nombre de la app</h2>
+    <p class="intro">Cronio es tu idea y va primero. Las otras cuatro son alternativas con otra razón de ser. En todas, la mascota hace de punto de la «i» o de la última «o».</p>
+    <div class="grid g3" id="nombres"></div>
+  </section>
+
+  <section>
+    <h2>Logo elegido</h2>
+    <p class="intro">Se eligió la <b>opción 1 de <a href="logos.html">logos.html</a></b>: «La palabra es la cara». Las dos «O» de CRONIO son los ojos de la mascota. La mascota es la pantalla entera del color del agente con sus dos ojos: nunca un círculo ni una bolita.</p>
+    <div class="grid g2">
+      <div class="panel logo-card"><div class="lienzo"><div class="palabra-cara" style="font-size:44px">CR<i></i>NI<i></i></div></div>
+        <h3>Logo completo</h3><p>CRONIO en Dela Gothic One, tinta <code>#12131A</code>, sobre el rectángulo naranja <code>#EE7446</code>.</p></div>
+      <div class="panel logo-card"><div class="lienzo"><div class="ico-nuevo" style="width:120px;height:120px"></div></div>
+        <h3>Ícono</h3><p>El cuadrado naranja lleno, sin margen ni borde, con los dos ojos y sin letras. Va en el menú HOME, la bandeja, el acceso directo, la ventana y el navegador.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cro y Nio</h2>
+    <p class="intro">Tercera ronda: cabezones de cuerpo entero, cabeza grande y cuerpo chico, ojos de punto y colores planos, como los personajes de las consolas portátiles. Mantienen la idea «hecho de 3DS». Son dos hermanos, uno por pantalla: Cro vive en la de arriba y te cuenta lo que pasa; Nio vive en la de abajo, la que tocas, y te deja responder. Juntos forman el nombre: Cro + Nio. Todo su diseño sale de la consola, sin nada de Nintendo.</p>
+    <div class="duo" id="duo"></div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="panel"><b>La ropa es la consola abierta</b><p class="nota" style="margin:4px 0 0">Chaqueta de dos mitades unidas por una franja con bisagra a la altura de la cintura. Cro la lleva clara arriba, Nio la lleva oscura arriba: son las dos pantallas.</p></div>
+      <div class="panel"><b>El estilete es su bastón</b><p class="nota" style="margin:4px 0 0">Nio lleva un estilete gigante y en la punta va el punto naranja, la mascota que avisa dentro de la app. Cro lleva audífonos con la luz azul de notificación.</p></div>
+      <div class="panel"><b>Detalles de portátil</b><p class="nota" style="margin:4px 0 0">Horquillas con forma de tarjeta de juego, un botón circular en el pecho como el stick, y el pelo en los colores de las consolas: celeste y grafito.</p></div>
+    </div>
+    <p class="nota" style="margin-top:12px">Son bocetos en SVG para fijar la idea. El dibujo final conviene encargarlo a un ilustrador o generarlo con un modelo de imágenes usando esta ficha como guía; después se adapta a pixel art para la pantalla de la 3DS.</p>
+  </section>
+
+  <section>
+    <h2>Personaje anime · primera ronda</h2>
+    <p class="intro">Cuatro personajes originales para la cara de la marca: el logo grande, la web y la pantalla de inicio de la 3DS. El punto naranja sigue siendo el que avisa dentro de la app, y cada personaje lo lleva consigo. Son bocetos para elegir dirección; el dibujo final se afina después.</p>
+    <div class="grid g2" id="personajes"></div>
+  </section>
+
+  <section>
+    <h2>Logo</h2>
+    <p class="intro">Ya está decidido: opción 1, «La palabra es la cara» (arriba). Las otras siete opciones y el detalle de cada una siguen en <a href="logos.html">logos.html</a>.</p>
+  </section>
+
+  <section>
+    <h2>Dónde se usa</h2>
+    <p class="intro">La misma estética en las tres piezas: plata y blanco con rayitas finas, botones con relieve suave, esquinas redondas y un acento de color por acción.</p>
+    <div class="apps">
+      <div class="panel">
+        <p style="margin:0 0 10px"><b>Menú HOME de la 3DS</b></p>
+        <div class="home">
+          <div class="ic"><div class="icono-app" style="width:80%;height:80%;background:linear-gradient(#e9f6fd,#cfe9f7)"></div></div>
+          <div class="ic sel"><div class="icono-app"><svg aria-hidden="true"><use href="#masc"/><use href="#chispas"/></svg></div></div>
+          <div class="ic"><div class="icono-app" style="width:80%;height:80%;background:linear-gradient(#fdeeee,#f6cfd0)"></div></div>
+          <div class="ic vacio"></div>
+          <div class="ic vacio"></div><div class="ic vacio"></div><div class="ic vacio"></div><div class="ic vacio"></div>
+        </div>
+        <p class="nota" style="margin:8px 0 0">El ícono queda en el menú HOME al instalar el .cia.</p>
+      </div>
+      <div class="panel">
+        <p style="margin:0 0 10px"><b>Programa del PC</b></p>
+        <div class="ventana">
+          <div class="tit"><svg class="mini" aria-hidden="true"><use href="#masc"/></svg><span data-nombre></span></div>
+          <div class="cuerpo">
+            <div class="lado"><span>Qué necesitas</span><span class="on">Claude Code</span><span>Este PC</span><span>La 3DS</span><span>Emparejar</span></div>
+            <div class="main"><b>Conectar Claude Code</b><span style="font-size:13px;color:var(--gris)">Los permisos y preguntas llegan a la 3DS.</span><button class="pastilla" type="button">Hacerlo por mí</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <p style="margin:0 0 10px"><b>Página de descarga</b></p>
+        <div class="web">
+          <div class="marca" data-marca></div>
+          <p>Tus agentes de IA en la 3DS. Aprueba permisos, responde preguntas y mándales instrucciones sin volver al PC.</p>
+          <button class="pastilla roja" type="button">Descargar para Windows</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Colores y letra</h2>
+    <p class="intro">Una sola familia de letra, redonda y gruesa, como la de las consolas portátiles. El naranja es solo de la mascota; las acciones usan celeste y la descarga usa rojo.</p>
+    <div class="paleta">
+      <div class="color"><div style="background:var(--plata)"></div><p><b>Plata</b>#E6E9EE · carcasa y fondos</p></div>
+      <div class="color"><div style="background:var(--blanco)"></div><p><b>Blanco</b>#FFFFFF · pantallas y tarjetas</p></div>
+      <div class="color"><div style="background:var(--grafito)"></div><p><b>Grafito</b>#2F343C · texto</p></div>
+      <div class="color"><div style="background:var(--naranja)"></div><p><b>Naranja mascota</b>#FF8A3D · solo la mascota</p></div>
+      <div class="color"><div style="background:var(--cielo)"></div><p><b>Celeste</b>#3FB0E6 · botones y selección</p></div>
+      <div class="color"><div style="background:var(--rojo)"></div><p><b>Rojo</b>#E5383B · descargar y avisos</p></div>
+    </div>
+    <div class="panel tipo" style="margin-top:14px">
+      <span class="a">M PLUS Rounded 1c</span>
+      <span class="b">Claude quiere editar app.c</span>
+      <span class="c">Letra libre de Google Fonts, con acentos y ñ. En la 3DS se usa la misma forma redonda en negrita para títulos.</span>
+    </div>
+    <div class="aviso">La estética se inspira en las consolas portátiles, pero no usa logos, letras ni nombres de Nintendo. Así la app se puede publicar sin problemas de marca. Antes de decidir el nombre conviene revisar que nadie lo tenga registrado.</div>
+  </section>
+</main>
+
+<footer class="wrap">Borrador en <code>art/marca/index.html</code>. Nada de esto está aplicado todavía a la app.</footer>
+
+<script>
+const NOMBRES = [
+  {n:"Cronio", lema:"Tus agentes, al alcance de la mano", t:"Tu idea. Suena a tiempo y a crónica: la app te va contando lo que pasa mientras no miras el PC. Corto, fácil de decir en cualquier idioma.", chip:"Tu propuesta"},
+  {n:"Bisagra", lema:"Entre tu PC y tu bolsillo", t:"La pieza que une las dos pantallas de la consola, y la app une tu PC con tu mano. Muy nuestro en español; afuera cuesta pronunciarlo.", chip:"Alternativa"},
+  {n:"Dúo", lema:"Tú y tus agentes, en dos pantallas", t:"Dos pantallas, dos lados (tú y el agente). Muy corto y amable; por eso mismo es un nombre que usan muchas otras apps.", chip:"Alternativa"},
+  {n:"Pulso", lema:"Siente cómo van tus agentes", t:"Le tomas el pulso a tus agentes sin abrir el PC. Habla de avisos y de vida; la mascota late cuando algo pasa.", chip:"Alternativa"},
+  {n:"Faro", lema:"Te avisa cuando algo pasa", t:"Vigila y avisa desde lejos. Encaja con la luz de la consola que se enciende cuando un agente te necesita.", chip:"Alternativa"}
+];
+const MASCOTAS = [
+  {n:"Chispa", t:"Por las chispas que tiene alrededor"},
+  {n:"Pipo", t:"Corto y tierno; suena a aviso: «¡pip!»"},
+  {n:"Nuki", t:"Suave y fácil en cualquier idioma"},
+  {n:"Bolo", t:"Por su forma: una bolita"},
+  {n:"Tiki", t:"Suena a reloj, va bien con Cronio"},
+  {n:"Mochi", t:"Redondo y blandito como el dulce"}
+];
+const SVG_MASC = '<svg class="masc" viewBox="0 0 100 100"><use href="#masc"/></svg>';
+
+// Arma el logotipo: la mascota hace de punto de la «i» (ı sin punto) o reemplaza la última «o».
+function marcaHTML(nombre, salta){
+  const chars = [...nombre];
+  let idx = chars.findIndex(c => c === "i");
+  const modo = idx >= 0 ? "i" : "o";
+  if (idx < 0) idx = chars.map(c => c.toLowerCase()).lastIndexOf("o");
+  return chars.map((c,k) => {
+    if (k !== idx) return `<span class="l">${c}</span>`;
+    if (modo === "i") return `<span class="l">ı<span class="punto"><span class="anim ${salta?'salta':''}">${SVG_MASC}</span></span></span>`;
+    return `<span class="ojo"><span class="anim ${salta?'salta':''}">${SVG_MASC}</span></span>`;
+  }).join("");
+}
+
+let elegido = 0;
+function pintar(){
+  const it = NOMBRES[elegido];
+  const sup = document.getElementById("marcaSup");
+  // el logo elegido (opción 1 de logos.html) va fijo arriba, sea cual sea el nombre que se pruebe abajo
+  sup.className = "palabra-cara"; sup.style.fontSize = "46px"; sup.innerHTML = "CR<i></i>NI<i></i>";
+  sup.setAttribute("aria-label", "Cronio");
+  document.getElementById("lemaSup").textContent = it.lema;
+  document.querySelectorAll("[data-marca]").forEach(el => { el.classList.add("marca"); el.innerHTML = marcaHTML(it.n, false); el.setAttribute("aria-label", it.n); });
+  document.querySelectorAll("[data-nombre]").forEach(el => el.textContent = it.n);
+  document.querySelectorAll("[data-i]").forEach(el => el.setAttribute("aria-pressed", String(+el.dataset.i === elegido)));
+}
+function elegir(i){ elegido = i; pintar(); }
+
+const lista = document.getElementById("listaInf");
+const tarjetas = document.getElementById("nombres");
+NOMBRES.forEach((it,i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "btn3ds"; b.dataset.i = i; b.textContent = it.n;
+  b.addEventListener("click", () => elegir(i));
+  lista.appendChild(b);
+
+  const c = document.createElement("button");
+  c.type = "button"; c.className = "panel nombre-card"; c.dataset.i = i;
+  c.innerHTML = `<span class="chip ${i? 'azul':''}">${it.chip}</span><div class="marca">${marcaHTML(it.n,false)}</div><p>${it.t}</p>`;
+  c.addEventListener("click", () => { elegir(i); window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto':'smooth'}); });
+  tarjetas.appendChild(c);
+});
+// ---------- personajes anime (bocetos SVG) ----------
+// Cabeza chibi común; cada personaje cambia pelo, ojos, ropa y accesorios.
+function cabeza(o){
+  const ojo = (x) => `
+    <ellipse cx="${x}" cy="114" rx="11.5" ry="14.5" fill="#2b2240"/>
+    <ellipse cx="${x}" cy="118" rx="9" ry="10.5" fill="${o.iris}"/>
+    <ellipse cx="${x}" cy="121" rx="5" ry="6" fill="#2b2240"/>
+    <circle cx="${x-4}" cy="107" r="4.2" fill="#fff"/><circle cx="${x+4}" cy="124" r="2" fill="#fff"/>
+    <path d="M${x-14} 103 Q${x} 94 ${x+14} 103" stroke="#2b2240" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="${o.nombre}">
+    ${o.detras||""}
+    <path d="M48 200 Q52 162 100 156 Q148 162 152 200Z" fill="${o.ropa}"/>
+    <rect x="90" y="140" width="20" height="22" rx="8" fill="${o.piel2}"/>
+    ${o.cuello||""}
+    <path d="M52 98 Q52 150 100 158 Q148 150 148 98 Q148 56 100 56 Q52 56 52 98Z" fill="${o.piel}"/>
+    ${ojo(79)}${ojo(121)}
+    <ellipse cx="66" cy="134" rx="8" ry="4.5" fill="#ff9aa8" opacity=".55"/>
+    <ellipse cx="134" cy="134" rx="8" ry="4.5" fill="#ff9aa8" opacity=".55"/>
+    <path d="M94 139 Q100 144 106 139" stroke="#7a3b2e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    ${o.pelo}
+    ${o.delante||""}
+  </svg>`;
+}
+const PIEL = "#ffe6d4", PIEL2 = "#f6cdb3";
+const PERSONAJES = [
+  { nombre:"Iris", rol:"La mensajera · al estilo Hermes",
+    t:"En la mitología, Iris es la mensajera de los dioses, como Hermes. Lleva un gorro con alitas y una carta sellada con el punto naranja: trae y lleva los mensajes entre tu PC y tu 3DS.",
+    svg: cabeza({ nombre:"Iris", iris:"#3fb0e6", piel:PIEL, piel2:PIEL2, ropa:"#ffffff",
+      detras:`<path d="M44 100 Q40 160 62 176 L70 120Z M156 100 Q160 160 138 176 L130 120Z" fill="#2d3a6b"/>`,
+      cuello:`<path d="M70 160 Q100 176 130 160 L126 172 Q100 186 74 172Z" fill="#ff8a3d"/>`,
+      pelo:`<path d="M50 104 Q46 56 100 50 Q154 56 150 104 Q140 82 124 80 Q118 94 104 92 Q100 80 92 92 Q80 96 76 82 Q60 86 50 104Z" fill="#2d3a6b"/>
+            <path d="M54 70 Q100 22 146 70 Q150 78 146 82 Q100 60 54 82 Q50 78 54 70Z" fill="#fff" stroke="#c9cfd8" stroke-width="2"/>
+            <path d="M54 72 Q30 54 22 66 Q34 70 30 78 Q44 76 40 84 Q50 80 54 80Z" fill="#fff" stroke="#c9cfd8" stroke-width="2"/>
+            <path d="M146 72 Q170 54 178 66 Q166 70 170 78 Q156 76 160 84 Q150 80 146 80Z" fill="#fff" stroke="#c9cfd8" stroke-width="2"/>`,
+      delante:`<rect x="112" y="166" width="46" height="30" rx="4" fill="#fffaf2" stroke="#c9cfd8" stroke-width="2" transform="rotate(-8 135 181)"/>
+               <path d="M114 170 L135 184 L156 166" stroke="#c9cfd8" stroke-width="2" fill="none" transform="rotate(-8 135 181)"/>
+               <use href="#masc" x="127" y="173" width="16" height="16"/>` }) },
+  { nombre:"Nami", rol:"La operadora",
+    t:"Audífonos con micrófono y una consola de dos pantallas en la mano. Es la que atiende tus agentes como una central: te pasa cada permiso y cada pregunta. Su pelo es del naranja de la marca.",
+    svg: cabeza({ nombre:"Nami", iris:"#ff8a3d", piel:PIEL, piel2:PIEL2, ropa:"#3fb0e6",
+      detras:`<path d="M140 80 Q186 90 176 150 Q170 120 150 112Z" fill="#f26b1d"/>`,
+      pelo:`<path d="M50 106 Q44 52 100 48 Q156 52 150 106 Q144 84 128 76 Q120 92 102 90 Q96 78 88 90 Q72 94 70 78 Q56 86 50 106Z" fill="#ff8a3d"/>
+            <circle cx="146" cy="78" r="9" fill="#e5383b"/>`,
+      delante:`<path d="M48 104 Q48 40 100 40 Q152 40 152 104" stroke="#3a3f47" stroke-width="7" fill="none"/>
+               <rect x="38" y="94" width="18" height="30" rx="8" fill="#3a3f47"/><rect x="144" y="94" width="18" height="30" rx="8" fill="#3a3f47"/>
+               <path d="M48 122 Q56 150 84 146" stroke="#3a3f47" stroke-width="4" fill="none" stroke-linecap="round"/>
+               <circle cx="86" cy="146" r="5" fill="#3a3f47"/>
+               <use href="#clamshell" x="58" y="158" width="44" height="44"/>` }) },
+  { nombre:"Kon", rol:"El zorrito",
+    t:"Un chico con orejas de zorro (en japonés el zorro dice «kon»). Junto a él flota un fuego fatuo, que es el punto naranja: aparece cuando un agente necesita algo.",
+    svg: cabeza({ nombre:"Kon", iris:"#f2b134", piel:PIEL, piel2:PIEL2, ropa:"#2f343c",
+      detras:`<path d="M58 70 L44 18 L88 54Z" fill="#ff8a3d"/><path d="M60 62 L52 32 L78 54Z" fill="#fff1e6"/>
+              <path d="M142 70 L156 18 L112 54Z" fill="#ff8a3d"/><path d="M140 62 L148 32 L122 54Z" fill="#fff1e6"/>`,
+      cuello:`<path d="M80 158 L100 176 L120 158" stroke="#ff8a3d" stroke-width="5" fill="none"/>`,
+      pelo:`<path d="M50 108 Q42 54 100 50 Q158 54 150 108 Q146 86 132 80 L126 98 L114 82 L104 100 L96 82 L86 98 L74 80 Q56 88 50 108Z" fill="#fff1e6" stroke="#f5cfae" stroke-width="2"/>`,
+      delante:`<g class="salta"><use href="#masc" x="150" y="28" width="34" height="34"/><use href="#chispas" x="146" y="22" width="42" height="42"/></g>` }) },
+  { nombre:"Tiki", rol:"La androide",
+    t:"Una androide pequeña con una antena que termina en el punto naranja: cuando un agente termina o pide permiso, la antena se enciende. Sus ojos celestes son los de la pantalla de la consola.",
+    svg: cabeza({ nombre:"Tiki", iris:"#6fd3ff", piel:"#fff3ea", piel2:"#efd9c8", ropa:"#e6e9ee",
+      cuello:`<rect x="76" y="160" width="48" height="10" rx="5" fill="#c9cfd8"/>`,
+      pelo:`<path d="M50 112 Q44 52 100 48 Q156 52 150 112 L146 96 Q140 78 120 76 Q112 90 100 86 Q86 92 76 78 Q58 82 54 98Z" fill="#cdd5df"/>
+            <path d="M50 112 L46 150 L60 128Z M150 112 L154 150 L140 128Z" fill="#cdd5df"/>
+            <line x1="100" y1="48" x2="100" y2="22" stroke="#9aa3ae" stroke-width="4"/>`,
+      delante:`<use href="#masc" x="88" y="6" width="24" height="24"/>
+               <rect x="40" y="98" width="14" height="24" rx="5" fill="#ff8a3d"/><rect x="146" y="98" width="14" height="24" rx="5" fill="#ff8a3d"/>
+               <path d="M60 140 L70 140" stroke="#c9cfd8" stroke-width="2"/>` }) }
+];
+// ---------- Cro y Nio: chibi de medio cuerpo (viewBox 240×300) ----------
+function ojoGrande(x, y, iris){
+  return `<ellipse cx="${x}" cy="${y}" rx="13" ry="16.5" fill="#22203a"/>
+    <ellipse cx="${x}" cy="${y+4}" rx="10.5" ry="12.5" fill="${iris}"/>
+    <ellipse cx="${x}" cy="${y+9}" rx="8" ry="5" fill="#fff" opacity=".28"/>
+    <ellipse cx="${x}" cy="${y+5}" rx="5.5" ry="7" fill="#22203a"/>
+    <circle cx="${x-4.5}" cy="${y-6}" r="4.8" fill="#fff"/><circle cx="${x+4.5}" cy="${y+10}" r="2.2" fill="#fff"/>
+    <path d="M${x-16} ${y-10} Q${x} ${y-21} ${x+16} ${y-10}" stroke="#22203a" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
+}
+function chibi(o){
+  return `<svg viewBox="0 0 240 300" role="img" aria-label="${o.nombre}">
+    <defs><linearGradient id="fondo-${o.nombre}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${o.fondo1}"/><stop offset="1" stop-color="${o.fondo2}"/></linearGradient></defs>
+    <rect width="240" height="300" fill="url(#fondo-${o.nombre})"/>
+    <g opacity=".5">${Array.from({length:14},(_,k)=>`<line x1="${k*22-60}" y1="0" x2="${k*22+60}" y2="300" stroke="#fff" stroke-width="2"/>`).join("")}</g>
+    ${o.atras||""}
+    <!-- torso: chaqueta en dos mitades con bisagra -->
+    <path d="M44 300 Q46 214 120 204 Q194 214 196 300Z" fill="${o.abajo}"/>
+    <path d="M52 250 Q60 212 120 204 Q180 212 188 250Z" fill="${o.arriba}"/>
+    <rect x="50" y="246" width="140" height="11" rx="5.5" fill="#aeb6c1"/>
+    <rect x="58" y="244" width="18" height="15" rx="6" fill="#8d96a3"/><rect x="164" y="244" width="18" height="15" rx="6" fill="#8d96a3"/>
+    <path d="M100 206 L120 230 L140 206" fill="none" stroke="${o.cuello}" stroke-width="7" stroke-linejoin="round"/>
+    <circle cx="150" cy="276" r="10" fill="#3a3f47"/><circle cx="150" cy="276" r="6.5" fill="#5b636f"/>
+    <rect x="108" y="176" width="24" height="32" rx="10" fill="#f3cbb0"/>
+    ${o.atrasPelo||""}
+    <!-- cara -->
+    <path d="M66 112 Q66 176 120 186 Q174 176 174 112 Q174 64 120 64 Q66 64 66 112Z" fill="#ffe7d6"/>
+    ${ojoGrande(96,128,o.iris)}${ojoGrande(144,128,o.iris)}
+    <ellipse cx="80" cy="152" rx="9" ry="5" fill="#ff98a8" opacity=".5"/><ellipse cx="160" cy="152" rx="9" ry="5" fill="#ff98a8" opacity=".5"/>
+    <path d="${o.boca||'M113 160 Q120 166 127 160'}" stroke="#7a3b2e" stroke-width="2.8" fill="${o.bocaRelleno||'none'}" stroke-linecap="round"/>
+    ${o.pelo}
+    ${o.frente||""}
+  </svg>`;
+}
+// horquilla con forma de tarjeta de juego (esquina recortada)
+const tarjeta = (x,y,rot,c) => `<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M0 0 H14 L18 4 V20 H0Z" fill="${c}" stroke="#fff" stroke-width="1.5"/><rect x="3" y="4" width="9" height="6" rx="1" fill="#fff" opacity=".85"/></g>`;
+const DUO = [
+  { nombre:"Cro", rol:"Pantalla de arriba · te cuenta lo que pasa",
+    t:"El hermano mayor, tranquilo y atento. Lleva audífonos con la luz azul de notificación: cuando un agente termina o pide algo, la luz se enciende y él te lo cuenta. Chaqueta clara arriba, como la pantalla grande.",
+    svg: chibi({ nombre:"Cro", iris:"#3fb0e6", fondo1:"#eaf6fd", fondo2:"#cfe8f6", arriba:"#f4f6f9", abajo:"#3a3f47", cuello:"#3fb0e6",
+      atrasPelo:`<path d="M62 120 Q58 196 84 200 L84 130Z M178 120 Q182 196 156 200 L156 130Z" fill="#3a3f52"/>`,
+      pelo:`<path d="M62 124 Q52 56 120 50 Q188 56 178 124 L170 100 Q164 82 150 78 L146 98 L134 80 L124 100 L114 80 L104 98 L94 80 Q76 86 70 104Z" fill="#3a3f52"/>
+            <path d="M86 70 Q110 58 140 66" stroke="#5c6584" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+      frente:`<path d="M60 116 Q60 40 120 40 Q180 40 180 116" stroke="#e6e9ee" stroke-width="9" fill="none"/>
+              <rect x="48" y="104" width="22" height="36" rx="10" fill="#e6e9ee" stroke="#aeb6c1" stroke-width="2"/>
+              <rect x="170" y="104" width="22" height="36" rx="10" fill="#e6e9ee" stroke="#aeb6c1" stroke-width="2"/>
+              <circle cx="181" cy="122" r="5" fill="#3fd3ff"/><circle cx="181" cy="122" r="11" fill="#3fd3ff" opacity=".25"/>
+              ${tarjeta(70,84,-18,"#3fb0e6")}` }) },
+  { nombre:"Nio", rol:"Pantalla de abajo · te deja responder",
+    t:"La hermana menor, rápida y curiosa. Usa un estilete gigante como bastón y en la punta lleva el punto naranja: con él aprueba permisos y escribe tus instrucciones. Chaqueta oscura arriba, como la pantalla táctil.",
+    svg: chibi({ nombre:"Nio", iris:"#ff8a3d", fondo1:"#fff3ea", fondo2:"#ffe0c9", arriba:"#3a3f47", abajo:"#f4f6f9", cuello:"#ff8a3d",
+      boca:"M112 158 Q120 168 128 158 Z", bocaRelleno:"#c9574a",
+      atras:`<line x1="180" y1="296" x2="204" y2="66" stroke="#9aa3ae" stroke-width="16" stroke-linecap="round"/>
+             <line x1="180" y1="296" x2="204" y2="66" stroke="#e6e9ee" stroke-width="11" stroke-linecap="round"/>
+             <line x1="200" y1="104" x2="204" y2="66" stroke="#aeb6c1" stroke-width="11" stroke-linecap="round"/>
+             <use href="#masc" x="182" y="24" width="44" height="44"/><use href="#chispas" x="172" y="14" width="64" height="64"/>`,
+      atrasPelo:`<path d="M60 116 Q40 210 70 236 Q76 190 86 140Z M180 116 Q200 210 170 236 Q164 190 154 140Z" fill="#45b4e6"/>`,
+      pelo:`<path d="M60 128 Q50 54 120 48 Q190 54 180 128 Q176 98 160 84 Q150 104 128 100 Q122 84 112 100 Q90 106 84 84 Q66 100 60 128Z" fill="#45b4e6"/>
+            <path d="M84 66 Q112 52 146 62" stroke="#a6e1fa" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M150 58 Q176 30 196 46 Q178 52 172 70Z" fill="#45b4e6"/>`,
+      frente:`${tarjeta(148,82,16,"#e5383b")}${tarjeta(160,94,28,"#ff8a3d")}
+              <ellipse cx="186" cy="236" rx="13" ry="12" fill="#ffe7d6" stroke="#f3cbb0" stroke-width="2"/>` }) }
+];
+// ---------- Tercera ronda: cabezones de cuerpo entero (viewBox 200×260) ----------
+// Cabeza enorme (más de la mitad del alto), cuerpo chico, manos sin dedos, ojos de punto y colores planos sin contorno.
+function cabezon(o){
+  const ojo = (x) => `<ellipse cx="${x}" cy="104" rx="6.5" ry="9" fill="#2a2530"/><circle cx="${x-2}" cy="100" r="2.3" fill="#fff"/>`;
+  return `<svg viewBox="0 0 200 260" role="img" aria-label="${o.nombre}">
+    <rect width="200" height="260" fill="${o.fondo}"/>
+    <circle cx="100" cy="100" r="92" fill="#fff" opacity=".55"/>
+    <ellipse cx="100" cy="250" rx="52" ry="6" fill="#000" opacity=".12"/>
+    ${o.atras||""}
+    <!-- piernas y zapatos -->
+    <rect x="80" y="206" width="16" height="34" rx="7" fill="${o.piernas}"/><rect x="104" y="206" width="16" height="34" rx="7" fill="${o.piernas}"/>
+    <ellipse cx="87" cy="243" rx="13" ry="7" fill="${o.zapatos}"/><ellipse cx="113" cy="243" rx="13" ry="7" fill="${o.zapatos}"/>
+    <!-- cuerpo: chaqueta de dos mitades con bisagra -->
+    <path d="M70 176 Q70 150 100 150 Q130 150 130 176 Z" fill="${o.arriba}"/>
+    <path d="M68 176 H132 V200 Q132 216 116 216 H84 Q68 216 68 200 Z" fill="${o.abajo}"/>
+    <rect x="66" y="172" width="68" height="9" rx="4.5" fill="#aeb6c1"/>
+    <rect x="72" y="170" width="10" height="13" rx="4" fill="#8d96a3"/><rect x="118" y="170" width="10" height="13" rx="4" fill="#8d96a3"/>
+    <path d="M90 151 L100 162 L110 151" fill="none" stroke="${o.cuello}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- brazos -->
+    <ellipse cx="62" cy="178" rx="9" ry="20" transform="rotate(${o.brazoIzq||18} 62 178)" fill="${o.arriba}"/>
+    <circle cx="${o.manoIzq?.[0]??56}" cy="${o.manoIzq?.[1]??196}" r="8.5" fill="#ffe1c7"/>
+    <ellipse cx="138" cy="178" rx="9" ry="20" transform="rotate(${o.brazoDer||-18} 138 178)" fill="${o.arriba}"/>
+    ${o.atrasPelo||""}
+    <!-- cabeza -->
+    <ellipse cx="100" cy="96" rx="66" ry="62" fill="#ffe1c7"/>
+    <ellipse cx="100" cy="150" rx="22" ry="5" fill="#f2c5a6" opacity=".7"/>
+    ${o.pelo}
+    ${ojo(80)}${ojo(120)}
+    <path d="M72 88 Q80 84 88 88 M112 88 Q120 84 128 88" stroke="${o.cejas}" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="66" cy="118" rx="9" ry="5.5" fill="#ff9aa6" opacity=".55"/><ellipse cx="134" cy="118" rx="9" ry="5.5" fill="#ff9aa6" opacity=".55"/>
+    <path d="M97 113 Q100 116 103 113" stroke="#e0a78a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    ${o.boca}
+    <circle cx="${o.manoDer?.[0]??144}" cy="${o.manoDer?.[1]??196}" r="8.5" fill="#ffe1c7"/>
+    ${o.frente||""}
+  </svg>`;
+}
+const CABEZONES = [
+  { nombre:"Cro", rol:"Pantalla de arriba · te cuenta lo que pasa",
+    t:"Tranquilo y atento. Sus audífonos tienen la luz azul de notificación: se enciende cuando un agente termina o pide algo, y él te lo cuenta. Chaqueta clara arriba, como la pantalla grande.",
+    svg: cabezon({ nombre:"Cro", fondo:"#dff1fb", arriba:"#f4f6f9", abajo:"#3a3f47", piernas:"#3a3f47", zapatos:"#3fb0e6", cuello:"#3fb0e6", cejas:"#3a3f52",
+      boca:`<path d="M93 126 Q100 132 107 126" stroke="#8a4636" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+      pelo:`<path d="M34 100 Q30 30 100 28 Q170 30 166 100 Q160 74 146 66 Q138 80 122 74 Q112 84 100 72 Q86 84 76 70 Q58 76 52 92 Q44 92 34 100Z" fill="#3a3f52"/>
+            <path d="M70 42 Q96 32 126 38" stroke="#59617d" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+      frente:`<path d="M30 98 Q30 18 100 18 Q170 18 170 98" stroke="#e9edf2" stroke-width="8" fill="none"/>
+              <rect x="20" y="84" width="20" height="34" rx="10" fill="#e9edf2"/><rect x="160" y="84" width="20" height="34" rx="10" fill="#e9edf2"/>
+              <circle cx="170" cy="101" r="5" fill="#3fd3ff"/><circle cx="170" cy="101" r="11" fill="#3fd3ff" opacity=".25"/>` }) },
+  { nombre:"Nio", rol:"Pantalla de abajo · te deja responder",
+    t:"Rápida y curiosa. Usa un estilete más alto que ella y en la punta lleva el punto naranja: con él aprueba permisos y escribe tus instrucciones. Chaqueta oscura arriba, como la pantalla táctil.",
+    svg: cabezon({ nombre:"Nio", fondo:"#ffeede", arriba:"#3a3f47", abajo:"#f4f6f9", piernas:"#ffe1c7", zapatos:"#ff8a3d", cuello:"#ff8a3d", cejas:"#2c86b8",
+      brazoDer:-40, manoDer:[152,182],
+      boca:`<path d="M94 125 Q100 134 106 125 Z" fill="#c95a4c"/>`,
+      atras:`<line x1="156" y1="246" x2="164" y2="44" stroke="#9aa3ae" stroke-width="11" stroke-linecap="round"/>
+             <line x1="156" y1="246" x2="164" y2="44" stroke="#eef1f5" stroke-width="7" stroke-linecap="round"/>
+             <use href="#masc" x="146" y="10" width="38" height="38"/><use href="#chispas" x="136" y="0" width="58" height="58"/>`,
+      atrasPelo:`<path d="M150 80 Q192 86 184 140 Q174 118 158 112Z" fill="#45b4e6"/><circle cx="160" cy="86" r="7" fill="#e5383b"/>`,
+      pelo:`<path d="M34 104 Q28 30 100 28 Q172 30 166 104 Q162 76 150 66 Q140 84 118 80 Q110 70 100 80 Q84 86 74 70 Q56 80 48 96 Q40 96 34 104Z" fill="#45b4e6"/>
+            <path d="M68 42 Q96 32 128 40" stroke="#9fdcf7" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+      frente:`<g transform="translate(46 60) rotate(-14)"><path d="M0 0 H13 L17 4 V18 H0Z" fill="#e5383b"/><rect x="3" y="4" width="8" height="5" rx="1" fill="#fff" opacity=".9"/></g>` }) }
+];
+const duo = document.getElementById("duo");
+CABEZONES.forEach(p => {
+  const d = document.createElement("div");
+  d.className = "panel ficha";
+  d.innerHTML = `<div class="lamina">${p.svg}</div><h3>${p.nombre}</h3><p class="rol">${p.rol}</p><p>${p.t}</p>`;
+  duo.appendChild(d);
+});
+
+const cont = document.getElementById("personajes");
+PERSONAJES.forEach(p => {
+  const d = document.createElement("div");
+  d.className = "panel pj";
+  d.innerHTML = `<div class="retrato">${p.svg}</div><div><h3>${p.nombre}</h3><p class="rol">${p.rol}</p><p>${p.t}</p></div>`;
+  cont.appendChild(d);
+});
+
+const h = new Date(); document.getElementById("horaSup").textContent = h.toTimeString().slice(0,5);
+pintar();
+</script>
+</body>
+</html>

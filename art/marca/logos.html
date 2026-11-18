@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cronio — logos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap" rel="stylesheet">
+<style>
+:root{ --naranja:#ee7446; --tinta:#12131a; --plata:#e6e9ee; --grafito:#2f343c; --gris:#6b737f; --celeste:#3fb0e6; --rojo:#e5383b; --linea:#c9cfd8; }
+*{box-sizing:border-box}
+body{margin:0; font-family:"M PLUS Rounded 1c",system-ui,sans-serif; color:var(--grafito);
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.6) 0 2px,transparent 2px 9px),linear-gradient(#f4f6f9,#e3e7ec); background-attachment:fixed}
+.wrap{max-width:1120px; margin:0 auto; padding:32px 16px 60px}
+h1{font-size:34px; font-weight:900; margin:0 0 6px}
+.intro{color:var(--gris); max-width:64ch; margin:0 0 26px}
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:16px}
+.op{background:#fff; border:1px solid var(--linea); border-radius:20px; overflow:hidden; display:grid}
+.lienzos{display:grid; grid-template-columns:1fr 1fr}
+.lienzo{height:190px; display:grid; place-items:center; padding:14px}
+.lienzo.claro{background:repeating-linear-gradient(135deg,#fff 0 3px,#f2f4f7 3px 7px)}
+.lienzo.oscuro{background:#1b1d24}
+.lienzo svg{width:100%; height:100%; max-height:150px}
+.pie{padding:14px 16px 16px; display:grid; gap:6px; border-top:1px solid var(--linea)}
+.pie h2{margin:0; font-size:19px; font-weight:900}
+.pie p{margin:0; font-size:14px}
+.chico{display:flex; align-items:center; gap:10px; font-size:12px; color:var(--gris)}
+.chico svg{width:32px; height:32px; border-radius:7px}
+.chico svg.s16{width:16px; height:16px; border-radius:3px}
+.palabra-cara{display:inline-flex; align-items:center; gap:.06em; background:var(--naranja); color:var(--tinta);
+  font-family:"Dela Gothic One"; font-size:44px; line-height:1; padding:.32em .45em .38em; border-radius:12px; letter-spacing:.02em}
+.palabra-cara i{display:inline-block; width:.42em; height:.66em; border-radius:50%; background:var(--tinta); position:relative; margin:0 .08em; top:.02em}
+.palabra-cara i::after{content:""; position:absolute; left:.07em; top:.1em; width:.14em; height:.14em; border-radius:50%; background:rgba(255,255,255,.85)}
+.nota{margin-top:22px; font-size:14px; color:var(--gris)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- La mascota: la pantalla entera del color del agente, con los ojos de la 3DS. -->
+    <symbol id="cara" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="#ee7446"/>
+      <circle cx="22" cy="14" r="34" fill="#fff" opacity=".10"/><circle cx="22" cy="14" r="18" fill="#fff" opacity=".08"/>
+      <ellipse cx="34" cy="44" rx="9" ry="13.5" fill="#12131a"/><ellipse cx="66" cy="44" rx="9" ry="13.5" fill="#12131a"/>
+      <circle cx="31" cy="38" r="3.4" fill="#fff" opacity=".85"/><circle cx="63" cy="38" r="3.4" fill="#fff" opacity=".85"/>
+    </symbol>
+    <symbol id="ojos" viewBox="0 0 64 30">
+      <ellipse cx="14" cy="15" rx="9" ry="13.5" fill="currentColor"/><ellipse cx="50" cy="15" rx="9" ry="13.5" fill="currentColor"/>
+      <circle cx="11" cy="9" r="3.2" fill="#fff" opacity=".85"/><circle cx="47" cy="9" r="3.2" fill="#fff" opacity=".85"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <h1>Cronio · logos</h1>
+  <p class="intro">Ocho caminos más atrevidos. En todos, la mascota es la de la app: la pantalla entera del color del agente con sus dos ojos, sin círculos. Cada uno se ve sobre claro y sobre oscuro, y abajo a 32 y 16 px, que es como se ve en la bandeja y en la pestaña del navegador.</p>
+  <div class="grid" id="grid"></div>
+  <p class="nota">Las letras: M PLUS Rounded 1c (redonda) y Dela Gothic One (gruesa, de rótulo japonés). Las dos son libres de Google Fonts. Nada de esto usa logos, letras ni personajes de Nintendo.</p>
+</div>
+
+<script>
+// Cada opción: svg(fondoOscuro) devuelve el logo completo; icono() el ícono cuadrado.
+const NAR = "#ee7446", TIN = "#12131a";
+const icono = () => `<svg viewBox="0 0 100 100"><use href="#cara"/></svg>`;
+const OPCIONES = [
+  { t:"1 · La palabra es la cara",
+    p:"Las dos «o» de CRONIO son los ojos de la mascota dentro de su pantalla naranja. Se lee el nombre y a la vez es la cara: no necesita ícono aparte.",
+    svg:(o)=>`<div class="palabra-cara">CR<i></i>NI<i></i></div>`,
+    ico:()=>`<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="${NAR}"/><ellipse cx="34" cy="50" rx="11" ry="17" fill="${TIN}"/><ellipse cx="66" cy="50" rx="11" ry="17" fill="${TIN}"/><circle cx="30" cy="43" r="4" fill="#fff" opacity=".85"/><circle cx="62" cy="43" r="4" fill="#fff" opacity=".85"/></svg>` },
+  { t:"2 · Consola abierta",
+    p:"Dos pantallas apiladas: arriba la cara naranja, abajo la pantalla táctil con «cronio». Es la silueta de la consola abierta, reducida a dos bloques.",
+    svg:(o)=>`<svg viewBox="0 0 200 150"><rect x="40" y="6" width="120" height="74" rx="12" fill="${NAR}"/>
+      <ellipse cx="82" cy="40" rx="9" ry="14" fill="${TIN}"/><ellipse cx="118" cy="40" rx="9" ry="14" fill="${TIN}"/>
+      <circle cx="79" cy="34" r="3.2" fill="#fff" opacity=".85"/><circle cx="115" cy="34" r="3.2" fill="#fff" opacity=".85"/>
+      <rect x="54" y="84" width="92" height="8" rx="4" fill="${o?'#5b6270':'#aeb6c1'}"/>
+      <rect x="30" y="96" width="140" height="50" rx="12" fill="${o?'#f4f6f9':TIN}"/>
+      <text x="100" y="131" text-anchor="middle" font-family="M PLUS Rounded 1c" font-weight="900" font-size="28" fill="${o?TIN:'#fff'}">cronio</text></svg>`,
+    ico:icono },
+  { t:"3 · Sticker inclinado",
+    p:"La pantalla con cara como una calcomanía girada, con borde blanco grueso, y el nombre en cursiva pesada. Es el más juguetón, como una caja de juego.",
+    svg:(o)=>`<svg viewBox="0 0 320 140"><g transform="rotate(-8 70 70)"><rect x="18" y="20" width="104" height="104" rx="18" fill="#fff"/><rect x="28" y="30" width="84" height="84" rx="10" fill="${NAR}"/>
+      <ellipse cx="56" cy="66" rx="8" ry="12.5" fill="${TIN}"/><ellipse cx="84" cy="66" rx="8" ry="12.5" fill="${TIN}"/>
+      <circle cx="53" cy="61" r="3" fill="#fff" opacity=".85"/><circle cx="81" cy="61" r="3" fill="#fff" opacity=".85"/></g>
+      <text x="138" y="92" font-family="M PLUS Rounded 1c" font-weight="900" font-size="54" font-style="italic" fill="${o?'#fff':TIN}" transform="skewX(-10)">cronio</text></svg>`,
+    ico:()=>`<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fff"/><rect x="10" y="10" width="80" height="80" rx="10" fill="${NAR}" transform="rotate(-8 50 50)"/><ellipse cx="38" cy="50" rx="8" ry="12.5" fill="${TIN}" transform="rotate(-8 50 50)"/><ellipse cx="64" cy="50" rx="8" ry="12.5" fill="${TIN}" transform="rotate(-8 50 50)"/></svg>` },
+  { t:"4 · Solo los ojos",
+    p:"Los dos ojos solos son el símbolo, sin cara alrededor. Funcionan sobre cualquier color, como la cara que cambia según el agente. El nombre va al lado, limpio.",
+    svg:(o)=>`<svg viewBox="0 0 320 120" style="color:${o?'#fff':TIN}"><use href="#ojos" x="16" y="30" width="96" height="45"/>
+      <text x="128" y="80" font-family="M PLUS Rounded 1c" font-weight="900" font-size="56" fill="${o?'#fff':TIN}">cronio</text>
+      <rect x="128" y="92" width="64" height="8" rx="4" fill="${NAR}"/></svg>`,
+    ico:()=>`<svg viewBox="0 0 100 100" style="color:${TIN}"><rect width="100" height="100" fill="${NAR}"/><use href="#ojos" x="14" y="28" width="72" height="44"/></svg>` },
+  { t:"5 · Pixel",
+    p:"La cara y el nombre hechos de píxeles, como los gráficos de una portátil. Se ve nativo en la pantalla de la 3DS y queda nítido a 16 px.",
+    svg:(o)=>{ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`; const F=o?'#fff':TIN;
+      // letras de 5×7 celdas
+      const L={c:["01110","10001","10000","10000","10000","10001","01110"],r:["11110","10001","10001","11110","10100","10010","10001"],o:["01110","10001","10001","10001","10001","10001","01110"],n:["10001","11001","10101","10011","10001","10001","10001"],i:["111","010","010","010","010","010","111"]};
+      let s="", x=120; for(const ch of "cronio"){ const g=L[ch]; g.forEach((fila,j)=>[...fila].forEach((b,k)=>{ if(b==="1") s+=px(x+k*7,34+j*7,7,7,F); })); x+= g[0].length*7+8; }
+      return `<svg viewBox="0 0 ${x+10} 120" shape-rendering="crispEdges">${px(14,22,84,84,NAR)}${px(14,22,84,6,'#f59a72')}${px(32,48,12,24,TIN)}${px(68,48,12,24,TIN)}${px(32,48,6,6,'#fff')}${px(68,48,6,6,'#fff')}${s}</svg>`; },
+    ico:()=>`<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect width="16" height="16" fill="${NAR}"/><rect x="4" y="5" width="2" height="5" fill="${TIN}"/><rect x="10" y="5" width="2" height="5" fill="${TIN}"/><rect x="4" y="5" width="1" height="1" fill="#fff"/><rect x="10" y="5" width="1" height="1" fill="#fff"/></svg>` },
+  { t:"6 · Globo de aviso",
+    p:"La pantalla con cara se vuelve un globo de diálogo, porque Cronio es eso: algo que te avisa. La colita apunta al nombre.",
+    svg:(o)=>`<svg viewBox="0 0 320 130"><path d="M14 18 H114 Q124 18 124 28 V84 Q124 94 114 94 H64 L44 116 L46 94 H24 Q14 94 14 84 V28 Q14 18 24 18Z" fill="${NAR}"/>
+      <ellipse cx="54" cy="54" rx="8.5" ry="13" fill="${TIN}"/><ellipse cx="86" cy="54" rx="8.5" ry="13" fill="${TIN}"/>
+      <circle cx="51" cy="48" r="3.2" fill="#fff" opacity=".85"/><circle cx="83" cy="48" r="3.2" fill="#fff" opacity=".85"/>
+      <text x="138" y="84" font-family="Dela Gothic One" font-size="46" fill="${o?'#fff':TIN}">cronio</text></svg>`,
+    ico:()=>`<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="${NAR}"/><path d="M0 100 L0 74 L26 100Z" fill="#c8552a"/><ellipse cx="34" cy="44" rx="9" ry="14" fill="${TIN}"/><ellipse cx="66" cy="44" rx="9" ry="14" fill="${TIN}"/></svg>` },
+  { t:"7 · La C es la consola",
+    p:"La «C» de Cronio es la consola abierta de lado: dos mitades unidas por la bisagra, con la cara asomando en la mitad de arriba. Sirve como monograma suelto.",
+    svg:(o)=>`<svg viewBox="0 0 320 130"><g transform="translate(14 10)">
+      <path d="M60 0 H100 Q110 0 110 10 V40 Q110 50 100 50 H60 Q20 50 20 55" fill="none"/>
+      <rect x="6" y="2" width="96" height="52" rx="12" fill="${NAR}" transform="rotate(-18 54 56)"/>
+      <rect x="6" y="58" width="96" height="52" rx="12" fill="${o?'#f4f6f9':TIN}" transform="rotate(18 54 56)"/>
+      <rect x="0" y="50" width="22" height="12" rx="6" fill="${o?'#5b6270':'#aeb6c1'}"/>
+      <g transform="rotate(-18 54 56)"><ellipse cx="48" cy="28" rx="7" ry="10.5" fill="${TIN}"/><ellipse cx="74" cy="28" rx="7" ry="10.5" fill="${TIN}"/></g></g>
+      <text x="140" y="86" font-family="M PLUS Rounded 1c" font-weight="900" font-size="54" fill="${o?'#fff':TIN}">ronio</text></svg>`,
+    ico:icono },
+  { t:"8 · Bloque pesado",
+    p:"Todo el logo es un bloque naranja macizo con el nombre en negro gigante y la cara asomando en la esquina, como una etiqueta de cartucho. Muy de póster.",
+    svg:(o)=>`<svg viewBox="0 0 320 130"><rect x="6" y="8" width="308" height="114" rx="10" fill="${NAR}"/>
+      <rect x="236" y="8" width="78" height="56" rx="10" fill="${TIN}" opacity=".12"/>
+      <ellipse cx="262" cy="34" rx="7" ry="11" fill="${TIN}"/><ellipse cx="288" cy="34" rx="7" ry="11" fill="${TIN}"/>
+      <circle cx="260" cy="30" r="2.6" fill="#fff" opacity=".85"/><circle cx="286" cy="30" r="2.6" fill="#fff" opacity=".85"/>
+      <text x="20" y="106" font-family="Dela Gothic One" font-size="50" fill="${TIN}" textLength="280" lengthAdjust="spacingAndGlyphs">CRONIO</text></svg>`,
+    ico:()=>`<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="${NAR}"/><text x="10" y="88" font-family="Dela Gothic One" font-size="58" fill="${TIN}">C</text><ellipse cx="68" cy="28" rx="7" ry="11" fill="${TIN}"/><ellipse cx="86" cy="28" rx="7" ry="11" fill="${TIN}"/></svg>` }
+];
+const grid = document.getElementById("grid");
+OPCIONES.forEach(op => {
+  const d = document.createElement("article");
+  d.className = "op";
+  const ico = (op.ico || icono)();
+  d.innerHTML = `<div class="lienzos"><div class="lienzo claro">${op.svg(false)}</div><div class="lienzo oscuro">${op.svg(true)}</div></div>
+    <div class="pie"><h2>${op.t}</h2><p>${op.p}</p><div class="chico">${ico}${ico.replace('<svg ','<svg class="s16" ')}<span>32 px y 16 px</span></div></div>`;
+  grid.appendChild(d);
+});
+</script>
+</body>
+</html>

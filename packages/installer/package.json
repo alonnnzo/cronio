@@ -1,0 +1,117 @@
+{
+  "name": "@companion/installer",
+  "version": "0.3.1",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "description": "Programa del PC: paso a paso de instalación, puente y .cia por QR",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "npm run build && electron .",
+    "typecheck": "tsc --noEmit -p .",
+    "bundle:bridge": "node scripts/bundle-bridge.mjs",
+    "dist": "node scripts/dist.mjs",
+    "dist:local": "node scripts/dist-local.mjs"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0"
+  },
+  "author": "Cronio",
+  "build": {
+    "appId": "cl.cronio.app",
+    "productName": "Cronio",
+    "copyright": "Cronio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/**/*",
+      "package.json",
+      "!dist/**/*.map"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "alonnnzo",
+      "repo": "cronio"
+    },
+    "extraResources": [
+      {
+        "from": "build/origen-local.json",
+        "to": "origen-local.json"
+      },
+      {
+        "from": "build/bridge/cli.mjs",
+        "to": "bridge/cli.mjs"
+      },
+      {
+        "from": "build/bridge/cli.version",
+        "to": "bridge/cli.version"
+      },
+      {
+        "from": "../hooks/permission-hook.mjs",
+        "to": "hooks/permission-hook.mjs"
+      },
+      {
+        "from": "../hooks/carpetas.mjs",
+        "to": "hooks/carpetas.mjs"
+      },
+      {
+        "from": "../hooks/skills/grill-me/SKILL.md",
+        "to": "skills/grill-me/SKILL.md"
+      },
+      {
+        "from": "../simulator/public",
+        "to": "simulator"
+      },
+      {
+        "from": "../../client-3ds/agent-companion.cia",
+        "to": "client-3ds/agent-companion.cia"
+      },
+      {
+        "from": "../../client-3ds/agent-companion.version",
+        "to": "client-3ds/agent-companion.version"
+      },
+      {
+        "from": "../../client-3ds/agent-companion.3dsx",
+        "to": "client-3ds/agent-companion.3dsx"
+      },
+      {
+        "from": "assets/cronio.ico",
+        "to": "assets/cronio.ico"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/cronio.ico",
+      "artifactName": "Cronio-Setup-${version}.exe",
+      "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Cronio",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "electronVersion": "45.3.2",
+    "extraMetadata": {
+      "name": "cronio"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Texturas del logo de arranque (pantalla que sale al abrir la app desde HOME). gen-logo.py las pide con
+     gen-logo.cjs. La consola solo admite un color por textura (formato A4: blanco con transparencia sobre negro),
+     así que el logo va en silueta: arriba la cara (cuadro con los ojos calados), abajo la palabra con los ojos. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap">
+</head>
+<body>
+<script>
+async function render() {
+  const fuente = (px) => `400 ${px}px "Dela Gothic One"`;
+  await document.fonts.load(fuente(26));
+  const okFuente = document.fonts.check(fuente(26));
+  const lienzo = (w, h) => { const k = document.createElement("canvas"); k.width = w; k.height = h; return [k, k.getContext("2d")]; };
+
+  // arriba, 128x64: la cara (cuadro redondeado lleno, ojos calados con su brillo)
+  const [kt, gt] = lienzo(128, 64);
+  const lado = 60, x0 = 64 - lado / 2, y0 = 2;
+  gt.fillStyle = "#fff"; gt.beginPath(); gt.roundRect(x0, y0, lado, lado, lado * 0.2); gt.fill();
+  const ojo = (cx, cy, rx, ry) => {
+    gt.globalCompositeOperation = "destination-out";
+    gt.beginPath(); gt.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); gt.fill();
+    gt.globalCompositeOperation = "source-over";
+    gt.beginPath(); gt.arc(cx - rx * 0.33, cy - ry * 0.48, rx * 0.36, 0, Math.PI * 2); gt.fill();
+  };
+  ojo(64 - lado * 0.19, y0 + lado * 0.47, lado * 0.085, lado * 0.15);
+  ojo(64 + lado * 0.19, y0 + lado * 0.47, lado * 0.085, lado * 0.15);
+
+  // abajo, 128x64: «CRONIO» con las O como ojos (óvalos llenos con el brillo calado), en la franja baja como el de
+  // Homebrew
+  const [kb, gb] = lienzo(128, 64);
+  let F = 22;
+  gb.font = fuente(F);
+  const ls = 0.02 * F, gap = 0.06 * F, ojoW = 0.42 * F, ojoH = 0.66 * F, ojoM = 0.08 * F;
+  const w = (t) => gb.measureText(t).width + ls * t.length;
+  const piezas = [w("CR"), ojoW + 2 * ojoM, w("NI"), ojoW + 2 * ojoM];
+  const total = piezas.reduce((a, b) => a + b, 0) + gap * 3;
+  const yMedio = 46;
+  const m = gb.measureText("CRNI");
+  const yBase = yMedio + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  let x = 64 - total / 2;
+  gb.fillStyle = "#fff";
+  const letras = (t) => { for (const ch of t) { gb.fillText(ch, x + ls / 2, yBase); x += gb.measureText(ch).width + ls; } x += gap; };
+  const ojoB = () => {
+    const cx = x + ojoM + ojoW / 2;
+    gb.beginPath(); gb.ellipse(cx, yMedio, ojoW / 2, ojoH / 2, 0, 0, Math.PI * 2); gb.fill();
+    gb.globalCompositeOperation = "destination-out";
+    gb.beginPath(); gb.arc(cx - ojoW * 0.17, yMedio - ojoH * 0.24, ojoW * 0.17, 0, Math.PI * 2); gb.fill();
+    gb.globalCompositeOperation = "source-over";
+    x += ojoW + 2 * ojoM + gap;
+  };
+  letras("CR"); ojoB(); letras("NI"); ojoB();
+
+  return { okFuente, arriba: kt.toDataURL("image/png"), abajo: kb.toDataURL("image/png") };
+}
+</script>
+</body>
+</html>

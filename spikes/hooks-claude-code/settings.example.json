@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node C:/Users/yo/developer/3ds-agent-companion/spikes/hooks-claude-code/permission-hook.mjs",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

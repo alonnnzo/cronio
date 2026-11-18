@@ -1,0 +1,30 @@
+node_modules/
+dist/
+*.log
+
+# Cliente 3DS (devkitARM)
+client-3ds/build/
+client-3ds/tests-host/build/
+*.3dsx
+*.elf
+*.smdh
+*.cia
+client-3ds/agent-companion.version
+*.t3x
+
+# Datos locales del puente (clave de emparejamiento, estado)
+.companion/
+
+# Pruebas de la Fase 0
+spikes/*/build/
+spikes/*/grabacion-*.wav
+release/
+packages/installer/build/bridge/
+packages/installer/build/origen-local.json
+
+# Datos privados y secretos (no se publican nunca)
+.claude/
+.env*
+*.pem
+*.pfx
+logo_hmackey*

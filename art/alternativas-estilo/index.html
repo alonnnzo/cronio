@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alternativas de estilo — 3DS Agent Companion</title>
+<style>
+  :root { --bg:#14131c; --panel:#1e1c2b; --ink:#ece9f5; --mute:#a5a1bd; --line:#34314a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,"Segoe UI",sans-serif; padding:24px 16px 48px; }
+  main { max-width:1080px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--mute); margin:0 0 20px; max-width:64ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+  article { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  h2 { font-size:16px; margin:12px 0 4px; }
+  article p { margin:0 0 8px; color:var(--mute); font-size:14px; }
+  article p b { color:var(--ink); font-weight:600; }
+  .screen { width:100%; aspect-ratio:4/3; border-radius:4px; overflow:hidden; background:#000; }
+  .screen canvas, .screen svg { width:100%; height:100%; display:block; }
+  canvas { image-rendering:pixelated; image-rendering:crisp-edges; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Alternativas de estilo</h1>
+  <p class="lead">Tres direcciones con personajes originales, cada una en una pantalla de 320 × 240 (la pantalla inferior de la 3DS).
+  Todas están dibujadas y animadas por código.</p>
+  <div class="grid">
+    <article>
+      <div class="screen"><canvas id="c1" width="80" height="60"></canvas></div>
+      <h2>A. Criatura compañera</h2>
+      <p>Pixel art de consola portátil. La mascota es una criatura, no una persona, y cada agente sería otra criatura con su color.</p>
+      <p><b>A favor:</b> es el estilo que se ve más nativo en una 3DS; pesa muy poco; fácil hacer evoluciones por nivel.</p>
+      <p><b>En contra:</b> poco espacio para expresiones finas; se comunican con poses y globos.</p>
+    </article>
+    <article>
+      <div class="screen">
+        <svg id="s2" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <h2>B. Vecino acogedor</h2>
+      <p>Formas redondas, colores suaves, animal con ropa (aquí un pudú). Tono de juego de vida tranquila.</p>
+      <p><b>A favor:</b> muy expresivo con pocos trazos; calza con una mascota sin castigo; ropa y casa para la tienda.</p>
+      <p><b>En contra:</b> necesita texturas más grandes que el pixel art.</p>
+    </article>
+    <article>
+      <div class="screen"><canvas id="c3" width="80" height="60"></canvas></div>
+      <h2>C. Aventura vista desde arriba</h2>
+      <p>Pixel art de aventura clásica. El compañero recorre una sala; cada agente sería un personaje del grupo y cada tarea, una misión.</p>
+      <p><b>A favor:</b> el nivel, las monedas y la tienda calzan solos con el tema.</p>
+      <p><b>En contra:</b> el personaje es chico en pantalla; pide más escenarios y objetos.</p>
+    </article>
+  </div>
+</main>
+
+<script>
+// ---------- utilidades de pixel art ----------
+const mirror = rows => rows.map(r => r + [...r].reverse().join(''));
+function drawSprite(ctx, rows, pal, ox, oy) {
+  rows.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '.' || !pal[ch]) return;
+    ctx.fillStyle = pal[ch]; ctx.fillRect(ox + x, oy + y, 1, 1);
+  }));
+}
+
+// ---------- A. Criatura ----------
+const CRIT_PAL = { k:'#1b2a3a', t:'#3fc1b0', T:'#2a8f8a', c:'#f6efd2', p:'#1b2a3a', w:'#ffffff', o:'#ff9d5c', y:'#ffd84a' };
+const CRIT_HALF = [
+  "...........k",
+  "...kk.....ky",
+  "..kttk....ky",
+  "..ktotk....k",
+  "..ktotkkkkkk",
+  "..kttttttttt",
+  ".ktttttttttt",
+  ".ktttttttttt",
+  "ktttttkkkttt",
+  "kttttkppwktt",
+  "kttttkpppktt",
+  "kttttkpppktt",
+  "kttoottkkttt",
+  "kttttttttttk",
+  ".kttttcccccc",
+  ".ktttccccccc",
+  ".ktttccccccc",
+  "..kttccccccc",
+  "..kTttcccccc",
+  "...kTTttcccc",
+  "....kkTTTTTT",
+  "....kooookkk",
+  "....kkkkkk..",
+];
+const CRIT = mirror(CRIT_HALF);
+// el brillo del ojo va solo a un lado en cada ojo: se corrige el reflejo del derecho
+CRIT[9] = CRIT[9].slice(0, 15) + 'pwp' + CRIT[9].slice(18);
+const CRIT_BLINK = CRIT.map((r, y) => {
+  if (y >= 8 && y <= 10) return r.replace(/[kpw]/g, (ch, i) => (i > 3 && i < 20 ? 't' : ch));
+  if (y === 11) return r.replace(/p/g, 'k');
+  return r;
+});
+
+function sceneA(ctx, t) {
+  ctx.fillStyle = '#bfe9ff'; ctx.fillRect(0, 0, 80, 60);
+  ctx.fillStyle = '#e9f8ff'; [[8,8,14],[50,14,18],[30,4,8]].forEach(([x,y,w]) => { ctx.fillRect(x, y, w, 3); ctx.fillRect(x+2, y-2, w-5, 2); });
+  ctx.fillStyle = '#7ed06a'; ctx.fillRect(0, 42, 80, 18);
+  ctx.fillStyle = '#62b854'; for (let i = 0; i < 12; i++) ctx.fillRect((i * 19 + 5) % 80, 45 + (i * 7) % 13, 2, 1);
+  ctx.fillStyle = '#58a64c'; ctx.fillRect(0, 42, 80, 1);
+  const hop = Math.floor(t / 400) % 2;                 // rebote de 2 cuadros
+  const blink = (t % 3600) > 3450;
+  ctx.fillStyle = '#58a64c'; ctx.fillRect(31 - hop, 52, 18 + hop * 2, 2); ctx.fillRect(33, 54, 14, 1);
+  drawSprite(ctx, blink ? CRIT_BLINK : CRIT, CRIT_PAL, 28, 30 - hop);
+  // globo de estado
+  ctx.fillStyle = '#fff'; ctx.fillRect(56, 18, 17, 11); ctx.fillRect(54, 26, 3, 2);
+  ctx.fillStyle = '#1b2a3a'; ctx.fillRect(56, 17, 17, 1); ctx.fillRect(56, 29, 17, 1); ctx.fillRect(55, 18, 1, 11); ctx.fillRect(73, 18, 1, 11);
+  const dots = Math.floor(t / 350) % 4;
+  ctx.fillStyle = '#3fc1b0'; for (let i = 0; i < dots; i++) ctx.fillRect(59 + i * 4, 22, 2, 2);
+}
+
+// ---------- C. Aventura ----------
+const HERO_PAL = { k:'#1c1830', b:'#3d6fd9', B:'#2a4a9c', s:'#ffd9b8', e:'#1c1830', r:'#e0524a', n:'#a5754a', N:'#7a5233', g:'#5b5f73', y:'#ffd84a' };
+const HERO_HALF = [
+  "....kkkk",
+  "..kkbbbb",
+  ".kbbbbbb",
+  ".kbbbbbb",
+  "kbbkkkkk",
+  "kbksssss",
+  "kbkssess",
+  "kbkssess",
+  "kBbkssss",
+  ".kBbkkkk",
+  ".kkrrrrr",
+  "knnnnnny",
+  "ksknnnnn",
+  "kkknnnnn",
+  "..kNNNNN",
+];
+function hero(frame) {
+  const top = mirror(HERO_HALF);
+  const stand = ["..knnkknnk..", "..kggkkggk..", ".kgggkkgggk.", ".kkkkkkkkkk."].map(r => '..' + r + '..');
+  const step  = ["..knnkknnk..", "..kggkkggk..", ".kgggk.kkkk.", ".kkkkk......"].map(r => '..' + r + '..');
+  return top.concat(frame ? step : stand);
+}
+function sceneC(ctx, t) {
+  // piso de baldosas
+  for (let y = 0; y < 4; y++) for (let x = 0; x < 5; x++) {
+    ctx.fillStyle = (x + y) % 2 ? '#c9b38a' : '#bfa67c'; ctx.fillRect(x * 16, 12 + y * 16, 16, 16);
+    ctx.fillStyle = '#a89068'; ctx.fillRect(x * 16, 12 + y * 16, 16, 1); ctx.fillRect(x * 16, 12 + y * 16, 1, 16);
+  }
+  // muro
+  ctx.fillStyle = '#5a4a6e'; ctx.fillRect(0, 0, 80, 12);
+  ctx.fillStyle = '#463857'; ctx.fillRect(0, 10, 80, 2);
+  ctx.fillStyle = '#6d5c84'; for (let x = 0; x < 80; x += 10) ctx.fillRect(x + (x % 20 ? 0 : 5), 3, 6, 1);
+  // antorchas
+  const fl = Math.floor(t / 180) % 2;
+  [14, 62].forEach(x => { ctx.fillStyle = '#463857'; ctx.fillRect(x, 6, 2, 4);
+    ctx.fillStyle = '#ffb347'; ctx.fillRect(x - fl, 3, 3, 3); ctx.fillStyle = '#fff2a8'; ctx.fillRect(x, 4, 1, 2); });
+  // cofre
+  ctx.fillStyle = '#1c1830'; ctx.fillRect(57, 33, 14, 11);
+  ctx.fillStyle = '#b5762f'; ctx.fillRect(58, 34, 12, 9); ctx.fillStyle = '#8f5a20'; ctx.fillRect(58, 38, 12, 1);
+  ctx.fillStyle = '#ffd84a'; ctx.fillRect(63, 37, 2, 3);
+  // héroe: camina en el lugar
+  const f = Math.floor(t / 260) % 2;
+  ctx.fillStyle = 'rgba(40,30,20,.3)'; ctx.fillRect(24, 44, 12, 2);
+  drawSprite(ctx, hero(f), HERO_PAL, 22, 26 - f);
+  // marcador
+  ctx.fillStyle = '#1c1830'; ctx.fillRect(2, 50, 30, 8);
+  ctx.fillStyle = '#e0524a'; [0, 1, 2].forEach(i => { ctx.fillRect(4 + i * 6, 52, 2, 3); ctx.fillRect(6 + i * 6, 52, 2, 3); ctx.fillRect(5 + i * 6, 55, 2, 1); });
+  ctx.fillStyle = '#ffd84a'; ctx.fillRect(24, 52, 3, 4); ctx.fillStyle = '#fff2a8'; ctx.fillRect(25, 53, 1, 2);
+}
+
+// ---------- B. Vecino acogedor (SVG) ----------
+document.getElementById('s2').innerHTML = `
+  <rect width="320" height="240" fill="#fdf1d6"/>
+  <rect y="170" width="320" height="70" fill="#e7c796"/>
+  <rect y="170" width="320" height="5" fill="#d3ae78"/>
+  <g>
+    <rect x="28" y="42" width="78" height="78" rx="10" fill="#bfe6f2" stroke="#fff" stroke-width="7"/>
+    <path d="M67 42 V120 M28 81 H106" stroke="#fff" stroke-width="5"/>
+    <circle cx="86" cy="62" r="8" fill="#fff6c9"/>
+  </g>
+  <g>
+    <rect x="236" y="120" width="44" height="56" rx="8" fill="#c98a5a"/>
+    <ellipse cx="258" cy="112" rx="26" ry="24" fill="#7cc48a"/>
+    <ellipse cx="246" cy="98" rx="14" ry="13" fill="#93d49d"/>
+  </g>
+  <ellipse cx="160" cy="214" rx="54" ry="9" fill="#d3ae78"/>
+  <g id="pudu">
+    <g id="puduBody">
+      <rect x="130" y="196" width="20" height="18" rx="9" fill="#8a5a36"/>
+      <rect x="170" y="196" width="20" height="18" rx="9" fill="#8a5a36"/>
+      <path d="M118 168 C118 140 202 140 202 168 L206 196 C206 210 114 210 114 196Z" fill="#4fb6a6"/>
+      <path d="M116 182 H204 L205 192 H115Z" fill="#f6efd2"/>
+      <ellipse cx="112" cy="176" rx="11" ry="16" fill="#4fb6a6" transform="rotate(18 112 176)"/>
+      <ellipse cx="208" cy="176" rx="11" ry="16" fill="#4fb6a6" transform="rotate(-18 208 176)"/>
+      <circle cx="107" cy="190" r="8" fill="#b9794a"/><circle cx="213" cy="190" r="8" fill="#b9794a"/>
+    </g>
+    <g id="puduHead">
+      <g id="earL"><ellipse cx="108" cy="62" rx="14" ry="24" fill="#b9794a" transform="rotate(-32 108 62)"/><ellipse cx="108" cy="64" rx="7" ry="15" fill="#f2b8a2" transform="rotate(-32 108 64)"/></g>
+      <g id="earR"><ellipse cx="212" cy="62" rx="14" ry="24" fill="#b9794a" transform="rotate(32 212 62)"/><ellipse cx="212" cy="64" rx="7" ry="15" fill="#f2b8a2" transform="rotate(32 212 64)"/></g>
+      <rect x="138" y="42" width="8" height="16" rx="4" fill="#f6efd2"/><rect x="174" y="42" width="8" height="16" rx="4" fill="#f6efd2"/>
+      <ellipse cx="160" cy="108" rx="66" ry="56" fill="#b9794a"/>
+      <ellipse cx="160" cy="74" rx="30" ry="14" fill="#c98a5a"/>
+      <ellipse cx="160" cy="130" rx="32" ry="24" fill="#f6efd2"/>
+      <ellipse cx="108" cy="126" rx="11" ry="7" fill="#f29a8a" opacity=".55"/><ellipse cx="212" cy="126" rx="11" ry="7" fill="#f29a8a" opacity=".55"/>
+      <g id="eyes">
+        <ellipse cx="128" cy="104" rx="7" ry="10" fill="#3a2a22"/><circle cx="130.5" cy="100" r="2.6" fill="#fff"/>
+        <ellipse cx="192" cy="104" rx="7" ry="10" fill="#3a2a22"/><circle cx="194.5" cy="100" r="2.6" fill="#fff"/>
+      </g>
+      <path d="M150 118 Q160 112 170 118 Q166 128 160 128 Q154 128 150 118Z" fill="#3a2a22"/>
+      <path d="M160 128 V134 M148 136 Q154 142 160 135 Q166 142 172 136" fill="none" stroke="#3a2a22" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g id="note" fill="#4fb6a6"><ellipse cx="232" cy="66" rx="7" ry="5.5"/><rect x="237" y="38" width="3" height="28"/><path d="M237 38 Q250 40 250 52 Q246 46 237 46Z"/></g>
+`;
+
+// ---------- bucle ----------
+const c1 = document.getElementById('c1').getContext('2d');
+const c3 = document.getElementById('c3').getContext('2d');
+const $ = id => document.getElementById(id);
+function loop(t) {
+  sceneA(c1, t); sceneC(c3, t);
+  const s = Math.sin(t / 700), s2 = Math.sin(t / 350);
+  $('puduHead').setAttribute('transform', `rotate(${s * 3} 160 160) translate(0 ${s2 * 1.5})`);
+  $('puduBody').setAttribute('transform', `translate(160 214) scale(${1 + s2 * .012} ${1 - s2 * .012}) translate(-160 -214)`);
+  $('earL').setAttribute('transform', `rotate(${Math.max(0, Math.sin(t / 900)) * -8} 118 80)`);
+  $('earR').setAttribute('transform', `rotate(${Math.max(0, Math.sin(t / 900)) * 8} 202 80)`);
+  const blink = (t % 3200) > 3060;
+  $('eyes').setAttribute('transform', `translate(0 104) scale(1 ${blink ? .12 : 1}) translate(0 -104)`);
+  $('note').setAttribute('transform', `translate(${s * 3} ${-((t / 40) % 30)})`);
+  $('note').setAttribute('opacity', 1 - ((t / 40) % 30) / 30);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

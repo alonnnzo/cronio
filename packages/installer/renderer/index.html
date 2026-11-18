@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cronio</title>
+  <link rel="stylesheet" href="fonts.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <aside class="lateral">
+    <div class="marca">
+      <h1 class="palabra-cara" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></h1>
+      <p>Tu 3DS, al tanto de Claude</p>
+    </div>
+    <nav id="principal" aria-label="Secciones"></nav>
+    <p class="grupo" id="grupo-configurar">Configurar</p>
+    <nav id="pasos" aria-labelledby="grupo-configurar"></nav>
+    <div class="estado-puente" id="estado-puente" role="status">
+      <span class="luz" id="luz-puente"></span>
+      <span id="texto-puente">Comprobando el puente…</span>
+    </div>
+    <p class="version-programa" id="version-programa"></p>
+  </aside>
+  <div id="franja" class="franja" role="status" hidden></div>
+  <main id="contenido" tabindex="-1"></main>
+  <script src="app.js"></script>
+</body>
+</html>

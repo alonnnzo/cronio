@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personajes en capas</title>
+<style>
+  :root { --bg:#14131c; --panel:#1e1c2b; --ink:#ece9f5; --mute:#a5a1bd; --line:#34314a; --accent:#7fe0f0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,"Segoe UI",sans-serif; padding:24px 16px 48px; }
+  main { max-width:1100px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--mute); margin:0 0 14px; max-width:70ch; }
+  .ctl { display:flex; gap:12px; align-items:center; margin:0 0 18px; color:var(--mute); font-size:14px; flex-wrap:wrap; }
+  input[type=range] { width:200px; accent-color:var(--accent); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:20px; }
+  article { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .screen { width:100%; aspect-ratio:400/240; border-radius:4px; overflow:hidden; background:#000; }
+  .screen svg { width:100%; height:100%; display:block; }
+  h2 { font-size:16px; margin:12px 0 4px; }
+  article p { margin:0 0 6px; color:var(--mute); font-size:14px; }
+  article p b { color:var(--ink); font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Dos personajes, dos estilos de caricatura</h1>
+  <p class="lead">Personajes originales de cintura arriba en la pantalla superior (400 × 240). Cada uno está separado en capas;
+  el vaivén simula lo que hace el efecto 3D de la consola al separar esas capas.</p>
+  <div class="ctl">
+    <label for="depth">Efecto 3D</label>
+    <input id="depth" type="range" min="0" max="100" value="60">
+    <span>Mueve el control para separar más o menos las capas.</span>
+  </div>
+  <div class="grid">
+    <article>
+      <div class="screen"><svg id="A" viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>A. Caricatura plana — el aventurero</h2>
+      <p>Colores planos y vivos, sin contorno, ojos muy grandes, formas simples.</p>
+      <p><b>A favor:</b> expresiones exageradas que se leen de lejos; liviano; fácil de vestir con accesorios.</p>
+      <p><b>En contra:</b> aire más infantil.</p>
+    </article>
+    <article>
+      <div class="screen"><svg id="B" viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <h2>B. Ilustración suave — la piloto</h2>
+      <p>Proporciones más reales, contorno fino, sombra suave en dos tonos, colores apagados.</p>
+      <p><b>A favor:</b> más elegante y adulto; la ropa y el equipo lucen con detalle.</p>
+      <p><b>En contra:</b> la cara queda más chica en pantalla; cada expresión pide más trabajo.</p>
+    </article>
+  </div>
+</main>
+
+<script>
+// ============ A. Caricatura plana ============
+const A = {
+  skin:'#f7c99e', skinSh:'#e3a577', hair:'#b8442c', hairSh:'#8d3020', hairHi:'#d9684a',
+  tunic:'#2f74bd', tunicSh:'#23588f', scarf:'#f4c531', scarfSh:'#d49f1a', leather:'#7b4a2b', leatherHi:'#9c6238', dark:'#3a1d14'
+};
+document.getElementById('A').innerHTML = `
+  <rect width="400" height="240" fill="#86d5f4"/>
+  <g data-d="-3">
+    <circle cx="330" cy="44" r="20" fill="#fff6c9"/>
+    <g fill="#fff"><path d="M40 52 q10 -18 30 -10 q14 -14 30 0 q18 -4 20 12 q-40 8 -80 -2Z"/><path d="M228 86 q8 -12 22 -6 q12 -10 24 2 q12 0 12 10 q-30 6 -58 -6Z"/></g>
+  </g>
+  <g data-d="-2">
+    <rect x="-20" y="150" width="440" height="100" fill="#2f9fd6"/>
+    <path d="M250 152 q40 -58 90 -22 q22 -10 34 22Z" fill="#5fc06c"/><path d="M300 152 q16 -34 40 -22 q22 -10 34 22Z" fill="#4aa85a"/>
+    <rect x="296" y="96" width="10" height="26" fill="#f1e6cf"/><path d="M293 96 l8 -12 l8 12Z" fill="#d9534a"/>
+    <g stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".8"><path d="M226 172 h18 M262 186 h26 M330 176 h16 M214 204 h22 M346 200 h24"/></g>
+  </g>
+  <g data-d="-1"><path d="M-20 240 V206 q110 -34 230 -6 q90 18 210 -8 V240Z" fill="#7ed46c"/><path d="M-20 240 V222 q120 -22 240 -4 q90 12 200 -6 V240Z" fill="#62bd55"/></g>
+
+  <g transform="translate(26 0)">
+    <g data-d="-.6">
+      <g transform="rotate(22 152 136)"><rect x="148" y="92" width="8" height="42" rx="3" fill="#2d5f8a"/><circle cx="152" cy="90" r="6" fill="${A.scarf}"/><rect x="134" y="132" width="36" height="9" rx="4" fill="${A.scarf}"/></g>
+      <g data-a="tailA"><path d="M68 158 Q40 146 14 166 Q36 164 44 180 Q56 168 72 172Z" fill="${A.scarfSh}"/></g>
+      <ellipse cx="100" cy="86" rx="55" ry="45" fill="${A.hairSh}"/>
+    </g>
+    <g data-d="0"><g data-a="bodyA">
+      <path d="M36 244 L44 198 Q48 172 78 166 L122 166 Q152 172 156 198 L164 244Z" fill="${A.tunic}"/>
+      <path d="M122 166 Q152 172 156 198 L164 244 L130 244 Q136 200 122 166Z" fill="${A.tunicSh}"/>
+      <path d="M130 166 L146 170 L74 244 L54 244Z" fill="${A.leather}"/><path d="M130 166 L136 168 L62 244 L54 244Z" fill="${A.leatherHi}"/>
+      <rect x="92" y="198" width="14" height="14" rx="2" transform="rotate(44 99 205)" fill="${A.scarf}"/>
+      <ellipse cx="56" cy="186" rx="19" ry="13" fill="${A.leather}"/><ellipse cx="53" cy="182" rx="12" ry="6" fill="${A.leatherHi}"/>
+      <rect x="88" y="138" width="24" height="26" fill="${A.skinSh}"/>
+      <path d="M60 168 Q100 194 140 168 Q144 150 126 146 Q100 160 74 146 Q56 150 60 168Z" fill="${A.scarf}"/>
+      <path d="M62 170 Q100 196 140 168 Q118 186 100 186 Q80 186 62 170Z" fill="${A.scarfSh}"/>
+    </g></g>
+    <g data-d=".5"><g data-a="headA">
+      <ellipse cx="50" cy="100" rx="8" ry="11" fill="${A.skin}"/><ellipse cx="150" cy="100" rx="8" ry="11" fill="${A.skinSh}"/>
+      <path d="M52 88 C52 50 148 50 148 88 C148 124 128 148 100 148 C72 148 52 124 52 88Z" fill="${A.skin}"/>
+      <path d="M148 88 C148 124 128 148 100 148 C122 140 136 118 138 86Z" fill="${A.skinSh}" opacity=".6"/>
+      <g data-d-extra=".3">
+        <g data-a="eyesA">
+          <ellipse cx="78" cy="102" rx="13.5" ry="16.5" fill="#fff"/><ellipse cx="122" cy="102" rx="13.5" ry="16.5" fill="#fff"/>
+          <g data-a="pupA">
+            <ellipse cx="80" cy="104" rx="9.5" ry="12.5" fill="#1d8a78"/><ellipse cx="124" cy="104" rx="9.5" ry="12.5" fill="#1d8a78"/>
+            <ellipse cx="80" cy="105" rx="5.5" ry="8.5" fill="#14201d"/><ellipse cx="124" cy="105" rx="5.5" ry="8.5" fill="#14201d"/>
+            <circle cx="76" cy="98" r="3.8" fill="#fff"/><circle cx="120" cy="98" r="3.8" fill="#fff"/>
+          </g>
+          <path d="M63 94 Q78 79 94 95" fill="none" stroke="${A.dark}" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M106 95 Q122 79 137 94" fill="none" stroke="${A.dark}" stroke-width="4.5" stroke-linecap="round"/>
+        </g>
+        <path d="M60 80 L92 72 L92 80 L62 87Z" fill="${A.hairSh}"/><path d="M108 70 Q124 64 140 74 L139 81 Q124 72 109 77Z" fill="${A.hairSh}"/>
+        <path d="M97 114 L104 119 L97 121Z" fill="${A.skinSh}"/>
+        <path d="M84 127 Q100 144 120 124 Q102 133 84 127Z" fill="#7a2b22"/><path d="M90 129.5 Q102 133 114 128 L112 131 Q102 135 92 132Z" fill="#fff"/>
+      </g>
+    </g></g>
+    <g data-d="1"><g data-a="hairA">
+      <path d="M44 96 C36 38 112 24 152 54 C164 70 160 92 155 104 C151 86 143 74 132 70 C130 81 124 88 115 90 C116 80 110 73 104 70 C96 83 84 91 69 92 C72 84 70 77 66 75 C57 81 50 88 44 96Z" fill="${A.hair}"/>
+      <path d="M66 58 Q100 38 138 54 Q100 48 66 58Z" fill="${A.hairHi}"/>
+      <path d="M94 40 Q102 12 126 20 Q112 28 113 44Z" fill="${A.hair}"/>
+      <path d="M132 70 C143 74 151 86 155 104 C160 92 164 70 152 54 C150 62 142 68 132 70Z" fill="${A.hairSh}"/>
+    </g></g>
+  </g>
+
+  <g data-d="2">
+    <path d="M232 60 h136 a12 12 0 0 1 12 12 v32 a12 12 0 0 1 -12 12 h-110 l-18 14 l4 -14 h-12 a12 12 0 0 1 -12 -12 v-32 a12 12 0 0 1 12 -12Z" fill="#fff"/>
+    <circle cx="246" cy="80" r="6" fill="#e8693f"/>
+    <text x="258" y="85" font-family="system-ui,sans-serif" font-size="13" font-weight="800" fill="#27323a">¡Claude terminó!</text>
+    <text x="240" y="104" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#2f74bd">+40 XP   +12 tokens</text>
+  </g>`;
+
+// ============ B. Ilustración suave ============
+const B = {
+  skin:'#f3d5bf', skinSh:'#dcae96', hair:'#33414f', hairHi:'#6a8499', line:'#3b2b2b',
+  jacket:'#e9e3d4', jacketSh:'#c9c0ad', orange:'#dd7240', orangeSh:'#b85a30', suit:'#2c3541', teal:'#3bb7a8'
+};
+const ol = `stroke="${B.line}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"`;
+document.getElementById('B').innerHTML = `
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3352"/><stop offset=".55" stop-color="#7a6a8c"/><stop offset=".85" stop-color="#e8a37a"/><stop offset="1" stop-color="#f3c79a"/></linearGradient>
+    <linearGradient id="lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#e88a2e"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="grainB"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .95  0 0 0 0 .9  0 0 0 0 .8  0 0 0 .1 0"/></filter>
+    <clipPath id="faceB"><path d="M70 76 C70 44 130 44 130 76 C130 100 118 118 100 124 C82 118 70 100 70 76Z"/></clipPath>
+    <clipPath id="jackB"><path d="M26 244 L38 188 Q44 160 76 152 L88 148 L112 148 L124 152 Q156 160 162 188 L174 244Z"/></clipPath>
+  </defs>
+  <rect width="400" height="240" fill="url(#dusk)"/>
+  <g data-d="-3">
+    <g fill="#fff"><circle cx="60" cy="30" r="1"/><circle cx="130" cy="18" r="1.3"/><circle cx="250" cy="26" r="1"/><circle cx="310" cy="48" r="1.2"/><circle cx="364" cy="22" r="1"/><circle cx="200" cy="54" r=".9"/></g>
+    <circle cx="322" cy="92" r="26" fill="#fbe3bd" opacity=".9" filter="url(#soft)"/>
+    <path d="M-20 190 L40 128 L92 168 L150 110 L214 172 L262 134 L330 180 L420 120 V250 H-20Z" fill="#5d5d85" opacity=".75"/>
+  </g>
+  <g data-d="-2">
+    <path d="M-20 214 L60 164 L120 196 L206 150 L280 200 L352 168 L420 204 V250 H-20Z" fill="#474a70"/>
+    <rect x="346" y="120" width="3" height="60" fill="#2d2f4a"/><path d="M336 180 L347.5 150 L359 180Z" fill="#2d2f4a"/>
+    <circle data-a="beacon" cx="347.5" cy="118" r="3" fill="#ff6b5a"/>
+  </g>
+  <g data-d="-1"><path d="M-20 240 V214 Q200 196 420 216 V240Z" fill="#2a2c45"/><g fill="${B.teal}" opacity=".8"><rect x="230" y="218" width="10" height="2"/><rect x="268" y="220" width="10" height="2"/><rect x="306" y="221" width="10" height="2"/><rect x="344" y="222" width="10" height="2"/></g></g>
+
+  <g transform="translate(22 0)">
+    <g data-d="-.6"><g data-a="ponyB">
+      <path d="M122 50 Q170 56 164 118 Q160 140 148 148 Q154 112 134 82Z" fill="${B.hair}" ${ol}/>
+      <path d="M140 62 Q158 80 156 116" fill="none" stroke="${B.hairHi}" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    </g></g>
+    <g data-d="0"><g data-a="bodyB">
+      <path d="M26 244 L38 188 Q44 160 76 152 L88 148 L112 148 L124 152 Q156 160 162 188 L174 244Z" fill="${B.jacket}"/>
+      <g clip-path="url(#jackB)">
+        <path d="M118 148 Q150 190 140 244 L180 244 L170 150Z" fill="${B.jacketSh}" opacity=".8"/>
+        <path d="M30 196 Q44 160 78 150 L72 178 Q54 184 48 208Z" fill="${B.orange}"/>
+        <path d="M170 196 Q156 160 122 150 L128 178 Q146 184 152 208Z" fill="${B.orangeSh}"/>
+        <path d="M30 226 H60 M140 226 H172" stroke="${B.teal}" stroke-width="4"/>
+        <path d="M88 150 L100 180 L112 150Z" fill="${B.suit}"/>
+        <path d="M100 180 V244" stroke="${B.line}" stroke-width="1.5"/><path d="M100 180 V244" stroke="#b9b09c" stroke-width="4" opacity=".5"/>
+        <rect x="112" y="204" width="26" height="16" rx="3" fill="${B.suit}"/><rect x="116" y="208" width="10" height="3" fill="${B.teal}"/><rect x="116" y="213" width="16" height="2" fill="#8894a3"/>
+      </g>
+      <path d="M26 244 L38 188 Q44 160 76 152 L88 148 L112 148 L124 152 Q156 160 162 188 L174 244" fill="none" ${ol}/>
+      <path d="M90 118 L90 148 Q100 156 110 148 L110 118Z" fill="${B.skin}" ${ol}/>
+      <path d="M90 124 Q100 136 110 124 L110 119 L90 119Z" fill="${B.skinSh}"/>
+      <path d="M80 150 Q100 170 120 150 L117 136 Q100 150 83 136Z" fill="${B.jacketSh}" ${ol}/>
+      <path d="M70 152 Q100 190 130 152" fill="none" stroke="${B.line}" stroke-width="9" stroke-linecap="round"/>
+      <path d="M70 152 Q100 190 130 152" fill="none" stroke="${B.suit}" stroke-width="6" stroke-linecap="round"/>
+      <rect x="58" y="140" width="18" height="26" rx="7" fill="${B.suit}" ${ol}/><rect x="124" y="140" width="18" height="26" rx="7" fill="${B.suit}" ${ol}/>
+      <rect data-a="glow" x="62" y="146" width="10" height="14" rx="4" fill="${B.teal}"/><rect data-a="glow" x="128" y="146" width="10" height="14" rx="4" fill="${B.teal}"/>
+    </g></g>
+    <g data-d=".5"><g data-a="headB">
+      <ellipse cx="131" cy="84" rx="5" ry="8" fill="${B.skinSh}" ${ol}/>
+      <path d="M70 76 C70 44 130 44 130 76 C130 100 118 118 100 124 C82 118 70 100 70 76Z" fill="${B.skin}"/>
+      <g clip-path="url(#faceB)">
+        <path d="M112 44 Q140 70 124 108 Q116 120 100 126 L140 130 L140 40Z" fill="${B.skinSh}" opacity=".55"/>
+        <path d="M66 60 H134 V74 Q100 66 66 78Z" fill="${B.skinSh}" opacity=".5"/>
+        <ellipse cx="82" cy="98" rx="8" ry="4.5" fill="#e88f7e" opacity=".3"/><ellipse cx="118" cy="98" rx="8" ry="4.5" fill="#e88f7e" opacity=".3"/>
+      </g>
+      <path d="M70 76 C70 44 130 44 130 76 C130 100 118 118 100 124 C82 118 70 100 70 76Z" fill="none" ${ol}/>
+      <g data-a="eyesB">
+        <path d="M77 84 Q86 75 95 84 Q86 90 77 84Z" fill="#fff"/><path d="M105 84 Q114 75 123 84 Q114 90 105 84Z" fill="#fff"/>
+        <g data-a="pupB"><circle cx="87" cy="83.5" r="5" fill="#2f9c8f"/><circle cx="115" cy="83.5" r="5" fill="#2f9c8f"/>
+          <circle cx="87" cy="83.5" r="2.4" fill="#16242a"/><circle cx="115" cy="83.5" r="2.4" fill="#16242a"/>
+          <circle cx="85.4" cy="81.6" r="1.4" fill="#fff"/><circle cx="113.4" cy="81.6" r="1.4" fill="#fff"/></g>
+        <path d="M76 84 Q86 73.5 96 83" fill="none" stroke="${B.line}" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M104 83 Q114 73.5 124 84" fill="none" stroke="${B.line}" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M80 88 Q86 90.5 92 88 M108 88 Q114 90.5 120 88" fill="none" stroke="${B.line}" stroke-width=".9" opacity=".6"/>
+      </g>
+      <path d="M77 74 Q86 70 95 73" fill="none" stroke="${B.hair}" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M105 70 Q114 65 124 70" fill="none" stroke="${B.hair}" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M100 92 Q97.5 99 101.5 100.5" fill="none" stroke="#b9826c" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M91 108 Q100 112.5 111 105" fill="none" stroke="#9c4a44" stroke-width="2" stroke-linecap="round"/>
+      <path d="M96 114 Q101 115.5 106 113.5" fill="none" stroke="${B.skinSh}" stroke-width="1.6" stroke-linecap="round"/>
+    </g></g>
+    <g data-d="1"><g data-a="hairB">
+      <path d="M68 80 Q61 102 70 120 Q73 102 76 84Z" fill="${B.hair}" ${ol}/>
+      <path d="M66 82 C60 38 122 28 136 58 C140 68 138 82 135 90 C131 78 125 68 115 61 C104 73 88 81 73 83 C73 89 71 95 68 100 C66 94 66 88 66 82Z" fill="${B.hair}" ${ol}/>
+      <path d="M78 52 Q96 40 118 46 M74 64 Q90 54 106 54" fill="none" stroke="${B.hairHi}" stroke-width="2" stroke-linecap="round" opacity=".75"/>
+      <path d="M65 62 Q100 38 136 58" fill="none" stroke="${B.line}" stroke-width="8.5" stroke-linecap="round"/>
+      <path d="M65 62 Q100 38 136 58" fill="none" stroke="${B.suit}" stroke-width="6" stroke-linecap="round"/>
+      <g transform="rotate(-12 84 48)"><rect x="72" y="38" width="26" height="18" rx="7" fill="url(#lens)" ${ol}/><path d="M77 43 L84 43" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/></g>
+      <g transform="rotate(8 114 45)"><rect x="102" y="36" width="26" height="18" rx="7" fill="url(#lens)" ${ol}/><path d="M107 41 L114 41" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/></g>
+    </g></g>
+  </g>
+
+  <g data-d="2">
+    <rect x="226" y="62" width="156" height="54" rx="6" fill="#1c2233" opacity=".88" stroke="#8fa3c8" stroke-width="1"/>
+    <circle cx="240" cy="80" r="5" fill="#4a7dff"/>
+    <text x="252" y="84.5" font-family="system-ui,sans-serif" font-size="12.5" font-weight="700" fill="#f3efe6">Gemini pide permiso</text>
+    <text x="238" y="104" font-family="Consolas,monospace" font-size="12" fill="#b7c3dc">git push origin main</text>
+  </g>
+  <rect width="400" height="240" filter="url(#grainB)" opacity=".7"/>`;
+
+// ============ Animación ============
+const all = sel => [...document.querySelectorAll(sel)];
+const set = (name, tr) => all(`[data-a="${name}"]`).forEach(el => el.setAttribute('transform', tr));
+const depthInput = document.getElementById('depth');
+function loop(t) {
+  // separación de capas (simula el efecto 3D)
+  const amp = depthInput.value / 100 * 3.2, sway = Math.sin(t / 1100);
+  all('[data-d]').forEach(el => el.setAttribute('transform', `translate(${(+el.dataset.d * amp * sway).toFixed(2)} 0)`));
+
+  const br = Math.sin(t / 900), blink = (t % 3700) > 3560, blink2 = ((t + 1300) % 4300) > 4170;
+  // A
+  set('bodyA', `translate(100 244) scale(1 ${1 + br * .012}) translate(-100 -244)`);
+  set('headA', `translate(0 ${-br * 1.2}) rotate(${Math.sin(t / 1500) * 1.5} 100 148)`);
+  set('hairA', `translate(0 ${-br * 1.6}) rotate(${Math.sin(t / 1500) * 1.5} 100 148)`);
+  set('tailA', `rotate(${Math.sin(t / 420) * 6} 68 164)`);
+  set('eyesA', `translate(0 102) scale(1 ${blink ? .1 : 1}) translate(0 -102)`);
+  set('pupA', `translate(${Math.sin(t / 2100) > .3 ? 2 : -3} 0)`);
+  // B
+  set('bodyB', `translate(100 244) scale(1 ${1 + br * .009}) translate(-100 -244)`);
+  set('headB', `translate(0 ${-br * .9}) rotate(${Math.sin(t / 1900) * 1.2} 100 124)`);
+  set('hairB', `translate(0 ${-br * 1.1}) rotate(${Math.sin(t / 1900) * 1.2} 100 124)`);
+  set('ponyB', `rotate(${Math.sin(t / 700) * 3} 128 56)`);
+  set('eyesB', `translate(0 84) scale(1 ${blink2 ? .12 : 1}) translate(0 -84)`);
+  set('pupB', `translate(${Math.sin(t / 2600) > 0 ? 1 : -2} 0)`);
+  all('[data-a="glow"]').forEach(el => el.setAttribute('opacity', .6 + .4 * Math.sin(t / 500)));
+  all('[data-a="beacon"]').forEach(el => el.setAttribute('opacity', (t % 1400) < 700 ? 1 : .15));
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
