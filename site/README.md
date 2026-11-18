@@ -23,9 +23,14 @@ Luego abre `http://localhost:4873/`.
    Enter o A); arriba, el banner de la función elegida. Es un `tablist` con `aria-selected`.
 3. **Cómo funciona.** Diagrama PC ↔ puente ↔ 3DS y tres pasos. Todo local.
 4. **Demo interactiva** (`app.js`). Una consola que responde a botones, teclado y toques.
-5. **Descarga e instalación.** Botón a `releases/latest`, huellas SHA-256, código y SECURITY.md.
-6. **Seguridad y privacidad** y **Preguntas frecuentes** (`<details>`).
-7. Pie con enlaces y descargo de marcas.
+5. **Descarga e instalación.** Botón a `releases/latest`, nota de beta, enlaces a reportes y novedades, requisitos y tabla de
+   **Compatibilidad** (consolas, agentes y PC: probado, sin probar, planeado).
+6. **Seguridad y privacidad.**
+7. **Lo que viene** (`#futuro`): hoja de ruta en dos columnas, como planes y sin fechas.
+8. **Preguntas frecuentes** (`<details>`).
+9. Pie con enlaces y descargo de marcas.
+
+La barra de arriba lleva la insignia «Beta» junto al logo y el enlace «Código» (ícono propio en SVG) al repositorio.
 
 ## Archivos
 
@@ -37,7 +42,7 @@ Luego abre `http://localhost:4873/`.
 ## Detalles
 
 - Sin servicios externos: fuentes (OFL) en `fonts/` y CSP estricta (`'self'`; `style-src` lleva `'unsafe-inline'` por los
-  `style=""` de la demo y de la consola). La versión (0.3.1) está fija en el HTML: no se llama a la API de GitHub.
+  `style=""` de la demo y de la consola). No se llama a la API de GitHub: la versión es un dato fijo.
 - El scroll es el nativo del navegador (rueda, barra, teclado y táctil). Antes se usaba Lenis, pero su interpolación
   (`lerp`) retrasaba cada movimiento y el recorrido «se sentía trabado»; se quitó. `tour.js` solo lee `scrollY` dentro de
   `requestAnimationFrame` y aplica `transform` y `opacity`. El fondo va en una capa `position: fixed` propia (con
@@ -49,7 +54,12 @@ Luego abre `http://localhost:4873/`.
 - Con `prefers-reduced-motion` no hay cámara: cada plano es un bloque estático con su encuadre y su texto.
 - En menos de 900 px los encuadres son otros (`MOB`) y el texto va en una tarjeta abajo.
 
+## Cómo se actualiza la versión
+
+La versión vive en un solo lugar: el atributo `data-version` de `<html>` en `index.html`. Cambia ese número en cada release.
+Los sitios donde se muestra son `<span data-v>` y `app.js` los rellena al cargar. Sin JavaScript se ve igual: cada `<span data-v>`
+trae también el número escrito, así que si buscas «0.3.1» en `index.html` cambia el `data-version` y esos dos textos por defecto.
+
 ## Pendiente
 
 - Video o GIF para el README: grabar el recorrido.
-- La versión del HTML (0.3.1) se actualiza a mano en cada release.

@@ -270,6 +270,9 @@
   // =====================================================================================================
   // Arranque
   // =====================================================================================================
+  // La versión vive en un solo lugar: data-version en <html>. El HTML ya trae el valor, esto solo lo repite donde aparece.
+  const VERSION = document.documentElement.dataset.version;
+  if (VERSION) document.querySelectorAll('[data-v]').forEach(e => { e.textContent = VERSION; });
   if (RELEASES_URL) {
     document.querySelectorAll('[data-releases]').forEach(a => { a.href = RELEASES_URL; });
   }

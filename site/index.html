@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-version="0.3.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -31,8 +31,8 @@
 
 <a class="skip" href="#funciones">Saltar al contenido</a>
 <header class="topnav">
-  <a class="brand" href="#inicio" aria-label="Cronio, inicio"><span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span></a>
-  <nav class="topnav-links" aria-label="Principal"><a class="hide-s" href="#funciones">Funciones</a><a class="hide-s" href="#demo">Demo</a><a class="hide-s" href="#preguntas">Preguntas</a><a class="btn-rojo" href="#descarga">Descargar</a></nav>
+  <a class="brand" href="#inicio" aria-label="Cronio beta, inicio"><span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span><span class="beta" aria-hidden="true">Beta</span></a>
+  <nav class="topnav-links" aria-label="Principal"><a class="hide-s" href="#funciones">Funciones</a><a class="hide-s" href="#demo">Demo</a><a class="hide-s" href="#preguntas">Preguntas</a><a class="code-link" href="https://github.com/alonnnzo/cronio" aria-label="Código en GitHub"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M8.5 6.5 3 12l5.5 5.5M15.5 6.5 21 12l-5.5 5.5M13.5 5l-3 14"/></svg><span class="code-txt">Código</span></a><a class="btn-rojo" href="#descarga">Descargar</a></nav>
 </header>
 
 <main>
@@ -49,7 +49,7 @@
             <a class="btn-rojo cta" data-releases href="https://github.com/alonnnzo/cronio/releases/latest">Descargar para Windows</a>
             <a class="btn-claro cta2" href="#funciones">Ver cómo funciona</a>
           </div>
-          <p class="ver">Versión 0.3.1 · gratis · código abierto</p>
+          <p class="ver">Versión <span data-v>0.3.1</span> beta · gratis · código abierto</p>
         </div></article>
 
         <article class="cap" data-shot="1"><div class="cap-in">
@@ -200,7 +200,7 @@
           <button type="button" class="btn-claro" data-key="down" aria-label="Abajo">▼</button>
           <button type="button" class="btn-claro" data-key="select">SELECT</button>
         </div>
-        <p class="note">Es una simulación en el navegador con los textos de la app. Con sonido activado en SELECT, los avisos suenan. Hoy el puente se conecta con Claude Code; Gemini, Codex, Cursor y Hermes ya tienen su color y se conectan más adelante.</p>
+        <p class="note">Es una simulación en el navegador con los textos de la app. Con sonido activado en SELECT, los avisos suenan. Hoy el puente se conecta solo con Claude Code. Gemini, Codex, Cursor y Hermes ya tienen su color, pero están planeados (mira «Lo que viene»).</p>
       </div>
     </div>
   </section>
@@ -209,7 +209,9 @@
     <h2 id="download-title">Instálala en tu consola.</h2>
     <p class="lede">Un programa para tu PC que te guía paso a paso y, desde ahí, la app para la consola.</p>
     <a class="btn-rojo cta big" data-releases href="https://github.com/alonnnzo/cronio/releases/latest">Descargar Cronio para Windows</a>
-    <p class="cta-sub">Versión 0.3.1 · <a data-releases href="https://github.com/alonnnzo/cronio/releases/latest">todas las versiones y huellas SHA-256</a> · <a href="https://github.com/alonnnzo/cronio">código fuente</a> · <a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">SECURITY.md</a></p>
+    <p class="cta-sub">Versión <span data-v>0.3.1</span> · <a data-releases href="https://github.com/alonnnzo/cronio/releases/latest">todas las versiones y huellas SHA-256</a> · <a href="https://github.com/alonnnzo/cronio">código fuente</a> · <a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">SECURITY.md</a></p>
+    <p class="beta-note"><span class="beta">Beta</span> Cronio está en fase beta: funciona, pero puede tener fallos. Tus reportes ayudan.</p>
+    <p class="cta-sub help"><a href="https://github.com/alonnnzo/cronio/issues">¿Algo no funciona?</a> · <a href="https://github.com/alonnnzo/cronio/releases">Qué trae cada versión</a></p>
 
     <div class="install">
       <h3>Instalación</h3>
@@ -245,6 +247,31 @@
         <div><dt>Sonido</dt><dd>Opcional. Sube el volumen de la consola: los avisos suenan bajo a propósito.</dd></div>
       </dl>
     </div>
+
+    <div class="compat" id="compatibilidad">
+      <h3>Compatibilidad</h3>
+      <table>
+        <caption class="sr-only">Qué consolas, agentes y sistemas funcionan hoy y cuáles están planeados</caption>
+        <thead class="sr-only"><tr><th scope="col">Tipo</th><th scope="col">Cuál</th><th scope="col">Estado</th></tr></thead>
+        <tbody>
+          <tr><th scope="rowgroup" rowspan="5">Consolas</th><td>New 3DS XL</td><td><span class="st si">Probada</span></td></tr>
+          <tr><td>New 3DS</td><td><span class="st no">Sin probar</span></td></tr>
+          <tr><td>New 2DS XL</td><td><span class="st no">Sin probar</span></td></tr>
+          <tr><td>Old 3DS</td><td><span class="st no">Sin probar</span></td></tr>
+          <tr><td>2DS</td><td><span class="st no">Sin probar</span></td></tr>
+        </tbody>
+        <tbody>
+          <tr><th scope="rowgroup" rowspan="2">Agentes</th><td>Claude Code</td><td><span class="st si">Funciona</span></td></tr>
+          <tr><td>Gemini CLI, Cursor, Codex y Hermes</td><td><span class="st plan">Planeado</span></td></tr>
+        </tbody>
+        <tbody>
+          <tr><th scope="rowgroup" rowspan="3">PC</th><td>Windows 10 u 11</td><td><span class="st si">Funciona</span></td></tr>
+          <tr><td>macOS</td><td><span class="st plan">Planeado</span></td></tr>
+          <tr><td>Linux</td><td><span class="st plan">Planeado</span></td></tr>
+        </tbody>
+      </table>
+      <p class="note">«Sin probar» no quiere decir que no funcione: nadie lo ha comprobado todavía. Si la pruebas, cuéntanos cómo te fue en los <a href="https://github.com/alonnnzo/cronio/issues">reportes</a>.</p>
+    </div>
   </section>
 
   <section class="security" id="seguridad" aria-labelledby="sec-title">
@@ -258,13 +285,45 @@
     <p class="sec-links"><a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">Cómo reportar un problema (SECURITY.md)</a> · <a href="https://github.com/alonnnzo/cronio">Ver el código</a></p>
   </section>
 
+  <section class="roadmap" id="futuro" aria-labelledby="road-title">
+    <h2 id="road-title">Lo que viene.</h2>
+    <p class="lede">Son planes, no promesas: sin fechas y pueden cambiar.</p>
+    <p class="road-now"><span class="st si">Hoy</span> Claude Code, Windows y una New 3DS XL.</p>
+    <div class="road-cols">
+      <div class="road-col">
+        <h3>Nuevas funciones planeadas</h3>
+        <ul>
+          <li><b>Más agentes:</b> <span class="ag" style="--c:#5b8cff">Gemini CLI</span>, <span class="ag" style="--c:#c9ced9">Cursor</span>, <span class="ag" style="--c:#2fd08a">Codex</span> y <span class="ag" style="--c:#f6c544">Hermes</span>, cada uno con su color de cara. Hoy solo funciona Claude Code.</li>
+          <li><b>Voz:</b> hablarle a la consola para dar instrucciones.</li>
+          <li><b>Asistente general:</b> pedirle cosas rápidas desde la 3DS, como recordatorios o preguntas.</li>
+          <li><b>Más personalidad:</b> sonidos por estado y pequeños extras para la cara.</li>
+          <li><b>Banner 3D:</b> uno propio en el menú de la consola.</li>
+          <li><b>Versión en inglés.</b></li>
+        </ul>
+      </div>
+      <div class="road-col">
+        <h3>Cómo va a crecer</h3>
+        <ul>
+          <li><b>Más plataformas:</b> el programa para macOS y Linux (hoy es solo Windows) y pruebas en Old 3DS y 2DS.</li>
+          <li><b>Uso fuera de casa:</b> un modo opcional para usar la consola lejos del PC, cifrado de punta a punta. El modo local sigue siendo la base.</li>
+          <li><b>Instalar desde la consola:</b> a través de las tiendas de homebrew de la comunidad.</li>
+          <li><b>Instalador con firma de código:</b> para que Windows no muestre la advertencia.</li>
+          <li><b>Abierto a la comunidad:</b> código GPL-3.0, y sugerencias y aportes bienvenidos.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="sec-links"><a href="https://github.com/alonnnzo/cronio/issues">Cuéntanos qué te gustaría ver</a></p>
+  </section>
+
   <section class="faq" id="preguntas" aria-labelledby="faq-title">
     <h2 id="faq-title">Preguntas frecuentes.</h2>
     <div class="faq-list">
+      <details><summary>¿Está terminado?</summary><p>No: Cronio está en beta. Ya funciona de punta a punta con Claude Code, Windows y una New 3DS XL, pero puede tener fallos y cambiar entre versiones. Si algo falla, cuéntalo en los <a href="https://github.com/alonnnzo/cronio/issues">reportes de problemas</a>: ayudan mucho.</p></details>
       <details><summary>¿Necesito una 3DS modificada?</summary><p>Sí. Cronio es una app homebrew: hace falta una New 3DS con firmware personalizado (Luma3DS) y FBI para instalarla.</p></details>
-      <details><summary>¿Funciona con Old 3DS o 2DS?</summary><p>Sin probar. Cronio está hecha y probada en una New 3DS XL; en otros modelos puede fallar.</p></details>
-      <details><summary>¿Con qué agentes funciona?</summary><p>Con Claude Code, hoy. Gemini, Codex, Cursor y Hermes ya tienen su color en la consola y se conectarán más adelante.</p></details>
-      <details><summary>¿Envía mis datos a algún lado?</summary><p>No. Todo pasa entre tu PC y tu consola por tu red. Cronio no tiene servidores propios ni analítica. Solo consulta GitHub si activas las actualizaciones automáticas.</p></details>
+      <details><summary>¿Funciona con Old 3DS o 2DS?</summary><p>Sin probar. Cronio está hecha y probada en una New 3DS XL; en otros modelos puede fallar. Mira la tabla de <a href="#compatibilidad">compatibilidad</a>.</p></details>
+      <details><summary>¿Con qué agentes funciona?</summary><p>Hoy, solo con Claude Code.</p></details>
+      <details><summary>¿Va a funcionar con otros agentes?</summary><p>Está planeado: Gemini CLI, Cursor, Codex y Hermes, cada uno con su color de cara. Todavía no se conectan y no hay fecha. Mira <a href="#futuro">Lo que viene</a>.</p></details>
+      <details><summary>¿Envía mis datos a algún lado?</summary><p>Hoy no. Todo pasa entre tu PC y tu consola por tu red. Cronio no tiene servidores propios ni analítica. Solo consulta GitHub si activas las actualizaciones automáticas.</p></details>
       <details><summary>¿Es oficial?</summary><p>No. Es un proyecto independiente, sin afiliación ni respaldo de Nintendo ni de Anthropic.</p></details>
     </div>
   </section>
@@ -272,7 +331,7 @@
 
 <footer class="foot">
   <span class="logo" role="img" aria-label="Cronio"><span aria-hidden="true">CR<i></i>NI<i></i></span></span>
-  <nav class="foot-links" aria-label="Enlaces"><a href="https://github.com/alonnnzo/cronio">Código</a><a href="https://github.com/alonnnzo/cronio/releases/latest">Versiones</a><a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">Seguridad</a><a href="#descarga">Descargar</a></nav>
+  <nav class="foot-links" aria-label="Enlaces"><a href="https://github.com/alonnnzo/cronio">Código</a><a href="https://github.com/alonnnzo/cronio/releases/latest">Versiones</a><a href="https://github.com/alonnnzo/cronio/blob/main/SECURITY.md">Seguridad</a><a href="#descarga">Descargar</a><a href="https://github.com/alonnnzo/cronio/issues">¿Algo no funciona?</a></nav>
   <p>Nintendo 3DS es una marca de Nintendo. Claude es una marca de Anthropic. Cronio es un proyecto independiente, sin afiliación ni respaldo de ninguna de las dos. Software libre bajo GPL-3.0.</p>
 </footer>
 
