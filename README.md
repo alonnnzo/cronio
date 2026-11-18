@@ -109,7 +109,7 @@ make test                # en client-3ds/tests-host: núcleo del cliente en C (t
 
 ## Estado del proyecto
 
-Cronio está en **beta**: funciona, pero puede tener fallos y cambiar entre versiones. Versión 0.3.2: funciona de punta a punta con una New 3DS XL (estado de sesiones, permisos, preguntas, avisos con sonido,
+Cronio está en **beta**: funciona, pero puede tener fallos y cambiar entre versiones. Versión 0.3.3: funciona de punta a punta con una New 3DS XL (estado de sesiones, permisos, preguntas, avisos con sonido,
 lector del último mensaje e instrucciones). Es un proyecto personal en marcha: puede haber errores y cambios entre versiones.
 
 | Agente | Estado |

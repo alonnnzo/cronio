@@ -46,7 +46,7 @@ APP_AUTHOR	:=	Alonso Rojas
 # Versión de la app: la única fuente. Va al código C (-DAPP_VERSION, el saludo con el puente y la comparación para actualizar), al .cia (makerom
 # -major/-minor/-micro: la versión del título; major y minor hasta 63, micro hasta 15) y a agent-companion.version, que `make cia` deja junto al .cia
 # y de donde el puente lee la versión que ofrece a las consolas.
-APP_VERSION := 0.3.2
+APP_VERSION := 0.3.3
 APP_MAJOR	:=	$(word 1,$(subst ., ,$(APP_VERSION)))
 APP_MINOR	:=	$(word 2,$(subst ., ,$(APP_VERSION)))
 APP_MICRO	:=	$(word 3,$(subst ., ,$(APP_VERSION)))
