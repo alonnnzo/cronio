@@ -57,7 +57,7 @@
     ['mi-portal', 'Opus', 'working', 'trabajando', '2:14', 'Editando hero.astro'],
     ['OTRO-SISTEMA', 'Sonnet', 'ask', 'te espera', '0:40', 'Espera tu respuesta'],
     ['otro-sitio', 'Pro', 'done', 'terminó', '5:02', 'Formulario listo y probado'],
-    ['VISKA', 'GPT', 'idle', 'inactivo', '12:31', 'Esperando instrucciones'],
+    ['ATLAS', 'GPT', 'idle', 'inactivo', '12:31', 'Esperando instrucciones'],
   ].map(([p, m, st, lab, t, act]) =>
     `<div class="sess${st === 'ask' ? ' ask' : ''}"><b>${p}</b><em class="st-${st}">${m} · ${lab} · ${t}</em><span>${act}</span></div>`).join('');
 
