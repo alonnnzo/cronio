@@ -295,3 +295,52 @@
   sizeDemo();
   requestAnimationFrame(loop);
 })();
+
+// Saltos largos dentro de la página (por ejemplo «Ver cómo funciona» desde la portada): el scroll suave pasaría por todo el
+// recorrido de la consola a la carrera. En su lugar, un velo con el logo tapa la página, se salta de una vez y el velo se va.
+// Los saltos cortos (menos de una pantalla y media) y el movimiento reducido siguen como siempre.
+(() => {
+  'use strict';
+  const reducido = matchMedia('(prefers-reduced-motion: reduce)');
+  let velo = null, ocupado = false;
+  function crearVelo() {
+    velo = document.createElement('div');
+    velo.className = 'velo';
+    velo.setAttribute('aria-hidden', 'true');
+    const logo = document.createElement('span');
+    logo.className = 'logo';
+    const letras = document.createElement('span');
+    letras.append('CR', document.createElement('i'), 'NI', document.createElement('i'));
+    logo.append(letras);
+    velo.append(logo);
+    document.body.append(velo);
+  }
+  const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+  document.addEventListener('click', async (e) => {
+    const a = e.target instanceof Element ? e.target.closest('a[href^="#"]') : null;
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const id = decodeURIComponent(a.getAttribute('href').slice(1));
+    const destino = id ? document.getElementById(id) : null;
+    if (!destino || reducido.matches) return;
+    const lejos = Math.abs(destino.getBoundingClientRect().top) > innerHeight * 1.5;
+    if (!lejos) return; // un salto corto se ve bien con el scroll suave
+    e.preventDefault();
+    if (ocupado) return;
+    ocupado = true;
+    if (!velo) crearVelo();
+    void velo.offsetWidth; // que la transición parta desde opacidad 0
+    velo.classList.add('on');
+    await espera(240);
+    const raiz = document.documentElement;
+    raiz.style.scrollBehavior = 'auto';
+    scrollTo(0, Math.max(0, Math.round(scrollY + destino.getBoundingClientRect().top - 56))); // 56: alto de la barra de arriba
+    raiz.style.scrollBehavior = '';
+    history.pushState(null, '', '#' + id);
+    if (!destino.hasAttribute('tabindex')) destino.setAttribute('tabindex', '-1');
+    destino.focus({ preventScroll: true });
+    await espera(160);
+    velo.classList.remove('on');
+    await espera(240);
+    ocupado = false;
+  });
+})();
