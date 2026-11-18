@@ -1,6 +1,6 @@
 {
   "name": "@companion/installer",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "license": "GPL-3.0-or-later",
   "description": "Programa del PC: paso a paso de instalación, puente y .cia por QR",

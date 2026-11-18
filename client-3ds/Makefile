@@ -46,7 +46,7 @@ APP_AUTHOR	:=	Alonso Rojas
 # Versión de la app: la única fuente. Va al código C (-DAPP_VERSION, el saludo con el puente y la comparación para actualizar), al .cia (makerom
 # -major/-minor/-micro: la versión del título; major y minor hasta 63, micro hasta 15) y a agent-companion.version, que `make cia` deja junto al .cia
 # y de donde el puente lee la versión que ofrece a las consolas.
-APP_VERSION := 0.3.1
+APP_VERSION := 0.3.2
 APP_MAJOR	:=	$(word 1,$(subst ., ,$(APP_VERSION)))
 APP_MINOR	:=	$(word 2,$(subst ., ,$(APP_VERSION)))
 APP_MICRO	:=	$(word 3,$(subst ., ,$(APP_VERSION)))
@@ -174,12 +174,17 @@ all:
 
 #---------------------------------------------------------------------------------
 # cia: arma agent-companion.cia a partir del .elf (compila antes si hace falta).
-#   banner plano (imagen + sonido) -> build/banner.bnr. El banner 3D (cia/banner3d) congeló el menú HOME en la consola:
-#   no se usa hasta encontrar la causa., icono -> build/icon.icn, y makerom lo junta con el .rsf.
+#   banner 3D + sonido -> build/banner.bnr, icono -> build/icon.icn, y makerom lo junta con el .rsf.
 #---------------------------------------------------------------------------------
+# Banner 3D del menú HOME: variante D de cia/gen-banner3d-v2.py (solo el logo, en capas, con parpadeo y respiro por escala).
+# Probada en la consola con la app de prueba (cia-banner-test). El generador alinea las texturas a 128 bytes y verifica el .cgfx.
+BANNER_3D	?=	d
+PYTHON		?=	$(if $(wildcard /c/Python314/python.exe),/c/Python314/python,python)
+
 cia: all
 	@echo armando $(TARGET).cia ...
-	@$(BANNERTOOL) makebanner -i $(CIA_DIR)/banner.png -a $(CIA_DIR)/banner.wav -o $(BUILD)/banner.bnr
+	@$(PYTHON) $(CIA_DIR)/gen-banner3d-v2.py $(BANNER_3D) $(BUILD)/banner.cgfx > $(BUILD)/banner.txt || { cat $(BUILD)/banner.txt; exit 1; }
+	@$(BANNERTOOL) makebanner -ci $(BUILD)/banner.cgfx -a $(CIA_DIR)/banner.wav -o $(BUILD)/banner.bnr
 	@$(BANNERTOOL) makesmdh -s "$(APP_TITLE)" -l "$(APP_TITLE)" -p "$(APP_AUTHOR)" -i $(CIA_DIR)/icon.png -o $(BUILD)/icon.icn
 	@$(MAKEROM) -f cia -o $(TARGET).cia -target t -exefslogo -elf $(TARGET).elf -rsf $(CIA_DIR)/$(TARGET).rsf -icon $(BUILD)/icon.icn -banner $(BUILD)/banner.bnr -major $(APP_MAJOR) -minor $(APP_MINOR) -micro $(APP_MICRO)
 	@printf '%s' '$(APP_VERSION)' > $(TARGET).version
@@ -197,7 +202,6 @@ cia: all
 # UniqueId: A 0xF7A3D, B 0xF7A3E, C 0xF7A3F, D 0xF7A40, E 0xF7A41 (la app real es 0xF7A3C).
 #---------------------------------------------------------------------------------
 BT_VARIANTES	:=	a b c d e
-PYTHON		?=	$(if $(wildcard /c/Python314/python.exe),/c/Python314/python,python)
 
 cia-banner-test: all
 	@mkdir -p $(BUILD)/banner-test
