@@ -1,0 +1,204 @@
+# Plantilla RSF de la APP DE PRUEBA DE BANNERS (make cia-banner-test): copia de agent-companion.rsf con tres valores
+# que el Makefile rellena por variante (A, B, C, D), para instalarlas de a una junto a la app real sin pisarla:
+#   @TITULO@  título del exheader (8 letras como máximo): «Banner A» ...
+#   @CODIGO@  ProductCode distinto del de la app real (CTR-H-AGCP): CTR-H-BNRA ...
+#   @ID@      UniqueId distinto del real (0xF7A3C): 0xF7A3D, 0xF7A3E, ...
+# Si cambia agent-companion.rsf (permisos, servicios), hay que repetir aquí el cambio. Nunca se instala sin rellenar.
+# Plantilla RSF de makerom para el .cia de Agent Companion (app de homebrew).
+# Basada en la de Universal-Updater (conocida por funcionar al abrirse desde el menú HOME).
+# Un RSF incompleto (sin APT:U, sin Dependency, números de syscall mal) hace que HOME falle con "SD removed".
+# El UniqueId es fijo: instalar de nuevo el .cia (por ejemplo con el QR de FBI) actualiza la app en vez de duplicarla.
+BasicInfo:
+  Title                   : "@TITULO@"
+  ProductCode             : "@CODIGO@"
+  Logo                    : Homebrew # obligatorio: con None la consola no abre la app desde HOME (error «SD quitada»)
+
+# Sin sección RomFs: la app no trae romfs.
+
+TitleInfo:
+  Category                : Application
+  UniqueId                : @ID@
+
+Option:
+  UseOnSD                 : true # la app guarda su configuración en la SD (sdmc:/3ds/agent-companion)
+  FreeProductCode         : true # permite cualquier ProductCode
+  MediaFootPadding        : false
+  EnableCrypt             : false
+  EnableCompress          : true
+
+AccessControlInfo:
+  CoreVersion                   : 2
+  DescVersion                   : 2
+  ReleaseKernelMajor            : "02"
+  ReleaseKernelMinor            : "33"
+  UseExtSaveData                : false
+  # Permisos de archivos recortados (auditoría 2026-11-17): sin Debug, TwlCardBackup, TwlNandData, FsMountTwln, FsMountCardSpi ni UseCardSpi. Se dejan
+  # CtrNandRo, FsMountNand y CategorySystemApplication por prudencia: dsp_extract.c lee el
+  # firmware del DSP desde la NAND (para el sonido). Sin escritura en NAND.
+  FileSystemAccess:
+   - CategorySystemApplication
+   - CategoryHardwareCheck
+   - CategoryFileSystemTool
+   - DirectSdmc
+   - Core
+   - CtrNandRo
+   - CategorySystemSettings
+   - DirectSdmcWrite
+  IoAccessControl:
+   - FsMountNand
+   - UseSdif3
+  MemoryType                    : Application # Application/System/Base
+  SystemMode                    : 64MB
+  IdealProcessor                : 0
+  AffinityMask                  : 1
+  Priority                      : 16
+  MaxCpu                        : 0x9E # valor por defecto
+  HandleTableSize               : 0x200
+  DisableDebug                  : false
+  EnableForceDebug              : false
+  CanWriteSharedPage            : false
+  CanUsePrivilegedPriority      : false
+  CanUseNonAlphabetAndNumber    : true
+  PermitMainFunctionArgument    : true
+  CanShareDeviceMemory          : true
+  RunnableOnSleep               : false
+  SpecialMemoryArrange          : true
+  SystemModeExt                 : Legacy # usa el modo de memoria de la Old 3DS
+  CpuSpeed                      : 804MHz # New 3DS (en Old 3DS se ignora)
+  EnableL2Cache                 : true
+  CanAccessCore2                : true
+  IORegisterMapping:
+   - 1ff00000-1ff7ffff   # memoria del DSP
+  MemoryMapping:
+   - 1f000000-1f5fffff:r # VRAM
+  # Syscalls de una app normal de libctru (memoria, hilos, sincronización, IPC, info, caché). Recortadas las de depuración y del kernel: Debug*, Read/WriteProcessMemory, CreateProcess, Map/ControlProcessMemory, CreateCodeSet, BindInterrupt, DMA, Backdoor, KernelSetState.
+  SystemCallAccess: 
+    ControlMemory: 1
+    QueryMemory: 2
+    ExitProcess: 3
+    GetProcessAffinityMask: 4
+    SetProcessAffinityMask: 5
+    GetProcessIdealProcessor: 6
+    SetProcessIdealProcessor: 7
+    CreateThread: 8
+    ExitThread: 9
+    SleepThread: 10
+    GetThreadPriority: 11
+    SetThreadPriority: 12
+    GetThreadAffinityMask: 13
+    SetThreadAffinityMask: 14
+    GetThreadIdealProcessor: 15
+    SetThreadIdealProcessor: 16
+    GetCurrentProcessorNumber: 17
+    Run: 18
+    CreateMutex: 19
+    ReleaseMutex: 20
+    CreateSemaphore: 21
+    ReleaseSemaphore: 22
+    CreateEvent: 23
+    SignalEvent: 24
+    ClearEvent: 25
+    CreateTimer: 26
+    SetTimer: 27
+    CancelTimer: 28
+    ClearTimer: 29
+    CreateMemoryBlock: 30
+    MapMemoryBlock: 31
+    UnmapMemoryBlock: 32
+    CreateAddressArbiter: 33
+    ArbitrateAddress: 34
+    CloseHandle: 35
+    WaitSynchronization1: 36
+    WaitSynchronizationN: 37
+    SignalAndWait: 38
+    DuplicateHandle: 39
+    GetSystemTick: 40
+    GetHandleInfo: 41
+    GetSystemInfo: 42
+    GetProcessInfo: 43
+    GetThreadInfo: 44
+    ConnectToPort: 45
+    SendSyncRequest1: 46
+    SendSyncRequest2: 47
+    SendSyncRequest3: 48
+    SendSyncRequest4: 49
+    SendSyncRequest: 50
+    OpenProcess: 51
+    OpenThread: 52
+    GetProcessId: 53
+    GetProcessIdOfThread: 54
+    GetThreadId: 55
+    GetResourceLimit: 56
+    GetResourceLimitLimitValues: 57
+    GetResourceLimitCurrentValues: 58
+    GetThreadContext: 59
+    Break: 60
+    OutputDebugString: 61
+    ControlPerformanceCounter: 62
+    CreatePort: 71
+    CreateSessionToPort: 72
+    CreateSession: 73
+    AcceptSession: 74
+    ReplyAndReceive1: 75
+    ReplyAndReceive2: 76
+    ReplyAndReceive3: 77
+    ReplyAndReceive4: 78
+    ReplyAndReceive: 79
+    InvalidateProcessDataCache: 82
+    StoreProcessDataCache: 83
+    FlushProcessDataCache: 84
+  # Servicios que usa la app: APT:U (obligatorio en toda app), red (soc:U, ac:u), pantallas (gsp), mando (hid),
+  # sonido (dsp::DSP), LED de aviso (mcu::HWC), archivos (fs:USER), configuración (cfg:u), batería (ptm:u)
+  # y números al azar (ps:ps, psInit en app.c). El teclado de texto es un applet: va por APT:U.
+  # am:net es el servicio de instalación de títulos (amInit, AM_StartCiaInstall...): la app se actualiza sola desde la consola (updater.c);
+  # Universal-Updater lo usa igual. La lista queda en 13 servicios, lejos del máximo de makerom (34).
+  ServiceAccessControl:
+   - APT:U
+   - ac:u
+   - am:net
+   - cfg:u
+   - dsp::DSP
+   - fs:USER
+   - gsp::Gpu
+   - gsp::Lcd
+   - hid:USER
+   - mcu::HWC
+   - ps:ps
+   - ptm:u
+   - soc:U
+SystemControlInfo:
+  SaveDataSize: 0KB # no usa datos de guardado propios: todo va a la SD
+  RemasterVersion: 0
+  StackSize: 0x40000 # igual que __stacksize__ en source/main.c
+  # Servicios del sistema de los que depende la app (lista idéntica a la de Universal-Updater).
+  Dependency: 
+    ac: 0x0004013000002402
+    am: 0x0004013000001502
+    boss: 0x0004013000003402
+    camera: 0x0004013000001602
+    cecd: 0x0004013000002602
+    cfg: 0x0004013000001702
+    codec: 0x0004013000001802
+    csnd: 0x0004013000002702
+    dlp: 0x0004013000002802
+    dsp: 0x0004013000001a02
+    friends: 0x0004013000003202
+    gpio: 0x0004013000001b02
+    gsp: 0x0004013000001c02
+    hid: 0x0004013000001d02
+    http: 0x0004013000002902
+    i2c: 0x0004013000001e02
+    ir: 0x0004013000003302
+    mcu: 0x0004013000001f02
+    mic: 0x0004013000002002
+    ndm: 0x0004013000002b02
+    news: 0x0004013000003502
+    nim: 0x0004013000002c02
+    nwm: 0x0004013000002d02
+    pdn: 0x0004013000002102
+    ps: 0x0004013000003102
+    ptm: 0x0004013000002202
+    ro: 0x0004013000003702
+    socket: 0x0004013000002e02
+    spi: 0x0004013000002302
+    ssl: 0x0004013000002f02
